@@ -1,4 +1,4 @@
-# FE Tactique 0.3.0 – guide d'installation et de test
+# FE Tactique 0.3.1 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.3.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.3.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -39,6 +39,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | FE – Fin de phase | Expire Silence et bonus temporaires du camp qui finit, soigne 10 % sur fort/trône/porte pour le camp qui commence. |
 | FE – Bonus temporaire | Bonus ou malus chiffré sur les unités sélectionnées, avec expiration. |
 | FE – Nouvelle unité | Crée une unité depuis une des 12 classes de base. |
+| FE – Terrain des Régions | (MJ) Liste les Régions de la scène avec le terrain reconnu, et permet de le choisir dans une liste. |
 | FE – Nouveau chapitre | Remet les jetons Bouclier, Ailé et Esprit à zéro. |
 | FE – Préparer le chapitre 1 | Remplit la scène affichée : Régions de terrain et jetons. |
 

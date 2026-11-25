@@ -284,6 +284,7 @@ export const MACROS = [
   ["FE – Fin de phase", "icons/svg/clockwork.svg", `${API}.endPhase();`],
   ["FE – Bonus temporaire", "icons/svg/aura.svg", `${API}.bonusDialog();`],
   ["FE – Nouvelle unité", "icons/svg/mystery-man.svg", `${API}.newUnit();`],
+  ["FE – Terrain des Régions", "icons/svg/terrain.svg", `${API}.regions();`],
   ["FE – Nouveau chapitre (jetons à zéro)", "icons/svg/book.svg", `${API}.newChapter();`],
   ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`]
 ];

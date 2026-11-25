@@ -120,3 +120,40 @@ export function registerMovementCosts() {
 export function refreshPlannedPaths() {
   try { canvas?.tokens?.recalculatePlannedMovementPaths?.(); } catch (e) { /* ignore */ }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Macro : vérifier / régler le terrain des Régions de la scène       */
+/* ------------------------------------------------------------------ */
+export async function regionsMacro() {
+  if (!game.user.isGM) return ui.notifications.warn("Réservé au MJ.");
+  const scene = canvas?.scene;
+  const regions = scene?.regions?.contents ?? [];
+  if (!regions.length) return ui.notifications.warn("Aucune Région sur cette scène.");
+  const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
+  const options = (sel) => [`<option value="">(aucun : ignorée)</option>`]
+    .concat(Object.entries(TERRAINS).map(([k, t]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${t.label}${t.esq || t.def ? ` (Esq +${t.esq}, Déf +${t.def})` : ""}</option>`)).join("");
+  const rows = regions.map(r => {
+    const flag = r.getFlag(MODULE_ID, "terrain");
+    const detected = regionTerrain(r);
+    const how = flag ? "réglé" : (detected ? "d'après le nom" : "non reconnu");
+    return `<tr><td>${esc(r.name)}</td><td><select name="${r.id}">${options(detected)}</select></td><td class="hint">${how}</td></tr>`;
+  }).join("");
+  const res = await foundry.applications.api.DialogV2.wait({
+    window: { title: `Terrain des Régions : ${scene.name}` },
+    position: { width: 620 },
+    content: `<p>Chaque Région donne son terrain aux cases qu'elle couvre (les cases sans Région sont des plaines). Le combat lit le terrain sous chaque unité, et le déplacement utilise le coût du profil de l'unité.</p>
+      <table><thead><tr><th>Région</th><th>Terrain</th><th></th></tr></thead><tbody>${rows}</tbody></table>`,
+    buttons: [{
+      action: "ok", label: "Enregistrer", default: true,
+      callback: (e, b) => Object.fromEntries(regions.map(r => [r.id, b.form.elements[r.id].value]))
+    }, { action: "cancel", label: "Annuler" }],
+    rejectClose: false
+  }).catch(() => null);
+  if (!res || res === "cancel") return;
+  const updates = regions.map(r => res[r.id]
+    ? { _id: r.id, [`flags.${MODULE_ID}.terrain`]: res[r.id] }
+    : { _id: r.id, [`flags.${MODULE_ID}.-=terrain`]: null });
+  await scene.updateEmbeddedDocuments("Region", updates);
+  refreshPlannedPaths();
+  ui.notifications.info(`Terrain enregistré pour ${regions.length} Région(s).`);
+}

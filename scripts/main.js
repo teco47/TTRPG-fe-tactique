@@ -6,7 +6,7 @@ import { MODULE_ID, WEAPON_TYPES } from "./config.js";
 import * as config from "./config.js";
 import * as engine from "./engine.js";
 import { readUnit, sheetSummary, itemCategory, readWeapon } from "./engine.js";
-import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint } from "./terrain.js";
+import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro } from "./terrain.js";
 import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
 import { registerBadgeHooks } from "./badge.js";
@@ -101,7 +101,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
