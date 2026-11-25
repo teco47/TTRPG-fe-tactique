@@ -59,6 +59,7 @@ export async function refreshSheets() {
     const emb = itemUpdates(a.items.contents);
     if (emb.length) await a.updateEmbeddedDocuments("Item", emb);
     if (a.system?.template === TEMPLATE_IDS.unite) await migrateStatModel(a);
+    if (a.system?.template === TEMPLATE_IDS.unite) await migrateClassBalance(a);
     await ensureDefaults(a);
   }
 }
@@ -82,6 +83,51 @@ export async function migrateStatModel(actor) {
     upd[`system.props.niv_${s}`] = g;
   }
   await actor.update(upd);
+}
+
+/** Modificateurs des classes de base jusqu'à la 0.7.1 [PV, For, Mag, Déf, Rés, Tech, Vit]. */
+export const CLASS_MODS_071 = {
+  "Soldat": [4, 1, -2, 2, -1, 1, 0], "Écuyer": [6, 2, -2, 1, -2, 0, 1], "Coursier": [6, 0, -2, -1, -1, 2, 2],
+  "Chasseur": [2, 1, -1, -2, 0, 2, 2], "Voleur": [4, 0, 0, -2, -1, 2, 2], "Brute": [10, 3, -1, 0, -1, -3, 0],
+  "Mercenaire": [2, 2, 0, 0, -2, 1, 1], "Scribe": [4, 0, 2, -2, 1, 0, 0], "Sauvage": [8, 2, -2, 0, -1, -1, 1],
+  "Moine": [2, 0, 2, -2, 2, 0, 0], "Apprentie": [4, -1, 2, -2, 0, 2, 0], "Shaman": [4, 0, 3, -2, 1, 0, -1]
+};
+
+/**
+ * Pure : mises à jour d'un objet Classe de base resté aux modificateurs de la 0.7.1.
+ * Un objet modifié à la main (valeurs différentes de la 0.7.1) n'est pas touché. Retour : { props, pvDelta } ou null.
+ */
+export function classBalanceUpdate(name, mods) {
+  const old = CLASS_MODS_071[name];
+  const c = CLASSES[name];
+  if (!old || !c) return null;
+  const keys = ["pv", "for", "mag", "def", "res", "tech", "vit"];
+  if (keys.some((k, i) => Number(mods?.[k] ?? 0) !== old[i])) return null;
+  const base = { pv: 10, for: 5, mag: 5, def: 5, res: 5, tech: 5, vit: 5 };
+  const props = Object.fromEntries(keys.map(k => [`cl_mod_${k}`, c[k] - base[k]]));
+  if (keys.every((k, i) => props[`cl_mod_${k}`] === old[i])) return null;
+  return { props, pvDelta: props.cl_mod_pv - old[0] };
+}
+
+/** 0.8.0 : nouvel équilibrage des classes de base sur les objets Classe des unités ; les PV actuels suivent le maximum. */
+export async function migrateClassBalance(actor) {
+  if (actor.getFlag(MODULE_ID, "classBalance") >= 1) return;
+  const upd = [];
+  let pvDelta = 0;
+  for (const i of actor.items) {
+    if (itemCategory(i) !== "classe") continue;
+    const c = readClass(i);
+    if (c.palier !== 1) continue;
+    const u = classBalanceUpdate(i.name, c.mods);
+    if (!u) continue;
+    upd.push({ _id: i.id, ...Object.fromEntries(Object.entries(u.props).map(([k, v]) => [`system.props.${k}`, v])) });
+    pvDelta += u.pvDelta;
+  }
+  if (upd.length) await actor.updateEmbeddedDocuments("Item", upd);
+  const data = { [`flags.${MODULE_ID}.classBalance`]: 1 };
+  const pv = actor.system.props?.pv;
+  if (pvDelta && pv !== undefined && pv !== null && pv !== "") data["system.props.pv"] = Math.max(1, Number(pv) + pvDelta);
+  await actor.update(data);
 }
 
 /** Données à recopier depuis un modèle dans un acteur/objet qui l'utilise (comme le bouton « Recharger » de CSB). */

@@ -140,22 +140,24 @@ export const OBJECTS = [
 ].map(([nom, effetCle, valeur, uses, prix, effet]) => ({ nom, effetCle, valeur, uses, prix, effet }));
 
 /* ------------------------------------------------------------------ */
-/*  Classes de base (version du 24/11/2026)                            */
+/*  Classes de base (équilibrage du 25/11/2026)                        */
 /* ------------------------------------------------------------------ */
 // stats après modificateurs de classe, avant les 3 points libres
+// Budget : la stat d'attaque inutile (Mag des classes physiques, For des mages et du Moine) est à −2 et ne compte pas ;
+// les 6 autres (PV/2, attaque, Déf, Rés, Tech, Vit) totalisent +7 à pied et +5 monté ou volant (monture ≈ 2 points).
 export const CLASSES = {
-  "Soldat":     { pv: 14, for: 6, mag: 3, def: 7, res: 4, tech: 6, vit: 5, des: ["tech", "def"], armes: ["lance"], depart: "Lance de bronze", mvt: 5, profil: "pied", traitDefaut: "Bouclier" },
+  "Soldat":     { pv: 16, for: 6, mag: 3, def: 8, res: 4, tech: 6, vit: 5, des: ["tech", "def"], armes: ["lance"], depart: "Lance de bronze", mvt: 5, profil: "pied", traitDefaut: "Bouclier" },
   "Écuyer":     { pv: 16, for: 7, mag: 3, def: 6, res: 3, tech: 5, vit: 6, des: ["for", "vit"], armes: ["lance"], depart: "Lance de bronze", mvt: 6, profil: "monte", motsCles: ["cavalier"] },
   "Coursier":   { pv: 16, for: 5, mag: 3, def: 4, res: 4, tech: 7, vit: 7, des: ["vit", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 6, profil: "volant", traitDefaut: "Ailé", motsCles: ["volant"] },
-  "Chasseur":   { pv: 12, for: 6, mag: 4, def: 3, res: 5, tech: 7, vit: 7, des: ["tech", "for"], armes: ["arc"], depart: "Arc de bronze", mvt: 5, profil: "pied" },
-  "Voleur":     { pv: 14, for: 5, mag: 5, def: 3, res: 4, tech: 7, vit: 7, des: ["tech", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 5, profil: "pied" },
-  "Brute":      { pv: 20, for: 8, mag: 4, def: 5, res: 4, tech: 2, vit: 5, des: ["for", "pv"], armes: ["hache"], depart: "Hache de bronze", mvt: 5, profil: "pied" },
-  "Mercenaire": { pv: 12, for: 7, mag: 5, def: 5, res: 3, tech: 6, vit: 6, des: ["for", "def"], armes: ["epee"], depart: "Épée de bronze", mvt: 5, profil: "pied" },
-  "Scribe":     { pv: 14, for: 5, mag: 7, def: 3, res: 6, tech: 5, vit: 5, des: ["mag", "res"], armes: ["lumiere"], depart: "Éclair", mvt: 5, profil: "pied" },
-  "Sauvage":    { pv: 18, for: 7, mag: 3, def: 5, res: 4, tech: 4, vit: 6, des: ["for", "vit"], armes: ["hache"], depart: "Hache de bronze", mvt: 5, profil: "pied" },
-  "Moine":      { pv: 12, for: 5, mag: 7, def: 3, res: 7, tech: 5, vit: 5, des: ["res", "pv"], armes: ["sceptre"], depart: "Soin", mvt: 5, profil: "pied" },
-  "Apprentie":  { pv: 14, for: 4, mag: 7, def: 3, res: 5, tech: 7, vit: 5, des: ["mag", "tech"], armes: ["anima"], depart: "Feu", mvt: 5, profil: "pied" },
-  "Shaman":     { pv: 14, for: 5, mag: 8, def: 3, res: 6, tech: 5, vit: 4, des: ["mag", "pv"], armes: ["tenebres"], depart: "Ombre", mvt: 5, profil: "pied", traitDefaut: "Esprit" }
+  "Chasseur":   { pv: 14, for: 7, mag: 3, def: 3, res: 5, tech: 8, vit: 7, des: ["tech", "for"], armes: ["arc"], depart: "Arc de bronze", mvt: 5, profil: "pied" },
+  "Voleur":     { pv: 14, for: 6, mag: 3, def: 3, res: 5, tech: 8, vit: 8, des: ["tech", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 5, profil: "pied" },
+  "Brute":      { pv: 20, for: 8, mag: 3, def: 7, res: 4, tech: 3, vit: 5, des: ["for", "pv"], armes: ["hache"], depart: "Hache de bronze", mvt: 5, profil: "pied" },
+  "Mercenaire": { pv: 14, for: 7, mag: 3, def: 6, res: 3, tech: 7, vit: 7, des: ["for", "def"], armes: ["epee"], depart: "Épée de bronze", mvt: 5, profil: "pied" },
+  "Scribe":     { pv: 14, for: 3, mag: 8, def: 3, res: 7, tech: 6, vit: 6, des: ["mag", "res"], armes: ["lumiere"], depart: "Éclair", mvt: 5, profil: "pied" },
+  "Sauvage":    { pv: 18, for: 7, mag: 3, def: 5, res: 4, tech: 5, vit: 7, des: ["for", "vit"], armes: ["hache"], depart: "Hache de bronze", mvt: 5, profil: "pied" },
+  "Moine":      { pv: 14, for: 3, mag: 8, def: 3, res: 8, tech: 5, vit: 6, des: ["res", "pv"], armes: ["sceptre"], depart: "Soin", mvt: 5, profil: "pied" },
+  "Apprentie":  { pv: 14, for: 3, mag: 8, def: 3, res: 6, tech: 7, vit: 6, des: ["mag", "tech"], armes: ["anima"], depart: "Feu", mvt: 5, profil: "pied" },
+  "Shaman":     { pv: 14, for: 3, mag: 9, def: 4, res: 7, tech: 6, vit: 4, des: ["mag", "pv"], armes: ["tenebres"], depart: "Ombre", mvt: 5, profil: "pied", traitDefaut: "Esprit" }
 };
 
 /* ------------------------------------------------------------------ */

@@ -17,7 +17,7 @@ assert.equal(created.system.template, C.TEMPLATE_IDS.unite);
 assert.equal(created.system.props.des_tech, 2);
 assert.equal(embedded.length, 3);
 assert.equal(embedded[0].name, "Soldat"); assert.equal(embedded[0].system.template, C.TEMPLATE_IDS.classe);
-assert.equal(embedded[0].system.props.cl_mod_def, 2); assert.equal(embedded[0].system.props.cl_trait, "Bouclier");
+assert.equal(embedded[0].system.props.cl_mod_def, 3); assert.equal(embedded[0].system.props.cl_trait, "Bouclier");
 assert.equal(embedded[1].name, "Lance de bronze"); assert.equal(embedded[1].system.props.equipee, true);
 assert.equal(embedded[1].system.props.sans_crit, true);
 assert.equal(embedded[2].name, "Bouclier"); assert.equal(embedded[2].system.props.equipe, true);
@@ -42,10 +42,23 @@ const brasier = E.readWeapon(S.catalogItemData("Brasier"));
 assert.equal(E.isEffective(u, brasier, u), true);
 // Classes : emplacements, conditions et écarts
 const K = await import("../scripts/classes.js");
-assert.equal(embedded[0].system.props.cl_mod_res, 2); // Moine : Rés 7 = 5 + 2
+assert.equal(embedded[0].system.props.cl_mod_res, 3); // Moine : Rés 8 = 5 + 3
 const brute = S.catalogItemData("Brute");
 const bruteC = E.readClass(brute);
-assert.deepEqual(bruteC.mods, { pv: 10, for: 3, mag: -1, def: 0, res: -1, tech: -3, vit: 0 });
+assert.deepEqual(bruteC.mods, { pv: 10, for: 3, mag: -2, def: 2, res: -1, tech: -2, vit: 0 });
+// 0.8.0 : budget des classes de base (stat d'attaque inutile à −2, +7 à pied, +5 monté ou volant)
+for (const [nom, c] of Object.entries(C.CLASSES)) {
+  const m = { pv: c.pv - 10, for: c.for - 5, mag: c.mag - 5, def: c.def - 5, res: c.res - 5, tech: c.tech - 5, vit: c.vit - 5 };
+  const magique = m.for === -2 && m.mag > 0;
+  assert.equal(magique ? m.for : m.mag, -2, nom);
+  const utile = m.pv / 2 + (magique ? m.mag : m.for) + m.def + m.res + m.tech + m.vit;
+  assert.equal(utile, c.profil === "pied" ? 7 : 5, nom);
+}
+// Migration des objets Classe restés en 0.7.1
+assert.deepEqual(S.classBalanceUpdate("Mercenaire", { pv: 2, for: 2, mag: 0, def: 0, res: -2, tech: 1, vit: 1 }),
+  { props: { cl_mod_pv: 4, cl_mod_for: 2, cl_mod_mag: -2, cl_mod_def: 1, cl_mod_res: -2, cl_mod_tech: 2, cl_mod_vit: 2 }, pvDelta: 2 });
+assert.equal(S.classBalanceUpdate("Mercenaire", { pv: 2, for: 3, mag: 0, def: 0, res: -2, tech: 1, vit: 1 }), null); // modifiée à la main
+assert.equal(S.classBalanceUpdate("Écuyer", { pv: 6, for: 2, mag: -2, def: 1, res: -2, tech: 0, vit: 1 }), null); // inchangée
 // Unité faite à la main (10/5 partout, aucun objet Classe) -> choix de la Brute
 const blank = { niveau: 1, pv: 10, base_pv: 10, base_for: 5, base_mag: 5, base_def: 5, base_res: 5, base_tech: 5, base_vit: 5, base_mvt: 5,
   des_pv: 1, des_for: 1, des_mag: 1, des_def: 1, des_res: 1, des_tech: 1, des_vit: 1 };
@@ -123,24 +136,35 @@ console.log("setup OK");
 // Colonnes de la fiche et totaux
 {
   const u = E.readUnit({ name: "x", items: [S.catalogItemData("Soldat")], effects: [], flags: {}, system: { props: { ...P.unitPropsFromClass("Soldat"), base_for: 6, niv_for: 2 } } });
-  assert.equal(u.base.for, 6 + 1 + 2); assert.equal(u.base.pv, 14);
+  assert.equal(u.base.for, 6 + 1 + 2); assert.equal(u.base.pv, 16);
   const sum = E.sheetSummary(u);
-  assert.equal(sum.cls_for, "+1"); assert.equal(sum.cls_mag, "−2"); assert.equal(sum.tot_for, 9); assert.equal(sum.tot_pv, 14);
+  assert.equal(sum.cls_for, "+1"); assert.equal(sum.cls_mag, "−2"); assert.equal(sum.tot_for, 9); assert.equal(sum.tot_pv, 16);
   // Ennemi de niveau 4 : écart avec la classe en gains de niveau
   const g = P.unitPropsFromClass("Brute", { niveau: 4, totals: { pv: 24, for: 10, mag: 4, def: 6, res: 4, tech: 3, vit: 5 } });
   assert.equal(g.base_for, 5); assert.equal(g.niv_for, 2); assert.equal(g.niv_pv, 4); assert.equal(g.pv, 24);
   // PNJ niveau 1 : écart en points libres
   const y = P.unitPropsFromClass("Moine", { totals: { pv: 14, for: 5, mag: 8, def: 3, res: 7, tech: 5, vit: 6 } });
-  assert.equal(y.base_pv, 12); assert.equal(y.base_mag, 6); assert.equal(y.niv_mag, 0);
+  assert.equal(y.base_pv, 10); assert.equal(y.base_mag, 5); assert.equal(y.niv_mag, 0);
 }
 console.log("allocation OK");
 // Migration 0.5 -> 0.6 : Mercenaire niveau 3 (total For 9 = 7 de classe + 2 gagnés)
 {
   let upd = null;
-  const old = { ...P.unitPropsFromClass("Mercenaire"), base_pv: 12, base_for: 9, base_mag: 5, base_def: 5, base_res: 3, base_tech: 6, base_vit: 6 };
+  const old = { ...P.unitPropsFromClass("Mercenaire"), base_pv: 14, base_for: 9, base_mag: 5, base_def: 5, base_res: 3, base_tech: 6, base_vit: 6 };
   const a = { items: [S.catalogItemData("Mercenaire")], system: { props: old }, getFlag: (m, k) => ({ gains: { for: 2 } })[k], update: async (d) => (upd = d) };
   await S.migrateStatModel(a);
   assert.equal(upd["system.props.base_for"], 5); assert.equal(upd["system.props.niv_for"], 2);
   assert.equal(upd["system.props.base_pv"], 10); assert.equal(upd["flags.fe-tactique.statModel"], 2);
 }
 console.log("migration OK");
+// 0.8.0 : migration d'une unité dont l'objet Classe a les modificateurs de la 0.7.1
+{
+  const cls = S.catalogItemData("Mercenaire");
+  Object.assign(cls.system.props, { cl_mod_pv: 2, cl_mod_for: 2, cl_mod_mag: 0, cl_mod_def: 0, cl_mod_res: -2, cl_mod_tech: 1, cl_mod_vit: 1 });
+  let itemUpd = null, upd = null;
+  const a = { items: [{ ...cls, id: "c1" }], system: { props: { pv: 16 } }, getFlag: () => undefined,
+    updateEmbeddedDocuments: async (t, l) => (itemUpd = l), update: async (d) => (upd = d) };
+  await S.migrateClassBalance(a);
+  assert.equal(itemUpd[0]._id, "c1"); assert.equal(itemUpd[0]["system.props.cl_mod_pv"], 4); assert.equal(itemUpd[0]["system.props.cl_mod_mag"], -2);
+  assert.equal(upd["system.props.pv"], 18); assert.equal(upd["flags.fe-tactique.classBalance"], 1);
+}

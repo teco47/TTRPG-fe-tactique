@@ -20,12 +20,12 @@ function unit(name, cls, stats, weaponName, extra = {}) {
 const merc = unit("Mercenaire", "Mercenaire", null, "Épée de bronze");
 const bandit = unit("Bandit", "Brute", [20, 8, 4, 5, 4, 2, 5], "Hache de bronze");
 let f = E.buildForecast(merc, bandit, merc.weapons[0], bandit.weapons[0], { distance: 1 });
-assert.equal(f.A.dmg, 9); assert.equal(f.A.hit, 111); assert.equal(f.D.dmg, 2); assert.equal(f.D.hit, 52);
+assert.equal(f.A.dmg, 9); assert.equal(f.A.hit, 113); assert.equal(f.D.dmg, 1); assert.equal(f.D.hit, 50);
 assert.equal(f.A.crit, 0); assert.equal(f.D.can, true);
 
 const app = unit("Apprentie", "Apprentie", null, "Feu");
 f = E.buildForecast(app, bandit, app.weapons[0], bandit.weapons[0], { distance: 1 });
-assert.equal(f.A.dmg, 2); assert.equal(f.A.hit, 78); assert.equal(f.D.dmg, 14); assert.equal(f.D.hit, 86);
+assert.equal(f.A.dmg, 3); assert.equal(f.A.hit, 78); assert.equal(f.D.dmg, 14); assert.equal(f.D.hit, 84);
 // À distance 2, la hache ne riposte pas
 f = E.buildForecast(app, bandit, app.weapons[0], bandit.weapons[0], { distance: 2 });
 assert.equal(f.D.can, false); assert.equal(f.D.restriction, "hors de portée");
@@ -39,16 +39,16 @@ assert.equal(f.A.dmg, 10); assert.equal(f.D.dmg, 1);
 const garrec = unit("Garrec", "Brute", [24, 10, 4, 6, 4, 3, 5], "Hache de fer");
 const s = E.combatStats(garrec, garrec.weapons[0], { terrain: "fort" });
 assert.equal(s.atq, 16); assert.equal(s.prec, 76); assert.equal(s.esq, 19); assert.equal(s.crit, 1);
-// Mercenaire contre Garrec sur le fort : 6 dégâts (98 %), riposte 6 (49 %)
+// Mercenaire contre Garrec sur le fort : 6 dégâts (100 %), riposte 5 (47 %)
 f = E.buildForecast(merc, garrec, merc.weapons[0], garrec.weapons[0], { distance: 1, terrainD: "fort" });
-assert.equal(f.A.dmg, 6); assert.equal(f.A.hit, 98); assert.equal(f.D.dmg, 6); assert.equal(f.D.hit, 49);
+assert.equal(f.A.dmg, 6); assert.equal(f.A.hit, 100); assert.equal(f.D.dmg, 5); assert.equal(f.D.hit, 47);
 
 // Résolution : dés fixes
 const seq = (arr) => { let i = 0; return () => arr[i++ % arr.length]; };
 f = E.buildForecast(app, bandit, app.weapons[0], bandit.weapons[0], { distance: 1 });
 let r = E.resolveCombat(f, seq([10, 10, 99, 50, 50]));
-// Apprentie touche (moyenne 10 ≤ 78), pas de crit possible (Feu crit 0 + Tech/2=3 → 3 % ; jet 99 raté), Bandit touche (50 ≤ 86) → 14 dégâts : Apprentie tombe
-assert.equal(r.log.length, 2); assert.equal(r.state.D.hp, 18); assert.equal(r.state.A.hp, 0);
+// Apprentie touche (moyenne 10 ≤ 78), pas de crit possible (Feu crit 0 + Tech/2=3 → 3 % ; jet 99 raté), Bandit touche (50 ≤ 84) → 14 dégâts : Apprentie tombe
+assert.equal(r.log.length, 2); assert.equal(r.state.D.hp, 17); assert.equal(r.state.A.hp, 0);
 assert.deepEqual(r.fallen.A, { wounds: 1, dead: false }); assert.equal(r.state.A.dur, 39);
 
 // Double attaque et Bouclier

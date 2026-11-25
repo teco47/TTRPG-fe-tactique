@@ -1,4 +1,4 @@
-# FE Tactique 0.7.1 – guide d'installation et de test
+# FE Tactique 0.8.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.7.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.8.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -59,6 +59,23 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de stats libres** (3 au niveau 1, 2 PV = 1 point), **dés libres** (4 au niveau 1, réglage « Dés libres au niveau 1 ») et **PM**, avec une alerte si un total est dépassé ou si une stat a plus de dés que la limite du niveau. Les gains de montée de niveau, les Boosters et les dés achetés avec la macro sont suivis à part et ne consomment pas les points libres. Ajouter un trait à une unité retire son prix en PM, le retirer les rembourse (réglage « Déduire le prix des traits »).
 
 ### Classes, promotions et mots-clés (objets)
+
+- **Équilibrage des classes de base (0.8.0)** : la stat d'attaque inutile (Magie des classes physiques, Force des mages et du Moine) est à −2 et ne compte pas dans le budget. Les 6 autres stats (PV/2, stat d'attaque, Déf, Rés, Tech, Vit) totalisent **+7 à pied** et **+5 pour l'Écuyer et le Coursier**, la monture ou le vol valant environ 2 points. À la mise à jour, les objets Classe des unités restés aux valeurs de la 0.7.1 prennent les nouveaux modificateurs et les PV actuels suivent le nouveau maximum ; un objet Classe modifié à la main n'est pas touché. Les ennemis du chapitre 1 gardent leurs stats totales.
+
+| Classe | PV | For | Mag | Déf | Rés | Tech | Vit | Mvt |
+|---|---|---|---|---|---|---|---|---|
+| Soldat | +6 | +1 | −2 | +3 | −1 | +1 | 0 | 5 |
+| Écuyer | +6 | +2 | −2 | +1 | −2 | 0 | +1 | 6 |
+| Coursier | +6 | 0 | −2 | −1 | −1 | +2 | +2 | 6 |
+| Chasseur | +4 | +2 | −2 | −2 | 0 | +3 | +2 | 5 |
+| Voleur | +4 | +1 | −2 | −2 | 0 | +3 | +3 | 5 |
+| Brute | +10 | +3 | −2 | +2 | −1 | −2 | 0 | 5 |
+| Mercenaire | +4 | +2 | −2 | +1 | −2 | +2 | +2 | 5 |
+| Sauvage | +8 | +2 | −2 | 0 | −1 | 0 | +2 | 5 |
+| Scribe | +4 | −2 | +3 | −2 | +2 | +1 | +1 | 5 |
+| Moine | +4 | −2 | +3 | −2 | +3 | 0 | +1 | 5 |
+| Apprentie | +4 | −2 | +3 | −2 | +1 | +2 | +1 | 5 |
+| Shaman | +4 | −2 | +4 | −1 | +2 | +1 | −1 | 5 |
 
 - Les 12 classes de base sont dans *FE – Catalogue > Classes*. Une fiche retient trois emplacements : **Base**, **Avancée** et **Élite** (onglet Profil).
 - Macro **FE – Classe et promotion** (ou *Utiliser* un Magister dans l'inventaire) : sélectionne le jeton, choisis la classe, et tout se fait :
