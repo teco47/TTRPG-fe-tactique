@@ -3,7 +3,7 @@
  * Ces objets sont créés tels quels par l'installeur du module, et exportés dans
  * data/fe-tactique-csb-templates.json pour un import manuel (Paramètres > CSB > Importer les modèles).
  */
-import { TEMPLATE_IDS, TEMPLATE_NAMES, WEAPON_TYPES, RANKS, PROFILES, STAT_LABELS } from "./config.js";
+import { TEMPLATE_IDS, TEMPLATE_NAMES, WEAPON_TYPES, RANKS, PROFILES, STAT_LABELS, STATS } from "./config.js";
 
 const API = "game.modules.get('fe-tactique')?.api";
 
@@ -52,60 +52,66 @@ const rankOptions = RANKS.map(r => [r, r]);
 const typeOptions = (filter) => Object.entries(WEAPON_TYPES).filter(([k, v]) => filter(k, v)).map(([k, v]) => [k, v.label]);
 
 /* ------------------------------------------------------------------ */
+/*  Tableaux                                                           */
+/* ------------------------------------------------------------------ */
+/** Tableau CSB : rows = tableau de lignes de composants (null = case vide), layout = alignement par colonne (l/c/r). */
+const table = (key, rows, { layout = null, cssClass = "fe-table" } = {}) => {
+  const cols = Math.max(...rows.map(r => r.length));
+  return base(key, "table", {
+    cols, rows: rows.length, layout: layout ?? "l" + "c".repeat(cols - 1), cssClass,
+    contents: rows.map(r => Array.from({ length: cols }, (_, i) => r[i] ?? null))
+  });
+};
+/** En-tête de colonne. */
+const th = (text) => label("", text, { style: "bold", cssClass: "fe-th" });
+/** Valeur calculée mise en avant. */
+const val = (key, stat, extra = {}) => label(key, sheetValue(stat), { cssClass: "fe-val", ...extra });
+const status = (name) => `<img class="fe-ico" src="modules/fe-tactique/assets/status/${name}.svg">`;
+const wicon = (type) => `<img class="fe-ico" src="modules/fe-tactique/assets/icons/${WEAPON_TYPES[type].icon}">`;
+const meter = (key, value, max) => base(key, "meter", {
+  label: "", value, min: "0", max, low: `\${${max.slice(2, -2)} * 0.34}$`, high: `\${${max.slice(2, -2)} * 0.67}$`,
+  optimum: max, textOption: "showMax", cssClass: "fe-meter"
+});
+
+/* ------------------------------------------------------------------ */
 /*  Modèle d'acteur : Unité                                            */
 /* ------------------------------------------------------------------ */
 function uniteTemplate() {
-  const statRow = (s) => [
-    number(`base_${s}`, STAT_LABELS[s], { def: s === "pv" ? 10 : 5, min: 0 }),
-    s === "pv" ? label(`eff_${s}`, sheetValue("pv_max"), { size: "small", prefix: "→ " })
-               : label(`eff_${s}`, sheetValue(s), { size: "small", prefix: "→ ", tooltip: "Valeur utilisée en combat (blessures, traits, bonus, plafond 50)" }),
-    number(`des_${s}`, "Dés", { def: 1, min: 0, max: 12 })
-  ];
-
   const header = panel("custom_header", [
-    panel("fe_head_id", [
-      text("classe", "Classe", { def: "" }),
-      number("niveau", "Niveau", { def: 1, min: 1, max: 40 }),
-      number("exp", "EXP", { def: 0, min: 0, max: 99 }),
-      number("pm", "PM", { def: 5, min: 0 })
-    ], { flow: "grid-4" }),
-    panel("fe_head_hp", [
-      number("pv", "PV", { def: 10, min: 0, max: "${pv_max}$", size: "small", controls: true }),
-      label("pv_max", sheetValue("pv_max"), { prefix: "/ ", size: "small" }),
-      number("blessures", "Blessures", { def: 0, min: 0, max: 4, controls: true }),
-      label("malus_blessure", sheetValue("malus"), { prefix: "Malus −", size: "small" })
-    ], { flow: "grid-4" }),
-    panel("fe_head_role", [
-      select("role", "Rôle", [["secondaire", "Personnage secondaire"], ["principal", "Personnage principal"]]),
-      select("palier", "Palier de classe", [["1", "I (base)"], ["2", "II (avancée)"], ["3", "III / élite"]]),
-      select("profil", "Déplacement", Object.entries(PROFILES)),
-      text("tags", "Mots-clés (dragon…)", { def: "" })
-    ], { flow: "grid-4" })
+    table("fe_head", [
+      [th("Classe"), th("Niveau"), th("EXP"), th("PM"), th("PV"), th("Blessures")],
+      [
+        val("classe_nom", "classe", { tooltip: "Glisse un objet Classe sur la fiche pour la changer" }),
+        number("niveau", "", { def: 1, min: 1, max: 40 }),
+        number("exp", "", { def: 0, min: 0, max: 99 }),
+        number("pm", "", { def: 5, min: 0 }),
+        panel("fe_head_pv", [
+          number("pv", "", { def: 10, min: 0, max: "${pv_max}$", controls: true }),
+          label("pv_max", sheetValue("pv_max"), { prefix: "/ ", size: "small" })
+        ], { flow: "grid-2" }),
+        panel("fe_head_bl", [
+          number("blessures", "", { def: 0, min: 0, max: 4, controls: true }),
+          label("malus_blessure", sheetValue("malus"), { prefix: "malus −", size: "small", tooltip: "Malus à toutes les stats par blessure" })
+        ], { flow: "grid-2" })
+      ]
+    ], { layout: "cccccc", cssClass: "fe-table fe-head" }),
+    meter("", "${pv}$", "${pv_max}$")
   ], { flow: "vertical" });
 
   const combat = panel("fe_combat", [
-    title("Combat (arme équipée, hors terrain et triangle)"),
-    panel("fe_combat_grid", [
-      label("arme_equipee", sheetValue("weapon"), { prefix: "Arme : " }),
-      label("portee", sheetValue("portee"), { prefix: "Portée : " }),
-      label("vit_att", sheetValue("vit_att"), { prefix: "Vit. d'attaque : " }),
-      label("attaque", sheetValue("atq"), { prefix: "Attaque : " }),
-      label("precision", sheetValue("prec"), { prefix: "Précision : " }),
-      label("esquive", sheetValue("esq"), { prefix: "Esquive : " }),
-      label("critique", sheetValue("crit"), { prefix: "Critique : " }),
-      label("esq_crit", sheetValue("esq_crit"), { prefix: "Esq. critique : " })
-    ], { flow: "grid-4" }),
-    title("Bonus manuels (soutiens, effets du MJ)"),
-    panel("fe_bonus", [
-      number("bon_prec", "Préc"), number("bon_esq", "Esq"), number("bon_crit", "Crit"),
-      number("bon_atq", "Atq"), number("bon_def", "Déf/Rés")
-    ], { flow: "grid-5" }),
+    title("Prévision (arme équipée, hors terrain et triangle)"),
+    table("fe_prev", [
+      [th("Arme"), th("Portée"), th("Atq"), th("Préc"), th("Crit"), th("Esq"), th("Vit. att."), th("Esq. crit")],
+      [val("arme_equipee", "weapon"), val("portee", "portee"), val("attaque", "atq"), val("precision", "prec"),
+       val("critique", "crit"), val("esquive", "esq"), val("vit_att", "vit_att"), val("esq_crit", "esq_crit")]
+    ]),
     title("Jetons (0 à 10, remis à zéro à chaque chapitre)"),
-    panel("fe_jetons", [
-      number("jet_bouclier", "Bouclier", { min: 0, max: 10, controls: true }),
-      number("jet_aile", "Ailé", { min: 0, max: 10, controls: true }),
-      number("jet_esprit", "Esprit", { min: 0, max: 10, controls: true })
-    ], { flow: "grid-3" }),
+    table("fe_jetons", [
+      [th(`${status("bouclier")} Bouclier`), th(`${status("aile")} Ailé`), th(`${status("esprit")} Esprit`)],
+      [number("jet_bouclier", "", { def: 0, min: 0, max: 10, controls: true }),
+       number("jet_aile", "", { def: 0, min: 0, max: 10, controls: true }),
+       number("jet_esprit", "", { def: 0, min: 0, max: 10, controls: true })]
+    ], { layout: "ccc" }),
     itemContainer("inv_armes", "Armes, tomes et sceptres",
       [TEMPLATE_IDS.arme, TEMPLATE_IDS.tome, TEMPLATE_IDS.sceptre], [
         col("c_eq", "Équipée", itemValue("equip"), { rollMessage: `%{${API}?.toggleEquip(linkedEntity); return '';}%`, tooltip: "Cliquer pour équiper" }),
@@ -117,25 +123,63 @@ function uniteTemplate() {
         col("c_poids", "Poids", itemValue("poids")),
         col("c_por", "Portée", itemValue("portee")),
         col("c_dur", "Dur.", itemValue("dur"))
-      ])
+      ]),
+    panel("fe_bonus_panel", [
+      table("fe_bonus", [
+        [th("Préc"), th("Esq"), th("Crit"), th("Atq"), th("Déf/Rés")],
+        [number("bon_prec", "", { def: 0 }), number("bon_esq", "", { def: 0 }), number("bon_crit", "", { def: 0 }),
+         number("bon_atq", "", { def: 0 }), number("bon_def", "", { def: 0 })]
+      ], { layout: "ccccc" })
+    ], { title: "Bonus manuels (soutiens, effets du MJ)", collapsible: true })
   ]);
 
+  const statRow = (s) => [
+    th(STAT_LABELS[s]),
+    number(`base_${s}`, "", { def: s === "pv" ? 10 : 5, min: 0 }),
+    s === "pv" ? val(`eff_${s}`, "pv_max") : val(`eff_${s}`, s, { tooltip: "Valeur utilisée en combat (blessures, traits, bonus, plafond 50)" }),
+    number(`des_${s}`, "", { def: 1, min: 0, max: 12 })
+  ];
+  const rankTypes = Object.keys(WEAPON_TYPES);
   const stats = panel("fe_stats", [
-    title("Statistiques (valeur de base · valeur en combat · dés de progression)"),
-    panel("fe_stats_grid", ["pv", "for", "mag", "def", "res", "tech", "vit"].flatMap(statRow), { flow: "grid-3" }),
-    panel("fe_mvt", [number("base_mvt", "Mouvement", { def: 5, min: 0 })], { flow: "grid-3" }),
+    table("fe_stats_table", [
+      [th("Stat"), th("Base"), th("En combat"), th("Dés")],
+      ...["pv", "for", "mag", "def", "res", "tech", "vit"].map(statRow),
+      [th("Mouvement"), number("base_mvt", "", { def: 5, min: 0 }), val("eff_mvt", "mvt"), label("", "—")]
+    ], { layout: "lccc" }),
     title("Rangs d'arme"),
-    panel("fe_rangs", Object.entries(WEAPON_TYPES).map(([k, v]) =>
-      select(`rang_${k}`, v.label, rankOptions, { def: "E", size: "small" })), { flow: "grid-4" })
+    table("fe_rangs", [
+      rankTypes.map(k => th(`${wicon(k)} ${WEAPON_TYPES[k].label}`)),
+      rankTypes.map(k => select(`rang_${k}`, "", rankOptions, { def: "E", size: "small" }))
+    ], { layout: "c".repeat(rankTypes.length) })
   ]);
 
   const traits = panel("fe_traits", [
-    label("slots", sheetValue("slots_text"), { prefix: "Emplacements équipés : " }),
+    table("fe_slots", [[th("Emplacements équipés"), label("slots", sheetValue("slots_text"), { cssClass: "fe-val" })]], { layout: "lc" }),
     itemContainer("traits", "Traits", [TEMPLATE_IDS.trait], [
       col("t_eq", "Équipé", itemValue("equip"), { rollMessage: `%{${API}?.toggleEquip(linkedEntity); return '';}%`, tooltip: "Cliquer pour équiper" }),
       col("t_prix", "Prix", itemValue("prix")),
       { ...col("t_effet", "Effet", itemValue("effet")), align: "left" }
     ])
+  ]);
+
+  const profil = panel("fe_profil", [
+    table("fe_profil_table", [
+      [th("Rôle"), th("Palier de classe"), th("Déplacement"), th("Mots-clés")],
+      [select("role", "", [["secondaire", "Personnage secondaire"], ["principal", "Personnage principal"]]),
+       select("palier", "", [["1", "I (base)"], ["2", "II (avancée)"], ["3", "III / élite"]]),
+       select("profil", "", Object.entries(PROFILES)),
+       val("mots_cles", "mots_cles")]
+    ], { layout: "cccc" }),
+    itemContainer("classe_item", "Classe (glisse un objet Classe ici)", [TEMPLATE_IDS.classe], [
+      col("k_mvt", "Mvt", itemValue("cl_mvt")),
+      col("k_profil", "Déplacement", itemValue("cl_profil")),
+      col("k_armes", "Armes", itemValue("cl_armes")),
+      col("k_mots", "Mots-clés", itemValue("cl_mots"))
+    ]),
+    itemContainer("mots_cles_items", "Mots-clés de l'unité", [TEMPLATE_IDS.motcle], [
+      { ...col("m_effet", "Effet", itemValue("effet")), align: "left" }
+    ]),
+    text("tags", "Autres mots-clés (séparés par des virgules)", { def: "" })
   ]);
 
   const inventaire = panel("fe_inv", [
@@ -152,7 +196,8 @@ function uniteTemplate() {
       ["tab_combat", "Combat", [combat]],
       ["tab_stats", "Stats", [stats]],
       ["tab_traits", "Traits", [traits]],
-      ["tab_inv", "Inventaire", [inventaire]]
+      ["tab_inv", "Inventaire", [inventaire]],
+      ["tab_profil", "Profil", [profil]]
     ])
   ]);
 
@@ -160,7 +205,7 @@ function uniteTemplate() {
     id: TEMPLATE_IDS.unite, type: "_template", name: TEMPLATE_NAMES.unite,
     data: {
       header, body, hidden: [], attributeBar: {},
-      display: { width: 760, height: 760, fix_size: false, pp_width: 100, pp_height: 100 },
+      display: { width: 820, height: 780, fix_size: false, pp_width: 100, pp_height: 100 },
       initiativeFormula: ""
     },
     flags: {}
@@ -261,10 +306,44 @@ function traitTemplate() {
   ]);
 }
 
+const SHORT = { pv: "PV", for: "For", mag: "Mag", def: "Déf", res: "Rés", tech: "Tech", vit: "Vit" };
+const statOptions = [["aucun", "—"], ...STATS.map(k => [k, STAT_LABELS[k]])];
+
+function classeTemplate() {
+  return itemTemplate("classe", [
+    select("cl_palier", "Palier", [["1", "I (base)"], ["2", "II (avancée)"], ["3", "III / élite"]]),
+    select("cl_profil", "Déplacement", Object.entries(PROFILES)),
+    number("cl_mvt", "Mouvement", { def: 5, min: 0 })
+  ], [
+    title("Stats de classe (appliquées à une unité de niveau 1)"),
+    table("fe_cl_stats", [
+      STATS.map(k => th(SHORT[k])),
+      STATS.map(k => number(`cl_${k}`, "", { def: k === "pv" ? 14 : 5, min: 0 }))
+    ], { layout: "c".repeat(STATS.length) }),
+    table("fe_cl_info", [
+      [th("Dé de classe 1"), select("cl_de1", "", statOptions, { def: "aucun" })],
+      [th("Dé de classe 2"), select("cl_de2", "", statOptions, { def: "aucun" })],
+      [th("Types d'arme"), text("cl_armes", "", { def: "" })],
+      [th("Arme de départ"), text("cl_depart", "", { def: "" })],
+      [th("Trait par défaut"), text("cl_trait", "", { def: "" })],
+      [th("Mots-clés"), text("cl_mots", "", { def: "" })]
+    ], { layout: "ll" }),
+    text("effet", "Description", { def: "" })
+  ]);
+}
+
+function motCleTemplate() {
+  return itemTemplate("motcle", [
+    text("mc_cle", "Clé (à écrire dans « Efficace contre »)", { def: "" })
+  ], [
+    text("effet", "Description", { def: "" })
+  ]);
+}
+
 export function buildTemplates() {
   return {
     isCustomSystemExport: true,
     actors: [uniteTemplate()],
-    items: [armeTemplate(), tomeTemplate(), sceptreTemplate(), objetTemplate(), traitTemplate()]
+    items: [armeTemplate(), tomeTemplate(), sceptreTemplate(), objetTemplate(), traitTemplate(), classeTemplate(), motCleTemplate()]
   };
 }

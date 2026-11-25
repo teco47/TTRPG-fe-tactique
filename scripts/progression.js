@@ -2,7 +2,7 @@
  * FE Tactique – montée de niveau (réserves de d6), fin de phase, nouvelle unité.
  */
 import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, TERRAINS, masteryReference, maxDicePerStat } from "./config.js";
-import { readUnit, effectiveStats } from "./engine.js";
+import { readUnit, effectiveStats, readClass, itemCategory } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
 import { applyOperations } from "./socket.js";
 
@@ -191,4 +191,99 @@ export async function newUnitDialog() {
   const { createUnit } = await import("./setup.js");
   const actor = await createUnit({ name: res.name, classe: res.classe, props: { role: res.role } });
   actor?.sheet?.render(true);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Objet Classe glissé sur une unité                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Modifications de fiche apportées par une classe.
+ * Niveau 1 : stats de base, PV et dés de classe. Toujours : nom, palier, déplacement et Mouvement.
+ */
+export function classUpdates(cls, props) {
+  const out = { classe: cls.nom, palier: String(cls.palier), profil: cls.profil, base_mvt: cls.mvt };
+  if (Number(props?.niveau ?? 1) <= 1) {
+    for (const s of STATS) out[`base_${s}`] = cls[s];
+    out.pv = cls.pv;
+    for (const s of STATS) out[`des_${s}`] = 1;
+    for (const d of cls.des) if (STATS.includes(d)) out[`des_${d}`] += 1;
+  }
+  return out;
+}
+
+export async function applyClass(actor, item) {
+  const cls = readClass(item);
+  const others = actor.items.filter(i => i.id !== item.id && itemCategory(i) === "classe").map(i => i.id);
+  if (others.length) await actor.deleteEmbeddedDocuments("Item", others);
+  const updates = classUpdates(cls, actor.system.props);
+  await actor.update(Object.fromEntries(Object.entries(updates).map(([k, v]) => [`system.props.${k}`, v])));
+  if (cls.traitDefaut && !actor.items.some(i => i.name === cls.traitDefaut)) {
+    const { catalogItemData } = await import("./setup.js");
+    const t = catalogItemData(cls.traitDefaut);
+    if (t) {
+      delete t.flags?.[MODULE_ID]?.catalog;
+      t.system.props.equipe = true;
+      await actor.createEmbeddedDocuments("Item", [t]);
+    }
+  }
+  const lvl1 = Number(actor.system.props?.niveau ?? 1) <= 1;
+  ui.notifications.info(`${actor.name} devient ${cls.nom}${lvl1 ? " : stats de classe appliquées." : " : déplacement, Mouvement et palier mis à jour (stats conservées)."}`);
+}
+
+export function registerClassHooks() {
+  Hooks.on("createItem", async (item, options, userId) => {
+    if (userId !== game.user.id || options?.feSkipClass) return;
+    const actor = item.parent;
+    if (!(actor instanceof Actor) || actor.type !== "character") return;
+    if (itemCategory(item) !== "classe") return;
+    await applyClass(actor, item);
+  });
+  Hooks.on("createActor", (actor, options, userId) => {
+    if (userId === game.user.id) ensureDefaults(actor);
+  });
+  Hooks.on("renderActorSheet", (app) => {
+    const actor = app.actor ?? app.document;
+    if (actor?.isOwner) ensureDefaults(actor);
+  });
+  Hooks.on("renderActorSheetV2", (app) => {
+    const actor = app.actor ?? app.document;
+    if (actor?.isOwner) ensureDefaults(actor);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Valeurs par défaut manquantes                                      */
+/* ------------------------------------------------------------------ */
+export const UNIT_DEFAULTS = {
+  niveau: 1, exp: 0, pm: 5, pv: 10, blessures: 0, role: "secondaire", palier: "1", profil: "pied",
+  jet_bouclier: 0, jet_aile: 0, jet_esprit: 0,
+  bon_prec: 0, bon_esq: 0, bon_crit: 0, bon_atq: 0, bon_def: 0,
+  base_pv: 10, base_for: 5, base_mag: 5, base_def: 5, base_res: 5, base_tech: 5, base_vit: 5, base_mvt: 5,
+  des_pv: 1, des_for: 1, des_mag: 1, des_def: 1, des_res: 1, des_tech: 1, des_vit: 1,
+  rang_epee: "E", rang_lance: "E", rang_hache: "E", rang_arc: "E", rang_lumiere: "E", rang_anima: "E", rang_tenebres: "E", rang_sceptre: "E"
+};
+
+/** Champs manquants ou vides d'une unité (null, "" ou absent). */
+export function missingDefaults(props = {}) {
+  const out = {};
+  for (const [k, v] of Object.entries(UNIT_DEFAULTS)) {
+    const cur = props?.[k];
+    if (cur === undefined || cur === null || cur === "" || (typeof cur === "number" && Number.isNaN(cur))) out[k] = v;
+  }
+  return out;
+}
+
+const pending = new Set();
+export async function ensureDefaults(actor) {
+  if (!actor || actor.type !== "character" || actor.system?.template !== TEMPLATE_IDS.unite) return;
+  if (pending.has(actor.uuid)) return;
+  const miss = missingDefaults(actor.system.props);
+  if (!Object.keys(miss).length) return;
+  pending.add(actor.uuid);
+  try {
+    await actor.update(Object.fromEntries(Object.entries(miss).map(([k, v]) => [`system.props.${k}`, v])));
+  } finally {
+    pending.delete(actor.uuid);
+  }
 }

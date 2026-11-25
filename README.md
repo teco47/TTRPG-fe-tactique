@@ -1,4 +1,4 @@
-# FE Tactique 0.1.0 – guide d'installation et de test
+# FE Tactique 0.2.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.1.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.2.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -43,11 +43,20 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 
 ## 3. La fiche d'unité
 
-- **En-tête** : classe, niveau, EXP, PM, PV (barre de jeton `attributeBar.pv`), blessures et malus, rôle (principal/secondaire), palier de classe, profil de déplacement, mots-clés (ex. `dragon`).
-- **Combat** : Attaque, Précision, Esquive, Critique, Vitesse d'attaque et Esquive critique calculées avec l'arme équipée ; bonus manuels (soutiens, effets du MJ) ; jetons 0-10 ; inventaire d'armes. Clique sur l'étoile ☆ pour équiper une arme.
-- **Stats** : valeur de base, valeur en combat (blessures, traits Boost, bonus, plafond 50) et nombre de dés de chaque stat ; rangs d'arme E à S.
-- **Traits** : clique sur l'étoile pour équiper (le module prévient au-delà des emplacements : 4, +2 tous les 10 niveaux).
-- **Inventaire** : objets avec bouton *Utiliser* (Potion, Élixir, Booster…), notes.
+| Zone | Contenu |
+|---|---|
+| En-tête | Tableau Classe · Niveau · EXP · PM · PV / max · Blessures (et malus), puis la barre de PV. |
+| Combat | Tableau de prévision (Arme, Portée, Atq, Préc, Crit, Esq, Vit. att., Esq. crit) avec l'arme équipée, jetons Bouclier/Ailé/Esprit, armes (☆ pour équiper), bonus manuels dans un bloc repliable. |
+| Stats | Tableau Stat · Base · En combat · Dés pour PV, For, Mag, Déf, Rés, Tech, Vit et Mouvement ; rangs d'arme sur une ligne. |
+| Traits | Emplacements équipés et liste des traits (☆ pour équiper ; 4 emplacements, +2 tous les 10 niveaux). |
+| Inventaire | Objets avec bouton *Utiliser*, notes. |
+| Profil | Rôle, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |
+
+### Classes et mots-clés (objets)
+
+- Les 12 classes sont dans *FE – Catalogue > Classes*. **Glisse une classe sur une unité** : elle remplace l'ancienne, règle le palier, le déplacement et le Mouvement, et ajoute le trait par défaut. Sur une unité **niveau 1**, elle remplit aussi les stats de base, les PV et les dés de classe ; au-delà, les stats sont conservées (promotion).
+- Les mots-clés (Volant, Cavalier, Blindé, Dragon, Monstre) sont dans *FE – Catalogue > Mots-clés*. Une unité a les mots-clés de sa classe (Coursier → Volant, Écuyer → Cavalier), ceux des objets Mot-clé glissés sur elle et ceux du champ libre. Le champ « Efficace contre » d'une arme se compare à ces clés.
+- À la mise à jour, le module recharge toutes les fiches FE depuis les nouveaux modèles et remplit les valeurs vides (Niveau, Blessures, jetons, bonus).
 
 Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 

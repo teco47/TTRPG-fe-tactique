@@ -15,12 +15,39 @@ const S = await import("../scripts/setup.js");
 await S.createUnit({ name: "Soldat test", classe: "Soldat" });
 assert.equal(created.system.template, C.TEMPLATE_IDS.unite);
 assert.equal(created.system.props.des_tech, 2);
-assert.equal(embedded.length, 2);
-assert.equal(embedded[0].name, "Lance de bronze"); assert.equal(embedded[0].system.props.equipee, true);
-assert.equal(embedded[0].system.props.sans_crit, true);
-assert.equal(embedded[1].name, "Bouclier"); assert.equal(embedded[1].system.props.equipe, true);
+assert.equal(embedded.length, 3);
+assert.equal(embedded[0].name, "Soldat"); assert.equal(embedded[0].system.template, C.TEMPLATE_IDS.classe);
+assert.equal(embedded[0].system.props.cl_def, 7); assert.equal(embedded[0].system.props.cl_trait, "Bouclier");
+assert.equal(embedded[1].name, "Lance de bronze"); assert.equal(embedded[1].system.props.equipee, true);
+assert.equal(embedded[1].system.props.sans_crit, true);
+assert.equal(embedded[2].name, "Bouclier"); assert.equal(embedded[2].system.props.equipe, true);
 await S.createUnit({ name: "Moine", classe: "Moine" });
-assert.equal(embedded[0].name, "Soin"); assert.equal(embedded[0].system.props.equipee, true);
+assert.equal(embedded[1].name, "Soin"); assert.equal(embedded[1].system.props.equipee, true);
+
+// Classe et mots-clés lus par le moteur
+const E = await import("../scripts/engine.js");
+const P = await import("../scripts/progression.js");
+const coursier = S.catalogItemData("Coursier");
+const volant = S.catalogItemData("Volant");
+assert.equal(E.itemCategory(coursier), "classe");
+assert.equal(E.itemCategory(volant), "motcle");
+const fakeActor = (items, props = {}) => ({ name: "x", items, effects: [], system: { props: { ...P.unitPropsFromClass("Coursier"), ...props } } });
+const u = E.readUnit(fakeActor([coursier, S.catalogItemData("Dragon")], { tags: "Monstre" }));
+assert.equal(u.className, "Coursier");
+assert.deepEqual([...u.keywords].sort(), ["dragon", "monstre", "volant"]);
+assert.equal(E.sheetSummary(u).mots_cles, "Volant · Dragon · Monstre");
+const arc = { ...S.catalogItemData("Arc de fer") };
+assert.equal(E.isEffective(E.readUnit(fakeActor([])), E.readWeapon(arc), u), false);
+const brasier = E.readWeapon(S.catalogItemData("Brasier"));
+assert.equal(E.isEffective(u, brasier, u), true);
+// Application d'une classe : niveau 1 = stats, sinon seulement déplacement
+const cls = E.readClass(S.catalogItemData("Brute"));
+const up1 = P.classUpdates(cls, { niveau: 1 });
+assert.equal(up1.base_pv, 20); assert.equal(up1.des_for, 2); assert.equal(up1.des_pv, 2); assert.equal(up1.des_tech, 1);
+const up5 = P.classUpdates(cls, { niveau: 5 });
+assert.equal(up5.base_pv, undefined); assert.equal(up5.base_mvt, 5); assert.equal(up5.classe, "Brute");
+// Valeurs manquantes
+assert.deepEqual(Object.keys(P.missingDefaults({ ...P.unitPropsFromClass("Soldat"), niveau: null, jet_bouclier: "" })).sort(), ["jet_bouclier", "niveau"]);
 assert.equal(S.catalogItemData("Fulguration").system.props.sans_riposte, true);
 assert.equal(S.catalogItemData("Fulguration").system.props.por_max, 10);
 assert.equal(S.catalogItemData("Luna").system.props.special, "luna");

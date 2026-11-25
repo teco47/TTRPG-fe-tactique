@@ -2,10 +2,10 @@
  * FE Tactique – installation du contenu dans le monde : modèles CSB, catalogue d'objets, macros.
  */
 import {
-  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, WEAPON_TYPES
+  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES
 } from "./config.js";
 import { buildTemplates } from "./csb-templates.js";
-import { unitPropsFromClass } from "./progression.js";
+import { unitPropsFromClass, ensureDefaults } from "./progression.js";
 import { timedEffectData } from "./status.js";
 
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -29,6 +29,27 @@ export async function installTemplates() {
   const pack = buildTemplates();
   for (const tpl of pack.items) await upsertTemplate(game.items, Item, tpl);
   for (const tpl of pack.actors) await upsertTemplate(game.actors, Actor, tpl);
+  await refreshSheets();
+}
+
+/** Recharge depuis leur modèle toutes les fiches FE du monde (comme le bouton « Recharger » de CSB), valeurs conservées. */
+export async function refreshSheets() {
+  const ids = new Set(Object.values(TEMPLATE_IDS));
+  const isFe = (d) => d.system?.template && ids.has(d.system.template) && !d.type.startsWith("_");
+  const sys = (d) => {
+    const tpl = d.documentName === "Actor" ? game.actors.get(d.system.template) : game.items.get(d.system.template);
+    return tpl ? appliedTemplateSystem(tpl) : null;
+  };
+  const itemUpdates = (items) => items.filter(isFe).map(i => ({ _id: i.id, system: sys(i) })).filter(u => u.system);
+  const worldItems = itemUpdates(game.items.contents);
+  if (worldItems.length) await Item.updateDocuments(worldItems);
+  for (const a of game.actors.filter(isFe)) {
+    const s = sys(a);
+    if (s) await a.update({ system: s });
+    const emb = itemUpdates(a.items.contents);
+    if (emb.length) await a.updateEmbeddedDocuments("Item", emb);
+    await ensureDefaults(a);
+  }
 }
 
 /** Données à recopier depuis un modèle dans un acteur/objet qui l'utilise (comme le bouton « Recharger » de CSB). */
@@ -117,6 +138,32 @@ export function traitItemData(t, { equipped = false } = {}) {
   };
 }
 
+export function classItemData(nom) {
+  const c = CLASSES[nom];
+  return {
+    name: nom, type: "equippableItem", img: icon(c.armes?.[0] ?? "epee"),
+    system: {
+      ...appliedTemplateSystem(requireTemplate("classe")),
+      props: {
+        cl_palier: "1", cl_profil: c.profil, cl_mvt: c.mvt,
+        cl_pv: c.pv, cl_for: c.for, cl_mag: c.mag, cl_def: c.def, cl_res: c.res, cl_tech: c.tech, cl_vit: c.vit,
+        cl_de1: c.des[0] ?? "aucun", cl_de2: c.des[1] ?? "aucun",
+        cl_armes: (c.armes ?? []).join(", "), cl_depart: c.depart ?? "", cl_trait: c.traitDefaut ?? "",
+        cl_mots: (c.motsCles ?? []).join(", "), effet: ""
+      }
+    },
+    flags: { [MODULE_ID]: { catalog: "classe" } }
+  };
+}
+
+export function keywordItemData(k) {
+  return {
+    name: k.nom, type: "equippableItem", img: "icons/svg/target.svg",
+    system: { ...appliedTemplateSystem(requireTemplate("motcle")), props: { mc_cle: k.cle, effet: k.effet } },
+    flags: { [MODULE_ID]: { catalog: "motcle" } }
+  };
+}
+
 /** Données d'objet à partir d'un nom du catalogue (armes, tomes, sceptres, objets, traits). */
 export function catalogItemData(name) {
   const n = name.trim().toLowerCase();
@@ -128,6 +175,10 @@ export function catalogItemData(name) {
   if (o) return objectItemData(o);
   const t = TRAITS.find(x => x.nom.toLowerCase() === n);
   if (t) return traitItemData(t);
+  const c = Object.keys(CLASSES).find(x => x.toLowerCase() === n);
+  if (c) return classItemData(c);
+  const k = KEYWORDS.find(x => x.nom.toLowerCase() === n || x.cle === n);
+  if (k) return keywordItemData(k);
   return null;
 }
 
@@ -143,7 +194,9 @@ export async function installCatalog() {
     ["Tomes", TOMES.map(weaponItemData)],
     ["Sceptres", STAVES.map(staffItemData)],
     ["Objets", OBJECTS.map(objectItemData)],
-    ["Traits", TRAITS.map(t => traitItemData(t))]
+    ["Traits", TRAITS.map(t => traitItemData(t))],
+    ["Classes", Object.keys(CLASSES).map(classItemData)],
+    ["Mots-clés", KEYWORDS.map(keywordItemData)]
   ];
   for (const [name, list] of groups) {
     const folder = await ensureFolder(name, "Item", root);
@@ -190,7 +243,10 @@ export async function createUnit({ name, classe, props = {}, items = null, equip
     const t = TRAITS.find(x => x.nom === c.traitDefaut);
     if (t) itemData.push(traitItemData(t, { equipped: true }));
   }
-  if (itemData.length) await actor.createEmbeddedDocuments("Item", itemData);
+  if (c) itemData.unshift(classItemData(classe));
+  for (const d of itemData) delete d.flags?.[MODULE_ID]?.catalog;
+  // La classe est déjà appliquée par unitPropsFromClass : on ne la réapplique pas.
+  if (itemData.length) await actor.createEmbeddedDocuments("Item", itemData, { feSkipClass: true });
   return actor;
 }
 
@@ -244,8 +300,8 @@ export async function offerInstall() {
   const ok = await DialogV2().confirm({
     window: { title: "FE Tactique" },
     content: installed
-      ? `<p>Le module est passé en version ${current}. Mettre à jour les modèles CSB et les macros ?</p><p class="hint">Les fiches existantes gardent leurs valeurs ; recharge-les ensuite depuis le modèle (clic droit > Recharger).</p>`
-      : `<p>Installer le contenu FE Tactique dans ce monde ?</p><ul><li>modèles CSB : Unité, Arme, Tome, Sceptre, Objet, Trait ;</li><li>catalogue des armes, tomes, sceptres, objets et traits ;</li><li>macros de combat, de progression et de scène.</li></ul>`,
+      ? `<p>Le module est passé en version ${current}. Mettre à jour les modèles CSB et les macros ?</p><p class="hint">Les fiches existantes sont rechargées depuis les nouveaux modèles et gardent leurs valeurs.</p>`
+      : `<p>Installer le contenu FE Tactique dans ce monde ?</p><ul><li>modèles CSB : Unité, Arme, Tome, Sceptre, Objet, Trait, Classe, Mot-clé ;</li><li>catalogue des armes, tomes, sceptres, objets, traits, classes et mots-clés ;</li><li>macros de combat, de progression et de scène.</li></ul>`,
     rejectClose: false
   }).catch(() => false);
   if (ok) await installAll();

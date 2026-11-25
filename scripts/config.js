@@ -15,7 +15,9 @@ export const TEMPLATE_IDS = {
   tome: "feTplTome0000001",
   sceptre: "feTplSceptre0001",
   objet: "feTplObjet000001",
-  trait: "feTplTrait000001"
+  trait: "feTplTrait000001",
+  classe: "feTplClasse00001",
+  motcle: "feTplMotCle00001"
 };
 
 export const TEMPLATE_NAMES = {
@@ -24,7 +26,9 @@ export const TEMPLATE_NAMES = {
   tome: "FE – Tome",
   sceptre: "FE – Sceptre",
   objet: "FE – Objet",
-  trait: "FE – Trait"
+  trait: "FE – Trait",
+  classe: "FE – Classe",
+  motcle: "FE – Mot-clé"
 };
 
 /* ------------------------------------------------------------------ */
@@ -141,8 +145,8 @@ export const OBJECTS = [
 // stats après modificateurs de classe, avant les 3 points libres
 export const CLASSES = {
   "Soldat":     { pv: 14, for: 6, mag: 3, def: 7, res: 4, tech: 6, vit: 5, des: ["tech", "def"], armes: ["lance"], depart: "Lance de bronze", mvt: 5, profil: "pied", traitDefaut: "Bouclier" },
-  "Écuyer":     { pv: 16, for: 7, mag: 3, def: 6, res: 3, tech: 5, vit: 6, des: ["for", "vit"], armes: ["lance"], depart: "Lance de bronze", mvt: 6, profil: "monte" },
-  "Coursier":   { pv: 16, for: 5, mag: 3, def: 4, res: 4, tech: 7, vit: 7, des: ["vit", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 6, profil: "volant", traitDefaut: "Ailé" },
+  "Écuyer":     { pv: 16, for: 7, mag: 3, def: 6, res: 3, tech: 5, vit: 6, des: ["for", "vit"], armes: ["lance"], depart: "Lance de bronze", mvt: 6, profil: "monte", motsCles: ["cavalier"] },
+  "Coursier":   { pv: 16, for: 5, mag: 3, def: 4, res: 4, tech: 7, vit: 7, des: ["vit", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 6, profil: "volant", traitDefaut: "Ailé", motsCles: ["volant"] },
   "Chasseur":   { pv: 12, for: 6, mag: 4, def: 3, res: 5, tech: 7, vit: 7, des: ["tech", "for"], armes: ["arc"], depart: "Arc de bronze", mvt: 5, profil: "pied" },
   "Voleur":     { pv: 14, for: 5, mag: 5, def: 3, res: 4, tech: 7, vit: 7, des: ["tech", "vit"], armes: ["epee"], depart: "Épée de bronze", mvt: 5, profil: "pied" },
   "Brute":      { pv: 20, for: 8, mag: 4, def: 5, res: 4, tech: 2, vit: 5, des: ["for", "pv"], armes: ["hache"], depart: "Hache de bronze", mvt: 5, profil: "pied" },
@@ -153,6 +157,18 @@ export const CLASSES = {
   "Apprentie":  { pv: 14, for: 4, mag: 7, def: 3, res: 5, tech: 7, vit: 5, des: ["mag", "tech"], armes: ["anima"], depart: "Feu", mvt: 5, profil: "pied" },
   "Shaman":     { pv: 14, for: 5, mag: 8, def: 3, res: 6, tech: 5, vit: 4, des: ["mag", "pv"], armes: ["tenebres"], depart: "Ombre", mvt: 5, profil: "pied", traitDefaut: "Esprit" }
 };
+
+/* ------------------------------------------------------------------ */
+/*  Mots-clés d'unité (cibles des armes « efficaces contre »)          */
+/* ------------------------------------------------------------------ */
+// cle : valeur à écrire dans « Efficace contre » d'une arme
+export const KEYWORDS = [
+  { nom: "Volant", cle: "volant", effet: "Unité volante : les arcs sont efficaces contre elle" },
+  { nom: "Cavalier", cle: "cavalier", effet: "Unité montée" },
+  { nom: "Blindé", cle: "blinde", effet: "Unité en armure lourde" },
+  { nom: "Dragon", cle: "dragon", effet: "Dragon ou unité draconique" },
+  { nom: "Monstre", cle: "monstre", effet: "Créature monstrueuse" }
+];
 
 export const STATS = ["pv", "for", "mag", "def", "res", "tech", "vit"];
 export const STAT_LABELS = { pv: "PV", for: "Force", mag: "Magie", def: "Défense", res: "Résistance", tech: "Technique", vit: "Vitesse", mvt: "Mouvement" };

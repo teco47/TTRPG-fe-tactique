@@ -5,7 +5,7 @@
  */
 import {
   RANKS, RANK_BONUS, WEAPON_TYPES, TRIANGLE_BEATS, TRIANGLE_BONUS, DOUBLE_THRESHOLD, STAT_CAP,
-  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, traitSlots
+  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots
 } from "./config.js";
 
 /* ================================================================== */
@@ -25,6 +25,8 @@ export function itemCategory(item) {
   const tpl = item?.system?.template;
   for (const [cat, id] of Object.entries(TEMPLATE_IDS)) if (tpl === id && cat !== "unite") return cat;
   const p = item?.system?.props ?? {};
+  if (p.cl_mvt !== undefined) return "classe";
+  if (p.mc_cle !== undefined) return "motcle";
   if (p.type_trait !== undefined) return "trait";
   if (p.effet_sceptre !== undefined) return "sceptre";
   if (p.effet_objet !== undefined) return "objet";
@@ -62,6 +64,27 @@ export function readTrait(item) {
   };
 }
 
+const list = (v) => str(v).toLowerCase().split(/[,;]+/).map(x => x.trim()).filter(Boolean);
+
+/** Normalise un mot-clé : minuscules, sans accents. */
+export function keywordKey(v) {
+  return str(v).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/** Lit un objet Classe (mêmes champs que CLASSES dans config.js). */
+export function readClass(item) {
+  const p = item.system.props ?? {};
+  return {
+    id: item.id, nom: item.name,
+    pv: num(p.cl_pv, 10), for: num(p.cl_for, 5), mag: num(p.cl_mag, 5), def: num(p.cl_def, 5),
+    res: num(p.cl_res, 5), tech: num(p.cl_tech, 5), vit: num(p.cl_vit, 5),
+    des: [str(p.cl_de1, "aucun"), str(p.cl_de2, "aucun")].filter(d => d !== "aucun"),
+    armes: list(p.cl_armes), mvt: num(p.cl_mvt, 5), profil: str(p.cl_profil, "pied"),
+    palier: num(p.cl_palier, 1), depart: str(p.cl_depart), traitDefaut: str(p.cl_trait),
+    motsCles: list(p.cl_mots).map(keywordKey)
+  };
+}
+
 /** Effets temporaires (Bonus/Malus/Silence) portés par l'acteur. */
 function readTemporaryEffects(actor) {
   const bonus = { prec: 0, esq: 0, crit: 0, atq: 0, def: 0, res: 0, for: 0, mag: 0, tech: 0, vit: 0 };
@@ -82,15 +105,23 @@ export function readUnit(actor, { token = null } = {}) {
   const traits = [];
   const weapons = [];
   const objects = [];
+  const keywordItems = [];
+  let classItem = null;
   for (const item of actor?.items ?? []) {
     const cat = itemCategory(item);
+    if (cat === "classe") { classItem ??= readClass(item); continue; }
+    if (cat === "motcle") { keywordItems.push(keywordKey(item.system.props?.mc_cle || item.name)); continue; }
     if (cat === "trait") traits.push(readTrait(item));
     else if (cat === "objet") objects.push(item);
     else if (cat) { const w = readWeapon(item); if (w) weapons.push(w); }
   }
   const temp = readTemporaryEffects(actor);
-  const className = str(p.classe).trim();
-  const classData = CLASSES[className] ?? null;
+  const className = classItem?.nom ?? str(p.classe).trim();
+  const classData = classItem ?? CLASSES[className] ?? null;
+  const profil = str(p.profil, classData?.profil ?? "pied");
+  const keywords = [...new Set([
+    ...(classData?.motsCles ?? []).map(keywordKey), ...keywordItems, ...list(p.tags).map(keywordKey)
+  ])];
   const ranks = {};
   for (const t of Object.keys(WEAPON_TYPES)) ranks[t] = str(p[`rang_${t}`], "E");
   return {
@@ -98,10 +129,10 @@ export function readUnit(actor, { token = null } = {}) {
     name: token?.name ?? actor?.name ?? "?",
     className, classData,
     level: num(p.niveau, 1),
-    palier: num(p.palier, 1),
+    palier: num(p.palier, classData?.palier ?? 1),
     role: str(p.role, "secondaire"),
-    profil: str(p.profil, classData?.profil ?? "pied"),
-    tags: str(p.tags).toLowerCase(),
+    profil, keywords,
+    tags: keywords.join(","),
     base: {
       pv: num(p.base_pv, 10), for: num(p.base_for, 5), mag: num(p.base_mag, 5), def: num(p.base_def, 5),
       res: num(p.base_res, 5), tech: num(p.base_tech, 5), vit: num(p.base_vit, 5), mvt: num(p.base_mvt, 5)
@@ -242,8 +273,8 @@ export function triangle(wA, wB) {
 
 export function isEffective(attacker, w, defender) {
   if (!w) return false;
-  const targetTags = [defender.profil, ...defender.tags.split(/[,; ]+/)].filter(Boolean);
-  const eff = w.efficace.split(/[,; ]+/).filter(Boolean);
+  const targetTags = [defender.profil, ...(defender.keywords ?? defender.tags.split(/[,; ]+/))].map(keywordKey).filter(Boolean);
+  const eff = w.efficace.split(/[,; ]+/).map(keywordKey).filter(Boolean);
   if (eff.some(e => targetTags.includes(e))) return true;
   if (w.type === "arc" && defender.profil === "volant" && hasTrait(attacker, "Tir au pigeon")) return true;
   return false;
@@ -428,6 +459,9 @@ export function sheetSummary(unit) {
     slots: traitSlots(unit.level),
     slots_used: unit.traits.filter(t => t.equipped).length,
     weapon: w ? w.name : "—",
+    classe: unit.className || "—",
+    mots_cles: unit.keywords.length ? unit.keywords.map(k => KEYWORDS.find(x => x.cle === k)?.nom ?? (k[0].toUpperCase() + k.slice(1))).join(" · ") : "—",
+    blessures_max: WOUND_LIMIT[unit.role] ?? WOUND_LIMIT.secondaire,
     portee: w ? weaponRange(unit, w).join("-") : "—"
   };
 }

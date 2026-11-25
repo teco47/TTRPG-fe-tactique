@@ -36,3 +36,15 @@
 .fe-chat .fe-die.six { background: #ffd84d; border-color: #b8860b; font-weight: bold; }
 .fe-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
 .fe-warn { color: #a82727; }
+
+/* Fiche d'unité */
+.custom-system .fe-table table, table.fe-table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; }
+.custom-system .fe-table td { padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: middle; }
+.custom-system .fe-table tr:first-child td { border-bottom: 1px solid rgba(255,255,255,0.25); }
+.custom-system .fe-th { opacity: 0.8; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+.custom-system .fe-val { font-size: 1.25em; font-weight: bold; }
+.custom-system .fe-head .fe-val { font-size: 1.1em; }
+.custom-system .fe-table input[type="text"], .custom-system .fe-table input[type="number"] { text-align: center; min-width: 3em; }
+.custom-system .fe-table select { width: 100%; }
+.custom-system img.fe-ico { width: 18px; height: 18px; border: none; vertical-align: middle; image-rendering: pixelated; margin-right: 2px; }
+.custom-system .fe-meter { margin: 2px 0 6px; }
