@@ -15,7 +15,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 ### The Forge (ou installation par URL)
 Dans la configuration du jeu, *Installer un module*, colle l'URL du manifeste :
 
-`https://github.com/teco47/TTRPG-fe-tactique/releases/latest/download/module.json`
+`https://raw.githubusercontent.com/teco47/TTRPG-fe-tactique/main/module.json`
 
 ## 2. Première ouverture du monde (MJ)
 
