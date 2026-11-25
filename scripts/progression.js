@@ -55,7 +55,10 @@ export async function levelUp(actor) {
   const upd = { niveau: res.newLevel, exp: Math.max(0, Number(p.exp ?? 0) - 100), pm: Number(p.pm ?? 0) + res.pm };
   for (const s of STATS) if (res.gains[s]) upd[`base_${s}`] = Number(p[`base_${s}`] ?? 0) + res.gains[s];
   if (res.gains.pv) upd.pv = Number(p.pv ?? 0) + res.gains.pv;
-  await applyOperations([{ op: "update", uuid: actor.uuid, data: Object.fromEntries(Object.entries(upd).map(([k, v]) => [`system.props.${k}`, v])) }]);
+  const data = Object.fromEntries(Object.entries(upd).map(([k, v]) => [`system.props.${k}`, v]));
+  const prevGains = actor.getFlag(MODULE_ID, "gains") ?? {};
+  for (const s of STATS) if (res.gains[s]) data[`flags.${MODULE_ID}.gains.${s}`] = Number(prevGains[s] ?? 0) + res.gains[s];
+  await applyOperations([{ op: "update", uuid: actor.uuid, data }]);
 
   const rows = STATS.map(s => {
     const faces = dice[s].map(v => `<span class="fe-die ${v === 6 ? "six" : ""}">${v}</span>`).join("");
@@ -93,7 +96,10 @@ export async function buyDie(actor) {
   }).catch(() => null);
   if (!stat || stat === "cancel") return;
   if (Number(p.pm ?? 0) < cost) return ui.notifications.warn("Pas assez de PM.");
-  await actor.update({ [`system.props.des_${stat}`]: Number(p[`des_${stat}`] ?? 1) + 1, "system.props.pm": Number(p.pm) - cost });
+  await actor.update({
+    [`system.props.des_${stat}`]: Number(p[`des_${stat}`] ?? 1) + 1, "system.props.pm": Number(p.pm) - cost,
+    [`flags.${MODULE_ID}.diceBought`]: Number(actor.getFlag(MODULE_ID, "diceBought") ?? 0) + 1
+  });
   ui.notifications.info(`${actor.name} : +1 dé de ${STAT_LABELS[stat]}.`);
 }
 
@@ -194,6 +200,32 @@ export async function newUnitDialog() {
 }
 
 export function registerDefaultHooks() {
+  // Trait ajouté à une unité : son prix en PM est déduit (réglage « traitCost »).
+  Hooks.on("createItem", async (item, options, userId) => {
+    if (userId !== game.user.id || options?.feSkipClass || options?.feNoCost) return;
+    const actor = item.parent;
+    if (!(actor instanceof Actor) || actor.system?.template !== TEMPLATE_IDS.unite) return;
+    if (!game.settings.get(MODULE_ID, "traitCost")) return;
+    const { itemCategory } = await import("./engine.js");
+    if (itemCategory(item) !== "trait") return;
+    const price = Number(item.system.props?.prix_pm ?? 0);
+    if (!price) return;
+    const pm = Number(actor.system.props?.pm ?? 0);
+    await actor.update({ "system.props.pm": pm - price });
+    if (pm < price) ui.notifications.warn(`${actor.name} : ${item.name} coûte ${price} PM, il n'en avait que ${pm}. PM négatifs : retire le trait ou corrige les PM.`);
+    else ui.notifications.info(`${actor.name} débloque ${item.name} : −${price} PM (reste ${pm - price}).`);
+  });
+  Hooks.on("deleteItem", async (item, options, userId) => {
+    if (userId !== game.user.id || options?.feNoCost) return;
+    const actor = item.parent;
+    if (!(actor instanceof Actor) || actor.system?.template !== TEMPLATE_IDS.unite || !game.settings.get(MODULE_ID, "traitCost")) return;
+    const { itemCategory } = await import("./engine.js");
+    if (itemCategory(item) !== "trait") return;
+    const price = Number(item.system.props?.prix_pm ?? 0);
+    if (!price) return;
+    await actor.update({ "system.props.pm": Number(actor.system.props?.pm ?? 0) + price });
+    ui.notifications.info(`${actor.name} : ${item.name} retiré, +${price} PM remboursés.`);
+  });
   Hooks.on("createActor", (actor, options, userId) => {
     if (userId === game.user.id) ensureDefaults(actor);
   });

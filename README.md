@@ -1,4 +1,4 @@
-# FE Tactique 0.4.0 – guide d'installation et de test
+# FE Tactique 0.5.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.4.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.5.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -53,6 +53,10 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | Traits | Emplacements équipés et liste des traits (☆ pour équiper ; 4 emplacements, +2 tous les 10 niveaux). |
 | Inventaire | Objets avec bouton *Utiliser*, notes. |
 | Profil | Rôle, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |
+
+### Reste à attribuer
+
+En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de stats libres** (3 au niveau 1, 2 PV = 1 point), **dés libres** (6 au niveau 1) et **PM**, avec une alerte si un total est dépassé ou si une stat a plus de dés que la limite du niveau. Les gains de montée de niveau, les Boosters et les dés achetés avec la macro sont suivis à part et ne consomment pas les points libres. Ajouter un trait à une unité retire son prix en PM, le retirer les rembourse (réglage « Déduire le prix des traits »).
 
 ### Classes, promotions et mots-clés (objets)
 

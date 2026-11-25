@@ -204,7 +204,7 @@ export async function applyClassChange(actor, source, { mode = null, existingIte
     if (t) {
       delete t.flags?.[MODULE_ID]?.catalog;
       t.system.props.equipe = true;
-      await actor.createEmbeddedDocuments("Item", [t]);
+      await actor.createEmbeddedDocuments("Item", [t], { feNoCost: true });
     }
   }
 

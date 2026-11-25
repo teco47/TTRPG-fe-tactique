@@ -304,6 +304,9 @@ export const MOVE_COSTS = {
 /*  Progression                                                        */
 /* ------------------------------------------------------------------ */
 export const MAX_LEVEL = 40;
+/** Au niveau 1 : 3 points de stats libres (2 PV = 1 point) et 6 dés libres. */
+export const FREE_POINTS = 3;
+export const FREE_DICE = 6;
 /** Référence de points de maîtrise par tranche de niveaux. */
 export function masteryReference(level) {
   if (level <= 9) return 2;

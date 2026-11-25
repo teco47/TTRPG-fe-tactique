@@ -5,7 +5,7 @@
  */
 import {
   RANKS, RANK_BONUS, WEAPON_TYPES, TRIANGLE_BEATS, TRIANGLE_BONUS, DOUBLE_THRESHOLD, STAT_CAP,
-  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots
+  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE
 } from "./config.js";
 
 /* ================================================================== */
@@ -165,6 +165,10 @@ export function readUnit(actor, { token = null } = {}) {
       res: num(p.base_res, 5), tech: num(p.base_tech, 5), vit: num(p.base_vit, 5), mvt: num(p.base_mvt, 5)
     },
     hp: num(p.pv, num(p.base_pv, 10)),
+    pm: num(p.pm),
+    dice: Object.fromEntries(Object.keys(STAT_BASELINE).map(k => [k, num(p[`des_${k}`], 1)])),
+    gains: Object.fromEntries(Object.keys(STAT_BASELINE).map(k => [k, num(actor?.flags?.[MODULE_ID]?.gains?.[k])])),
+    diceBought: num(actor?.flags?.[MODULE_ID]?.diceBought),
     wounds: num(p.blessures),
     jetons: { bouclier: num(p.jet_bouclier), aile: num(p.jet_aile), esprit: num(p.jet_esprit) },
     manual: {
@@ -491,9 +495,56 @@ export function sheetSummary(unit) {
     classe_2: unit.classes?.[2]?.nom ?? "—",
     classe_3: unit.classes?.[3]?.nom ?? "—",
     mots_cles: unit.keywords.length ? unit.keywords.map(k => KEYWORDS.find(x => x.cle === k)?.nom ?? (k[0].toUpperCase() + k.slice(1))).join(" · ") : "—",
+    ...(() => {
+      const a = allocation(unit);
+      const parts = [];
+      if (a.points > 0) parts.push(`${a.pointsText} pt${a.points > 1 ? "s" : ""} de stats`);
+      if (a.des > 0) parts.push(`${a.des} dé${a.des > 1 ? "s" : ""}`);
+      if (a.pm > 0) parts.push(`${a.pm} PM`);
+      const alert = a.alerts.length ? `<span class="fe-alert">⚠ ${a.alerts.join(" · ")}</span>` : "";
+      return {
+        pts_libres: a.pointsText, des_libres: a.des, pm_restants: a.pm,
+        alerte: a.alerts.length ? alert : "<span class=\"fe-ok\">✓ rien à signaler</span>",
+        a_attribuer: (parts.length ? `À attribuer : <b>${parts.join(" · ")}</b>` : "") + (alert ? ` ${alert}` : "")
+      };
+    })(),
     blessures_max: WOUND_LIMIT[unit.role] ?? WOUND_LIMIT.secondaire,
     portee: w ? weaponRange(unit, w).join("-") : "—"
   };
+}
+
+/**
+ * Ce qu'il reste à attribuer : points de stats libres, dés libres, PM.
+ * Points dépensés = stats de base − (10 PV / 5 + modificateurs des classes + gains de niveau et boosters) ; 2 PV = 1 point.
+ * Dés dépensés = dés − (1 par stat + dés des classes + dés achetés).
+ */
+export function allocation(unit) {
+  const slots = Object.values(unit.classes ?? {});
+  const classes = slots.length ? slots : (unit.classData ? [unit.classData] : []);
+  const stats = Object.keys(STAT_BASELINE);
+  let spent = 0;
+  const perStat = {};
+  for (const k of stats) {
+    const mods = classes.reduce((a, c) => a + num(c.mods?.[k]), 0);
+    const extra = unit.base[k] - STAT_BASELINE[k] - mods - num(unit.gains?.[k]);
+    perStat[k] = extra;
+    spent += k === "pv" ? extra / 2 : extra;
+  }
+  const classDice = classes.reduce((a, c) => a + (c.des?.length ?? 0), 0);
+  const totalDice = stats.reduce((a, k) => a + num(unit.dice?.[k], 1), 0);
+  const freeDiceUsed = totalDice - stats.length - classDice - num(unit.diceBought);
+  const limit = maxDicePerStat(unit.level);
+  const out = {
+    points: FREE_POINTS - spent, des: FREE_DICE - freeDiceUsed, pm: unit.pm, perStat,
+    overDice: stats.filter(k => num(unit.dice?.[k], 1) > limit).map(k => k), limit, alerts: []
+  };
+  const fmt = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1).replace(".", ",");
+  if (out.points < 0) out.alerts.push(`${fmt(-out.points)} point(s) de stats en trop`);
+  if (out.des < 0) out.alerts.push(`${-out.des} dé(s) en trop`);
+  if (out.pm < 0) out.alerts.push(`PM négatifs (${out.pm})`);
+  if (out.overDice.length) out.alerts.push(`plus de ${limit}d6 en ${out.overDice.map(k => k.toUpperCase()).join(", ")}`);
+  out.pointsText = fmt(out.points);
+  return out;
 }
 
 /** Distance en cases (Manhattan, comme dans les tactical RPG). */

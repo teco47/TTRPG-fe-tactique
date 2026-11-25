@@ -56,3 +56,6 @@ table.fe-class-slots th { text-align: left; width: 30%; }
 table.fe-terrain-table { width: 100%; font-size: 0.9em; }
 table.fe-terrain-table td, table.fe-terrain-table th { text-align: center; padding: 2px 4px; }
 table.fe-terrain-table td:nth-child(2) { text-align: left; }
+.custom-system .fe-todo { margin: 2px 0 4px; font-size: 0.95em; }
+.fe-alert { color: #ff6b6b; font-weight: bold; }
+.fe-ok { color: #6fcf7f; }

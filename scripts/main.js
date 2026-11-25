@@ -89,6 +89,7 @@ function registerSettings() {
   game.settings.register(MODULE_ID, "rangeOnSelect", { name: "Zone de déplacement et de portée", hint: "Quand tu sélectionnes une unité : cases atteignables en bleu, portée de l'arme équipée en rouge (vert pour un sceptre). Alt+R montre la zone de l'unité survolée.", scope: "client", config: true, type: Boolean, default: true, onChange: () => clearRange() });
   const TerrainApp = makeTerrainListApp();
   if (TerrainApp) game.settings.registerMenu(MODULE_ID, "terrainList", { name: "Terrains reconnus", label: "Voir la liste des terrains", hint: "Noms exacts, mots reconnus, bonus et coûts de déplacement par profil.", icon: "fas fa-mountain", type: TerrainApp, restricted: false });
+  reg("traitCost", { name: "Déduire le prix des traits", hint: "Ajouter un trait à une unité retire son prix en PM ; le retirer les rembourse.", type: Boolean, default: true });
   reg("dieCost", { name: "Prix d'un dé de stat (PM)", type: Number, default: 3 });
   game.settings.register(MODULE_ID, "installedVersion", { scope: "world", config: false, type: String, default: "" });
 }

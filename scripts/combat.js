@@ -448,6 +448,7 @@ export async function useObject(item) {
     const upd = { [key]: current + gain };
     if (stat === "pv") upd.pv = unit.hp + gain;
     ops.push(propsUpdate(actor, upd));
+    if (stat !== "mvt") ops.push({ op: "update", uuid: actor.uuid, data: { [`flags.${MODULE_ID}.gains.${stat}`]: Number(actor.getFlag(MODULE_ID, "gains")?.[stat] ?? 0) + gain } });
     text = `${esc(actor.name)} gagne +${gain} ${stat.toUpperCase()} de façon permanente.`;
   } else {
     text = `${esc(actor.name)} utilise ${esc(item.name)} : ${esc(p.effet ?? "effet à appliquer par le MJ")}.`;
