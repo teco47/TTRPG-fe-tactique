@@ -1,0 +1,53 @@
+{
+  "id": "fe-tactique",
+  "title": "FE Tactique – JDR tactique pour Custom System Builder",
+  "description": "Fiches d'unité, armes et objets, prévision de combat façon tactical RPG (triangle, 2RN, critiques, double attaque, riposte), montée de niveau, états à compteurs, badge d'arme, terrain par Régions et coûts de déplacement par profil. Projet personnel de Teco.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.365"
+  },
+  "authors": [
+    {
+      "name": "Teco"
+    }
+  ],
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/fe-tactique.css"
+  ],
+  "socket": true,
+  "relationships": {
+    "systems": [
+      {
+        "id": "custom-system-builder",
+        "type": "system",
+        "compatibility": {
+          "minimum": "6.0.0"
+        }
+      }
+    ],
+    "recommends": [
+      {
+        "id": "sequencer",
+        "type": "module",
+        "reason": "Animations de combat"
+      },
+      {
+        "id": "jb2a_patreon",
+        "type": "module",
+        "reason": "Fichiers d'animation JB2A"
+      },
+      {
+        "id": "statuscounter",
+        "type": "module",
+        "reason": "Compteurs de jetons Bouclier, Ailé, Esprit et de blessures"
+      }
+    ]
+  },
+  "url": "https://github.com/teco47/TTRPG-fe-tactique",
+  "manifest": "https://github.com/teco47/TTRPG-fe-tactique/releases/latest/download/module.json",
+  "download": "https://github.com/teco47/TTRPG-fe-tactique/releases/download/v0.1.0/fe-tactique-0.1.0.zip"
+}

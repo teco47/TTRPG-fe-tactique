@@ -1,0 +1,38 @@
+/* FE Tactique – fenêtre de prévision et messages de chat */
+.fe-forecast-dialog .window-content { padding: 8px; }
+.fe-forecast-root .fe-controls { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.fe-forecast-root .fe-controls select { min-width: 280px; }
+.fe-forecast-root .fe-acts { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.9em; }
+.fe-forecast { display: grid; grid-template-columns: 1fr 64px 1fr; gap: 6px; align-items: stretch; }
+.fe-side { border-radius: 8px; padding: 8px 10px; color: #fff; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25); }
+.fe-side-A { background: linear-gradient(160deg, #1e4f9c, #11305f); }
+.fe-side-D { background: linear-gradient(160deg, #a82727, #5c1212); }
+.fe-side .fe-name { font-size: 1.25em; font-weight: bold; text-shadow: 1px 1px 0 #000; }
+.fe-side .fe-weapon { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+.fe-side .fe-wicon { width: 24px; height: 24px; border: none; image-rendering: pixelated; }
+.fe-side .fe-hp { display: flex; align-items: baseline; gap: 6px; }
+.fe-side .fe-hp b { font-size: 1.8em; }
+.fe-side .fe-hpbar { height: 6px; background: rgba(0,0,0,0.45); border-radius: 3px; margin: 2px 0 6px; overflow: hidden; }
+.fe-side .fe-hpbar > div { height: 100%; background: linear-gradient(90deg, #7be37b, #2fb24a); }
+.fe-side table.fe-numbers { width: 100%; border: none; background: transparent; margin: 0; }
+.fe-side table.fe-numbers th { text-align: left; font-weight: normal; opacity: 0.85; background: none; color: #fff; }
+.fe-side table.fe-numbers td { text-align: right; font-size: 1.3em; font-weight: bold; }
+.fe-side .fe-x2 { color: #ffd84d; }
+.fe-side .fe-terrain, .fe-side .fe-tags { font-size: 0.85em; opacity: 0.9; margin-top: 4px; }
+.fe-side .fe-warn { margin-top: 6px; font-size: 0.85em; background: rgba(0,0,0,0.35); padding: 2px 6px; border-radius: 4px; }
+.fe-tri { margin-left: auto; font-weight: bold; }
+.fe-tri.up { color: #7dff7d; }
+.fe-tri.down { color: #ff8a8a; }
+.fe-vs { display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 1.6em; font-weight: bold; }
+.fe-vs small { font-size: 0.45em; font-weight: normal; }
+.fe-chat h3 { margin: 0 0 4px; border-bottom: 1px solid #7a1f1f; }
+.fe-chat .fe-sub { font-size: 0.85em; opacity: 0.8; }
+.fe-chat table.fe-log { font-size: 0.9em; }
+.fe-chat .fe-hit { color: #1a7a1a; }
+.fe-chat .fe-miss { color: #777; }
+.fe-chat .fe-fall { color: #a82727; font-weight: bold; }
+.fe-chat .fe-fall.dead { text-decoration: underline; }
+.fe-chat .fe-die { display: inline-block; min-width: 1.4em; text-align: center; border: 1px solid #999; border-radius: 3px; margin: 1px; }
+.fe-chat .fe-die.six { background: #ffd84d; border-color: #b8860b; font-weight: bold; }
+.fe-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.fe-warn { color: #a82727; }
