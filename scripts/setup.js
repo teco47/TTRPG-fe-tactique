@@ -220,9 +220,11 @@ async function ensureFolder(name, type, parent = null, color = "#7a1f1f") {
     ?? Folder.create({ name, type, folder: parent?.id ?? null, color });
 }
 
-export async function installCatalog() {
-  const root = await ensureFolder("FE – Catalogue", "Item");
-  const groups = [
+export const PACK_NAME = "fe-catalogue";
+export const PACK_ID = `world.${PACK_NAME}`;
+
+function catalogGroups() {
+  return [
     ["Armes", WEAPONS.map(weaponItemData)],
     ["Tomes", TOMES.map(weaponItemData)],
     ["Sceptres", STAVES.map(staffItemData)],
@@ -231,7 +233,39 @@ export async function installCatalog() {
     ["Classes", Object.keys(CLASSES).map(classItemData)],
     ["Mots-clés", KEYWORDS.map(keywordItemData)]
   ];
-  for (const [name, list] of groups) {
+}
+
+/**
+ * Compendium du monde « FE – Catalogue » : tout le catalogue rangé par dossiers.
+ * Les objets du module y sont mis à jour à chaque version ; ceux que tu y ajoutes ne sont pas touchés.
+ */
+export async function installCompendium() {
+  const CC = foundry.documents?.collections?.CompendiumCollection ?? globalThis.CompendiumCollection;
+  let pack = game.packs.get(PACK_ID);
+  if (!pack) pack = await CC.createCompendium({ type: "Item", label: "FE – Catalogue", name: PACK_NAME, package: "world" });
+  if (pack.locked) await pack.configure({ locked: false });
+  const docs = await pack.getDocuments();
+  const folders = pack.folders ?? new Map();
+  for (const [name, list] of catalogGroups()) {
+    let folder = [...folders.values?.() ?? folders].find?.(f => f.name === name);
+    folder ??= await Folder.create({ name, type: "Item", color: "#7a1f1f" }, { pack: pack.collection });
+    const byName = new Map(docs.filter(d => d.getFlag(MODULE_ID, "catalog")).map(d => [d.name, d]));
+    const toCreate = [], toUpdate = [];
+    for (const d of list) {
+      const ex = byName.get(d.name);
+      if (ex) toUpdate.push({ _id: ex.id, system: d.system, img: d.img, folder: folder.id });
+      else toCreate.push({ ...d, folder: folder.id });
+    }
+    if (toCreate.length) await Item.createDocuments(toCreate, { pack: pack.collection });
+    if (toUpdate.length) await Item.updateDocuments(toUpdate, { pack: pack.collection });
+  }
+  await pack.getIndex();
+  return pack;
+}
+
+export async function installCatalog() {
+  const root = await ensureFolder("FE – Catalogue", "Item");
+  for (const [name, list] of catalogGroups()) {
     const folder = await ensureFolder(name, "Item", root);
     const inFolder = game.items.filter(i => i.folder?.id === folder.id);
     const existing = new Set(inFolder.map(i => i.name));
@@ -327,6 +361,7 @@ export async function installAll({ silent = false } = {}) {
   try {
     await installTemplates();
     await installCatalog();
+    await installCompendium();
     await installMacros();
     await game.settings.set(MODULE_ID, "installedVersion", game.modules.get(MODULE_ID).version);
     ui.notifications.info("FE Tactique : installation terminée. Les macros sont dans le dossier « FE Tactique ».");

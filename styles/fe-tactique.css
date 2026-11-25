@@ -59,3 +59,8 @@ table.fe-terrain-table td:nth-child(2) { text-align: left; }
 .custom-system .fe-todo { margin: 2px 0 4px; font-size: 0.95em; }
 .fe-alert { color: #ff6b6b; font-weight: bold; }
 .fe-ok { color: #6fcf7f; }
+/* Fiches d'objets : tableaux de formulaire */
+.custom-system .fe-form td:nth-child(odd) { width: 1%; white-space: nowrap; padding-right: 8px; }
+.custom-system .fe-form .custom-system-field-full-size, .custom-system .fe-form input[type="text"], .custom-system .fe-form select { width: 100%; }
+.custom-system .fe-form .custom-system-field-small { width: 5em; }
+.custom-system .fe-traits-box a.content-link { white-space: nowrap; }

@@ -117,10 +117,10 @@ export function describePlan(plan, cls) {
 export function classTraitList(className, worldTraits = []) {
   const hit = (classes) => String(classes ?? "").split(/[,;]+/).map(x => x.trim().toLowerCase()).includes(className.trim().toLowerCase());
   const out = new Map();
-  for (const t of TRAITS) if (hit(t.classes)) out.set(t.nom, { nom: t.nom, prix: t.prix, effet: t.effet });
+  for (const t of TRAITS) if (hit(t.classes)) out.set(t.nom, { nom: t.nom, prix: t.prix, effet: t.effet, uuid: null });
   for (const i of worldTraits) {
     const p = i.system?.props ?? {};
-    if (hit(p.classes) && !out.has(i.name)) out.set(i.name, { nom: i.name, prix: n(p.prix_pm), effet: p.effet ?? "" });
+    if (hit(p.classes) && !out.has(i.name)) out.set(i.name, { nom: i.name, prix: n(p.prix_pm), effet: p.effet ?? "", uuid: i.uuid ?? null });
   }
   return [...out.values()].sort((a, b) => a.prix - b.prix || a.nom.localeCompare(b.nom));
 }
@@ -137,7 +137,20 @@ export function classTraitsHTML(item) {
     if (!list.length) return "<p><i>Aucun trait trouvé pour cette classe (crée des objets Trait dont le champ « Classe(s) » contient son nom).</i></p>";
     const owner = item.parent;
     const owned = new Set([...(owner?.items ?? [])].filter(i => itemCategory(i) === "trait").map(i => i.name));
-    const rows = list.map(t => `<tr><td>${owner ? (owned.has(t.nom) ? "✓" : "") : ""}</td><td><b>${esc(t.nom)}</b></td><td style="text-align:center">${t.prix === 0 ? "défaut" : `${t.prix} PM`}</td><td>${esc(t.effet)}</td></tr>`).join("");
+    // Lien glissable vers le trait du compendium « FE – Catalogue » (sinon l'objet du monde)
+    const pack = globalThis.game?.packs?.get?.("world.fe-catalogue");
+    const uuidOf = (t) => {
+      const e = pack?.index?.find?.(x => x.name === t.nom && (x.type === "equippableItem"));
+      if (e) return `Compendium.${pack.collection}.Item.${e._id}`;
+      return t.uuid ?? globalThis.game?.items?.find?.(i => i.name === t.nom && itemCategory(i) === "trait")?.uuid ?? null;
+    };
+    const link = (t) => {
+      const uuid = uuidOf(t);
+      return uuid
+        ? `<a class="content-link" draggable="true" data-link data-uuid="${uuid}" data-type="Item" data-tooltip="Glisse sur la fiche d'une unité pour débloquer"><i class="fas fa-star"></i>${esc(t.nom)}</a>`
+        : `<b>${esc(t.nom)}</b>`;
+    };
+    const rows = list.map(t => `<tr><td>${owner ? (owned.has(t.nom) ? "✓" : "") : ""}</td><td>${link(t)}</td><td style="text-align:center">${t.prix === 0 ? "défaut" : `${t.prix} PM`}</td><td>${esc(t.effet)}</td></tr>`).join("");
     return `<table class="fe-traits-list"><thead><tr><th>${owner ? "Acquis" : ""}</th><th>Trait</th><th>Prix</th><th>Effet</th></tr></thead><tbody>${rows}</tbody></table>`;
   } catch (err) {
     console.warn(`${MODULE_ID} | traits de classe`, err);

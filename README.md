@@ -1,4 +1,4 @@
-# FE Tactique 0.6.1 – guide d'installation et de test
+# FE Tactique 0.7.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.6.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.7.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -70,6 +70,8 @@ En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de sta
 | Magister d'équivalence | Soutien A avec un allié de cette classe (vérifié par le MJ) | Perd les modificateurs et dés de la classe actuelle (et des classes précédentes si la nouvelle est d'un palier inférieur), ajoute ceux de la nouvelle. |
 
   Le niveau, les stats gagnées, les points libres, les dés achetés, les rangs d'arme et les traits sont conservés. Le Mouvement, le déplacement, le palier (malus de blessure) et les armes maniables suivent la nouvelle classe, et le trait par défaut est ajouté. Le MJ peut ignorer les conditions ou ne pas consommer l'objet. Glisser une classe sur la fiche fait la même chose, sans vérifier les conditions ni consommer d'objet.
+- Le compendium du monde **FE – Catalogue** (onglet Compendiums) contient tout le catalogue par dossiers : armes, tomes, sceptres, objets, traits, classes, mots-clés. Il est mis à jour à chaque version du module ; les objets que tu y ajoutes ne sont pas touchés.
+- Dans un objet Classe, chaque trait déblocable est un **lien vers le compendium** : clique pour l'ouvrir, **glisse-le sur la fiche d'une unité pour le débloquer** (son prix en PM est déduit ; un trait déjà débloqué est refusé).
 - L'objet Classe contient ses **modificateurs** (classe de base) ou son **bonus de promotion** (classe avancée ou élite), ses 2 dés, ses armes, son Mouvement, son déplacement, son trait par défaut, ses mots-clés, ses promotions possibles et la liste de ses **traits déblocables avec leur prix en PM** (✓ pour ceux que l'unité possède).
 - Les classes avancées et d'élite ne sont pas encore définies : crée un objet Classe (palier Avancée ou Élite) et des objets Trait dont le champ « Classe(s) » contient son nom.
 - Les mots-clés (Volant, Cavalier, Blindé, Dragon, Monstre) sont dans *FE – Catalogue > Mots-clés*. Une unité a les mots-clés de sa classe (Coursier → Volant, Écuyer → Cavalier), ceux des objets Mot-clé glissés sur elle et ceux du champ libre. Le champ « Efficace contre » d'une arme se compare à ces clés.

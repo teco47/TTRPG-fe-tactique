@@ -212,6 +212,17 @@ export async function newUnitDialog() {
 }
 
 export function registerDefaultHooks() {
+  // Un trait ne se débloque qu'une fois.
+  Hooks.on("preCreateItem", (item, data, options, userId) => {
+    const actor = item.parent;
+    if (!actor || actor.system?.template !== TEMPLATE_IDS.unite) return;
+    const p = item.system?.props ?? {};
+    if (p.type_trait === undefined) return;
+    if (actor.items.some(i => i.name === item.name && i.system?.props?.type_trait !== undefined)) {
+      if (userId === game.user.id) ui.notifications.warn(`${actor.name} a déjà le trait ${item.name}.`);
+      return false;
+    }
+  });
   // Trait ajouté à une unité : son prix en PM est déduit (réglage « traitCost »).
   Hooks.on("createItem", async (item, options, userId) => {
     if (userId !== game.user.id || options?.feSkipClass || options?.feNoCost) return;

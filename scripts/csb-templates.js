@@ -234,94 +234,120 @@ function uniteTemplate() {
 /* ------------------------------------------------------------------ */
 /*  Modèles d'objets                                                   */
 /* ------------------------------------------------------------------ */
+/**
+ * Tableau de formulaire : paires [libellé, champ], `perRow` paires par ligne.
+ * Un champ marqué wide occupe toute la largeur restante de sa ligne.
+ */
+const form = (key, pairs, perRow = 2) => {
+  const rows = [];
+  let row = [];
+  for (const [text, field, wide] of pairs) {
+    if (wide) {
+      if (row.length) { rows.push(row); row = []; }
+      rows.push([th(text), { ...field, colSpan: perRow * 2 - 1 }]);
+      continue;
+    }
+    row.push(th(text), field);
+    if (row.length === perRow * 2) { rows.push(row); row = []; }
+  }
+  if (row.length) rows.push(row);
+  return table(key, rows, { layout: "lc".repeat(perRow), cssClass: "fe-table fe-form" });
+};
+const n = (key, def = 0, extra = {}) => number(key, "", { def, ...extra });
+const sel = (key, options, def) => select(key, "", options, { def, size: "full-size" });
+const txt = (key) => text(key, "", { def: "" });
+const chk = (key, def = false) => checkbox(key, "", def);
+
 function itemTemplate(cat, headerContents, bodyContents) {
   return {
     id: TEMPLATE_IDS[cat], type: "_equippableItemTemplate", name: TEMPLATE_NAMES[cat],
     data: {
-      header: panel("custom_header", headerContents, { flow: "grid-3" }),
+      header: panel("custom_header", headerContents, { flow: "vertical" }),
       body: panel("custom_body", bodyContents),
       hidden: [],
-      display: { width: 560, height: 520, fix_size: false, pp_width: 64, pp_height: 64 }
+      display: { width: 620, height: 600, fix_size: false, pp_width: 64, pp_height: 64 }
     },
     flags: {}
   };
 }
 
+const specialOptions = [["aucun", "Aucun"], ["luna", "Ignore la Résistance"], ["nosferatu", "Rend les dégâts en PV"], ["eclipse", "Réduit les PV de moitié"]];
+
 function weaponBody(magic) {
   return [
-    panel("fe_w_stats", [
-      number("pui", "Puissance"), number("prec", "Précision", { def: 80 }), number("crit", "Critique"),
-      checkbox("sans_crit", "Pas de critique (Bronze)"), number("poids", "Poids"),
-      number("por_min", "Portée min", { def: 1, min: 0 }), number("por_max", "Portée max", { def: magic ? 2 : 1, min: 0 }),
-      number("dur", "Durabilité", { def: 40, min: 0, controls: true }), number("dur_max", "Durabilité max", { def: 40, min: 0 }),
-      number("prix", "Prix (or)", { def: 0, min: 0 })
-    ], { flow: "grid-3" }),
-    panel("fe_w_special", [
-      text("efficace", "Efficace contre (mots-clés)", { def: "" }),
-      select("special", "Effet spécial", [["aucun", "Aucun"], ["luna", "Ignore la Résistance"], ["nosferatu", "Rend les dégâts en PV"], ["eclipse", "Réduit les PV de moitié"]]),
-      checkbox("sans_riposte", "Empêche la riposte"),
-      number("bonus_esq", "Bonus Esquive"), number("bonus_res", "Bonus Rés"),
-      checkbox("equipee", "Équipée")
-    ], { flow: "grid-3" }),
-    text("effet", "Description", { def: "" })
+    title("Caractéristiques"),
+    form("fe_w_stats", [
+      ["Puissance", n("pui")], ["Précision", n("prec", 80)],
+      ["Critique", n("crit")], ["Pas de critique (Bronze)", chk("sans_crit")],
+      ["Poids", n("poids")], ["Prix (or)", n("prix", 0, { min: 0 })],
+      ["Portée min", n("por_min", 1, { min: 0 })], ["Portée max", n("por_max", magic ? 2 : 1, { min: 0 })],
+      ["Durabilité", n("dur", 40, { min: 0, controls: true })], ["Durabilité max", n("dur_max", 40, { min: 0 })]
+    ]),
+    title("Effets"),
+    form("fe_w_special", [
+      ["Effet spécial", sel("special", specialOptions, "aucun")], ["Empêche la riposte", chk("sans_riposte")],
+      ["Bonus Esquive", n("bonus_esq")], ["Bonus Rés", n("bonus_res")],
+      ["Efficace contre (mots-clés)", txt("efficace"), true],
+      ["Équipée", chk("equipee")],
+      ["Description", txt("effet"), true]
+    ])
   ];
 }
 
 function armeTemplate() {
   return itemTemplate("arme", [
-    select("type_arme", "Type", typeOptions((k, v) => !v.magic)),
-    select("rang_req", "Rang", rankOptions.concat([["Perso", "Perso"]]), { def: "E" })
+    form("fe_w_head", [["Type", sel("type_arme", typeOptions((k, v) => !v.magic))], ["Rang", sel("rang_req", rankOptions.concat([["Perso", "Perso"]]), "E")]])
   ], weaponBody(false));
 }
 
 function tomeTemplate() {
   return itemTemplate("tome", [
-    select("type_arme", "École", typeOptions((k, v) => v.magic && k !== "sceptre")),
-    select("rang_req", "Rang", rankOptions.concat([["Perso", "Perso"]]), { def: "E" })
+    form("fe_w_head", [["École", sel("type_arme", typeOptions((k, v) => v.magic && k !== "sceptre"))], ["Rang", sel("rang_req", rankOptions.concat([["Perso", "Perso"]]), "E")]])
   ], weaponBody(true));
 }
 
 function sceptreTemplate() {
   return itemTemplate("sceptre", [
-    select("rang_req", "Rang", rankOptions, { def: "E" }),
-    select("effet_sceptre", "Effet", [["soin", "Soin (base + Mag/2)"], ["recouvrement", "Soin complet"], ["silence", "Silence"], ["autre", "Autre (manuel)"]])
+    form("fe_s_head", [["Rang", sel("rang_req", rankOptions, "E")],
+      ["Effet", sel("effet_sceptre", [["soin", "Soin (base + Mag/2)"], ["recouvrement", "Soin complet"], ["silence", "Silence"], ["autre", "Autre (manuel)"]], "soin")]])
   ], [
-    panel("fe_s_stats", [
-      number("soin_base", "Soin de base", { def: 10, min: 0 }),
-      number("por_min", "Portée min", { def: 1, min: 0 }), number("por_max", "Portée max", { def: 1, min: 0 }),
-      number("dur", "Durabilité", { def: 20, min: 0, controls: true }), number("dur_max", "Durabilité max", { def: 20, min: 0 }),
-      number("prix", "Prix (or)", { def: 0, min: 0 }),
-      checkbox("equipee", "Équipé")
-    ], { flow: "grid-3" }),
-    text("effet", "Description", { def: "" })
+    title("Caractéristiques"),
+    form("fe_s_stats", [
+      ["Soin de base", n("soin_base", 10, { min: 0 })], ["Prix (or)", n("prix", 0, { min: 0 })],
+      ["Portée min", n("por_min", 1, { min: 0 })], ["Portée max", n("por_max", 1, { min: 0 })],
+      ["Durabilité", n("dur", 20, { min: 0, controls: true })], ["Durabilité max", n("dur_max", 20, { min: 0 })],
+      ["Équipé", chk("equipee")],
+      ["Description", txt("effet"), true]
+    ])
   ]);
 }
 
 function objetTemplate() {
   return itemTemplate("objet", [
-    select("effet_objet", "Effet", [["soin", "Soin"], ["cle", "Clé"], ["booster", "Booster"], ["magister", "Magister"], ["autre", "Autre (manuel)"]]),
-    number("valeur", "Valeur", { def: 0 })
+    form("fe_o_head", [["Effet", sel("effet_objet", [["soin", "Soin"], ["cle", "Clé"], ["booster", "Booster"], ["magister", "Magister"], ["autre", "Autre (manuel)"]], "autre")], ["Valeur", n("valeur")]])
   ], [
-    panel("fe_o_stats", [
-      number("uses", "Utilisations", { def: 1, min: 0, controls: true }), number("uses_max", "Utilisations max", { def: 1, min: 0 }),
-      number("prix", "Prix (or)", { def: 0, min: 0 })
-    ], { flow: "grid-3" }),
-    text("effet", "Description", { def: "" })
+    form("fe_o_stats", [
+      ["Utilisations", n("uses", 1, { min: 0, controls: true })], ["Utilisations max", n("uses_max", 1, { min: 0 })],
+      ["Prix (or)", n("prix", 0, { min: 0 })],
+      ["Description", txt("effet"), true]
+    ])
   ]);
 }
 
 function traitTemplate() {
   return itemTemplate("trait", [
-    text("classes", "Classe(s)", { def: "" }),
-    number("prix_pm", "Prix (PM)", { def: 2, min: 0 }),
-    select("type_trait", "Automatisation", [["manuel", "Manuel (le MJ applique)"], ["auto", "Automatique"], ["boost", "Boost"], ["jetons", "Génère des jetons"]])
+    form("fe_t_head", [
+      ["Prix (PM)", n("prix_pm", 2, { min: 0 })],
+      ["Automatisation", sel("type_trait", [["manuel", "Manuel (le MJ applique)"], ["auto", "Automatique"], ["boost", "Boost"], ["jetons", "Génère des jetons"]], "manuel")],
+      ["Classe(s)", txt("classes"), true]
+    ])
   ], [
-    panel("fe_t_boost", [
-      select("boost_stat", "Stat du Boost", [["aucun", "—"], ["pv", "PV"], ["for", "Force"], ["mag", "Magie"], ["def", "Défense"], ["res", "Résistance"], ["tech", "Technique"], ["vit", "Vitesse"], ["prec", "Précision"], ["esq", "Esquive"], ["crit", "Critique"]]),
-      number("boost_val", "Valeur", { def: 0 }),
-      checkbox("equipe", "Équipé")
-    ], { flow: "grid-3" }),
-    text("effet", "Effet", { def: "" })
+    form("fe_t_boost", [
+      ["Stat du Boost", sel("boost_stat", [["aucun", "—"], ["pv", "PV"], ["for", "Force"], ["mag", "Magie"], ["def", "Défense"], ["res", "Résistance"], ["tech", "Technique"], ["vit", "Vitesse"], ["prec", "Précision"], ["esq", "Esquive"], ["crit", "Critique"]], "aucun")],
+      ["Valeur", n("boost_val")],
+      ["Équipé", chk("equipe")],
+      ["Effet", txt("effet"), true]
+    ])
   ]);
 }
 
@@ -330,35 +356,36 @@ const statOptions = [["aucun", "—"], ...STATS.map(k => [k, STAT_LABELS[k]])];
 
 function classeTemplate() {
   return itemTemplate("classe", [
-    select("cl_palier", "Palier", [["1", "Base"], ["2", "Avancée"], ["3", "Élite"]]),
-    select("cl_profil", "Déplacement", Object.entries(PROFILES)),
-    number("cl_mvt", "Mouvement", { def: 5, min: 0 })
+    form("fe_cl_head", [
+      ["Palier", sel("cl_palier", [["1", "Base"], ["2", "Avancée"], ["3", "Élite"]], "1")],
+      ["Déplacement", sel("cl_profil", Object.entries(PROFILES), "pied")],
+      ["Mouvement", n("cl_mvt", 5, { min: 0 })]
+    ])
   ], [
     title("Modificateurs de stats (classe de base) ou bonus de promotion"),
     table("fe_cl_stats", [
       STATS.map(k => th(SHORT[k])),
-      STATS.map(k => number(`cl_mod_${k}`, "", { def: 0 }))
+      STATS.map(k => n(`cl_mod_${k}`))
     ], { layout: "c".repeat(STATS.length) }),
-    table("fe_cl_info", [
-      [th("Dé de classe 1"), select("cl_de1", "", statOptions, { def: "aucun" })],
-      [th("Dé de classe 2"), select("cl_de2", "", statOptions, { def: "aucun" })],
-      [th("Types d'arme"), text("cl_armes", "", { def: "" })],
-      [th("Arme de départ"), text("cl_depart", "", { def: "" })],
-      [th("Trait par défaut"), text("cl_trait", "", { def: "" })],
-      [th("Mots-clés"), text("cl_mots", "", { def: "" })],
-      [th("Promotions possibles"), text("cl_promos", "", { def: "" })]
-    ], { layout: "ll" }),
-    title("Traits déblocables"),
-    label("cl_traits", `%{return ${API}?.classTraits(entity) ?? ''}%`, { cssClass: "fe-traits-box" }),
-    text("effet", "Description", { def: "" })
+    form("fe_cl_info", [
+      ["Dé de classe 1", sel("cl_de1", statOptions, "aucun")], ["Dé de classe 2", sel("cl_de2", statOptions, "aucun")],
+      ["Types d'arme", txt("cl_armes"), true],
+      ["Arme de départ", txt("cl_depart"), true],
+      ["Trait par défaut", txt("cl_trait"), true],
+      ["Mots-clés", txt("cl_mots"), true],
+      ["Promotions possibles", txt("cl_promos"), true],
+      ["Description", txt("effet"), true]
+    ]),
+    title("Traits déblocables (glisse un trait sur la fiche d'une unité pour le débloquer)"),
+    label("cl_traits", `%{return ${API}?.classTraits(entity) ?? ''}%`, { cssClass: "fe-traits-box" })
   ]);
 }
 
 function motCleTemplate() {
   return itemTemplate("motcle", [
-    text("mc_cle", "Clé (à écrire dans « Efficace contre »)", { def: "" })
+    form("fe_mc_head", [["Clé (à écrire dans « Efficace contre »)", txt("mc_cle"), true]])
   ], [
-    text("effet", "Description", { def: "" })
+    form("fe_mc_body", [["Description", txt("effet"), true]])
   ]);
 }
 
