@@ -3,7 +3,7 @@
  * Ces objets sont créés tels quels par l'installeur du module, et exportés dans
  * data/fe-tactique-csb-templates.json pour un import manuel (Paramètres > CSB > Importer les modèles).
  */
-import { TEMPLATE_IDS, TEMPLATE_NAMES, WEAPON_TYPES, RANKS, PROFILES, STAT_LABELS, STATS } from "./config.js";
+import { TEMPLATE_IDS, TEMPLATE_NAMES, WEAPON_TYPES, RANKS, PROFILES, STAT_LABELS, STATS, UNIT_ROLES } from "./config.js";
 
 const API = "game.modules.get('fe-tactique')?.api";
 
@@ -113,9 +113,9 @@ function uniteTemplate() {
        number("jet_aile", "", { def: 0, min: 0, max: 10, controls: true }),
        number("jet_esprit", "", { def: 0, min: 0, max: 10, controls: true })]
     ], { layout: "ccc" }),
-    itemContainer("inv_armes", "Armes, tomes et sceptres",
-      [TEMPLATE_IDS.arme, TEMPLATE_IDS.tome, TEMPLATE_IDS.sceptre], [
-        col("c_eq", "Équipée", itemValue("equip"), { rollMessage: `%{${API}?.toggleEquip(linkedEntity); return '';}%`, tooltip: "Cliquer pour équiper" }),
+    itemContainer("inv_armes", "Inventaire (armes, tomes, sceptres et objets)",
+      [TEMPLATE_IDS.arme, TEMPLATE_IDS.tome, TEMPLATE_IDS.sceptre, TEMPLATE_IDS.objet], [
+        col("c_eq", "Action", itemValue("equip"), { rollMessage: `%{${API}?.toggleEquip(linkedEntity); return '';}%`, tooltip: "Arme : cliquer pour équiper. Objet : cliquer pour l'utiliser" }),
         col("c_type", "Type", itemValue("type")),
         col("c_rang", "Rang", itemValue("rang")),
         col("c_pui", "Pui", itemValue("pui")),
@@ -123,7 +123,7 @@ function uniteTemplate() {
         col("c_crit", "Crit", itemValue("crit")),
         col("c_poids", "Poids", itemValue("poids")),
         col("c_por", "Portée", itemValue("portee")),
-        col("c_dur", "Dur.", itemValue("dur"))
+        col("c_dur", "Dur. / Util.", itemValue("dur"))
       ]),
     panel("fe_bonus_panel", [
       table("fe_bonus", [
@@ -178,7 +178,7 @@ function uniteTemplate() {
   const profil = panel("fe_profil", [
     table("fe_profil_table", [
       [th("Rôle"), th("Palier de classe"), th("Déplacement"), th("Mots-clés")],
-      [select("role", "", [["secondaire", "Personnage secondaire"], ["principal", "Personnage principal"]]),
+      [select("role", "", Object.entries(UNIT_ROLES).map(([k, r]) => [k, r.label]), { def: "secondaire" }),
        select("palier", "", [["1", "I (base)"], ["2", "II (avancée)"], ["3", "III / élite"]]),
        select("profil", "", Object.entries(PROFILES)),
        val("mots_cles", "mots_cles")]
@@ -198,24 +198,16 @@ function uniteTemplate() {
     itemContainer("mots_cles_items", "Mots-clés de l'unité", [TEMPLATE_IDS.motcle], [
       { ...col("m_effet", "Effet", itemValue("effet")), align: "left" }
     ]),
-    text("tags", "Autres mots-clés (séparés par des virgules)", { def: "" })
-  ]);
-
-  const inventaire = panel("fe_inv", [
-    itemContainer("inv_objets", "Objets", [TEMPLATE_IDS.objet], [
-      col("o_uses", "Utilisations", itemValue("uses")),
-      { ...col("o_effet", "Effet", itemValue("effet")), align: "left" },
-      col("o_use", "", "Utiliser", { style: "button", rollMessage: `%{${API}?.useObject(linkedEntity); return '';}%` })
-    ]),
+    text("tags", "Autres mots-clés (séparés par des virgules)", { def: "" }),
     textArea("notes", "Notes")
   ]);
+
 
   const body = panel("custom_body", [
     tabs("fe_tabs", [
       ["tab_combat", "Combat", [combat]],
       ["tab_stats", "Stats", [stats]],
       ["tab_traits", "Traits", [traits]],
-      ["tab_inv", "Inventaire", [inventaire]],
       ["tab_profil", "Profil", [profil]]
     ])
   ]);

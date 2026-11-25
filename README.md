@@ -1,4 +1,4 @@
-# FE Tactique 0.9.0 – guide d'installation et de test
+# FE Tactique 0.10.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.9.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.10.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -38,7 +38,8 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | FE – Acheter un dé de stat | 3 PM le dé, dans la limite du niveau. |
 | FE – Fin de phase | Expire Silence et bonus temporaires du camp qui finit, soigne 10 % sur fort/trône/porte pour le camp qui commence. |
 | FE – Bonus temporaire | Bonus ou malus chiffré sur les unités sélectionnées, avec expiration. |
-| FE – Nouvelle unité | Crée une unité depuis une des 12 classes de base. |
+| FE – Nouvelle unité | Crée une unité depuis une des 12 classes de base, en choisissant son type : principal ou secondaire (joueur, anneau #1fdaff), neutre/allié (#73ff00) ou ennemi (#ff0000). Neutre et Ennemi comptent comme secondaires. Le jeton a l'anneau dynamique activé et une échelle de 1.1. |
+| FE – Couleurs des jetons | (MJ) Applique l'anneau coloré et l'échelle 1.1 aux jetons sélectionnés, ou à toutes les unités FE. Changer le type sur la fiche met aussi le jeton à jour. |
 | FE – Terrain des Régions | (MJ) Liste les Régions de la scène avec le terrain reconnu, et permet de le choisir dans une liste. |
 | FE – Nouveau chapitre | Remet les jetons Bouclier, Ailé et Esprit à zéro. |
 | FE – Préparer le chapitre 1 | Remplit la scène affichée : Régions de terrain et jetons. |
@@ -48,11 +49,10 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | Zone | Contenu |
 |---|---|
 | En-tête | Tableau Classe · Niveau · EXP · PM · PV / max · Blessures (et malus), puis la barre de PV. |
-| Combat | Tableau de prévision (Arme, Portée, Atq, Préc, Crit, Esq, Vit. att., Esq. crit) avec l'arme équipée, jetons Bouclier/Ailé/Esprit, armes (☆ pour équiper), bonus manuels dans un bloc repliable. |
+| Combat | Tableau de prévision (Arme, Portée, Atq, Préc, Crit, Esq, Vit. att., Esq. crit) avec l'arme équipée, jetons Bouclier/Ailé/Esprit, **inventaire unique** (armes, tomes, sceptres et objets : ☆ pour équiper une arme, ▶ pour utiliser un objet ; dernière colonne = durabilité ou utilisations), bonus manuels dans un bloc repliable. |
 | Stats | Reste à attribuer, puis tableau Stat · Base (10 PV / 5 + points libres + Boosters, modifiable) · Classe (modificateurs des classes, calculé) · Niveau (gains de niveau, modifiable) · Total · En combat (Total + traits Boost + bonus temporaires − blessures) · Dés ; rangs d'arme sur une ligne. |
 | Traits | Emplacements équipés et liste des traits (☆ pour équiper ; 4 emplacements, +2 tous les 10 niveaux). |
-| Inventaire | Objets avec bouton *Utiliser*, notes. |
-| Profil | Rôle, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |
+| Profil | Type d'unité (principal, secondaire, neutre/allié, ennemi), notes, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |
 
 ### Reste à attribuer
 

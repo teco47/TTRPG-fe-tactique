@@ -1172,7 +1172,7 @@
 													"escapeHTML": false,
 													"colSpan": 1,
 													"rowSpan": 1,
-													"title": "Armes, tomes et sceptres",
+													"title": "Inventaire (armes, tomes, sceptres et objets)",
 													"hideEmpty": false,
 													"hiddenColumns": [],
 													"sortOption": "manual",
@@ -1185,7 +1185,8 @@
 													"templateFilter": [
 														"feTplArme0000001",
 														"feTplTome0000001",
-														"feTplSceptre0001"
+														"feTplSceptre0001",
+														"feTplObjet000001"
 													],
 													"itemFilterFormula": "",
 													"sortPredicates": [],
@@ -1197,7 +1198,7 @@
 															"role": 0,
 															"permission": 0,
 															"editRole": 0,
-															"tooltip": "Cliquer pour équiper",
+															"tooltip": "Arme : cliquer pour équiper. Objet : cliquer pour l'utiliser",
 															"visibilityFormula": "",
 															"editableFormula": "",
 															"escapeHTML": false,
@@ -1214,7 +1215,7 @@
 															"rollMessageToChat": false,
 															"altRollMessageToChat": false,
 															"align": "center",
-															"colName": "Équipée"
+															"colName": "Action"
 														},
 														{
 															"key": "c_type",
@@ -1422,7 +1423,7 @@
 															"rollMessageToChat": false,
 															"altRollMessageToChat": false,
 															"align": "center",
-															"colName": "Dur."
+															"colName": "Dur. / Util."
 														}
 													],
 													"head": true,
@@ -4369,177 +4370,6 @@
 									]
 								},
 								{
-									"key": "tab_inv",
-									"type": "tab",
-									"cssClass": "",
-									"role": 0,
-									"permission": 0,
-									"editRole": 0,
-									"tooltip": "",
-									"visibilityFormula": "",
-									"editableFormula": "",
-									"escapeHTML": false,
-									"colSpan": 1,
-									"rowSpan": 1,
-									"name": "Inventaire",
-									"contents": [
-										{
-											"key": "fe_inv",
-											"type": "panel",
-											"cssClass": "",
-											"role": 0,
-											"permission": 0,
-											"editRole": 0,
-											"tooltip": "",
-											"visibilityFormula": "",
-											"editableFormula": "",
-											"escapeHTML": false,
-											"colSpan": 1,
-											"rowSpan": 1,
-											"contents": [
-												{
-													"key": "inv_objets",
-													"type": "itemContainer",
-													"cssClass": "",
-													"role": 0,
-													"permission": 0,
-													"editRole": 0,
-													"tooltip": "",
-													"visibilityFormula": "",
-													"editableFormula": "",
-													"escapeHTML": false,
-													"colSpan": 1,
-													"rowSpan": 1,
-													"title": "Objets",
-													"hideEmpty": false,
-													"hiddenColumns": [],
-													"sortOption": "manual",
-													"headDisplay": true,
-													"showCreate": false,
-													"showDelete": true,
-													"statusIcon": false,
-													"nameAlign": "left",
-													"nameLabel": "Nom",
-													"templateFilter": [
-														"feTplObjet000001"
-													],
-													"itemFilterFormula": "",
-													"sortPredicates": [],
-													"rowLayout": [
-														{
-															"key": "o_uses",
-															"type": "label",
-															"cssClass": "",
-															"role": 0,
-															"permission": 0,
-															"editRole": 0,
-															"tooltip": "",
-															"visibilityFormula": "",
-															"editableFormula": "",
-															"escapeHTML": false,
-															"colSpan": 1,
-															"rowSpan": 1,
-															"value": "%{return game.modules.get('fe-tactique')?.api?.itemLabel(linkedEntity, 'uses') ?? ''}%",
-															"style": "label",
-															"size": "full-size",
-															"prefix": "",
-															"suffix": "",
-															"icon": "",
-															"rollMessage": "",
-															"altRollMessage": "",
-															"rollMessageToChat": false,
-															"altRollMessageToChat": false,
-															"align": "center",
-															"colName": "Utilisations"
-														},
-														{
-															"key": "o_effet",
-															"type": "label",
-															"cssClass": "",
-															"role": 0,
-															"permission": 0,
-															"editRole": 0,
-															"tooltip": "",
-															"visibilityFormula": "",
-															"editableFormula": "",
-															"escapeHTML": false,
-															"colSpan": 1,
-															"rowSpan": 1,
-															"value": "%{return game.modules.get('fe-tactique')?.api?.itemLabel(linkedEntity, 'effet') ?? ''}%",
-															"style": "label",
-															"size": "full-size",
-															"prefix": "",
-															"suffix": "",
-															"icon": "",
-															"rollMessage": "",
-															"altRollMessage": "",
-															"rollMessageToChat": false,
-															"altRollMessageToChat": false,
-															"align": "left",
-															"colName": "Effet"
-														},
-														{
-															"key": "o_use",
-															"type": "label",
-															"cssClass": "",
-															"role": 0,
-															"permission": 0,
-															"editRole": 0,
-															"tooltip": "",
-															"visibilityFormula": "",
-															"editableFormula": "",
-															"escapeHTML": false,
-															"colSpan": 1,
-															"rowSpan": 1,
-															"value": "Utiliser",
-															"style": "button",
-															"size": "full-size",
-															"prefix": "",
-															"suffix": "",
-															"icon": "",
-															"rollMessage": "%{game.modules.get('fe-tactique')?.api?.useObject(linkedEntity); return '';}%",
-															"altRollMessage": "",
-															"rollMessageToChat": false,
-															"altRollMessageToChat": false,
-															"align": "center",
-															"colName": ""
-														}
-													],
-													"head": true,
-													"deleteWarning": true,
-													"labelWhenEmpty": "Aucun",
-													"contents": []
-												},
-												{
-													"key": "notes",
-													"type": "textArea",
-													"cssClass": "",
-													"role": 0,
-													"permission": 0,
-													"editRole": 0,
-													"tooltip": "",
-													"visibilityFormula": "",
-													"editableFormula": "",
-													"escapeHTML": false,
-													"colSpan": 1,
-													"rowSpan": 1,
-													"label": "Notes",
-													"defaultValue": "",
-													"style": "sheet",
-													"size": "full-size"
-												}
-											],
-											"flow": "vertical",
-											"align": "left",
-											"verticalAlign": "top",
-											"collapsible": false,
-											"defaultCollapsed": false,
-											"title": "",
-											"titleStyle": "default"
-										}
-									]
-								},
-								{
 									"key": "tab_profil",
 									"type": "tab",
 									"cssClass": "",
@@ -4703,12 +4533,20 @@
 																"selectedOptionType": "custom",
 																"options": [
 																	{
-																		"key": "secondaire",
-																		"value": "Personnage secondaire"
+																		"key": "principal",
+																		"value": "Personnage principal (joueur)"
 																	},
 																	{
-																		"key": "principal",
-																		"value": "Personnage principal"
+																		"key": "secondaire",
+																		"value": "Personnage secondaire (joueur)"
+																	},
+																	{
+																		"key": "neutre",
+																		"value": "Neutre ou allié (secondaire)"
+																	},
+																	{
+																		"key": "ennemi",
+																		"value": "Ennemi (secondaire)"
 																	}
 																]
 															},
@@ -5247,6 +5085,24 @@
 													"charList": "",
 													"maxLength": null,
 													"autocomplete": false
+												},
+												{
+													"key": "notes",
+													"type": "textArea",
+													"cssClass": "",
+													"role": 0,
+													"permission": 0,
+													"editRole": 0,
+													"tooltip": "",
+													"visibilityFormula": "",
+													"editableFormula": "",
+													"escapeHTML": false,
+													"colSpan": 1,
+													"rowSpan": 1,
+													"label": "Notes",
+													"defaultValue": "",
+													"style": "sheet",
+													"size": "full-size"
 												}
 											],
 											"flow": "vertical",

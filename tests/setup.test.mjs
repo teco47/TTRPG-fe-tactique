@@ -179,3 +179,16 @@ console.log("migration OK");
   assert.equal(pl.updates.rang_hache, "D");
 }
 console.log("rangs OK");
+// Apparence du jeton selon le type
+{
+  await S.createUnit({ name: "Bandit", classe: "Brute", props: { role: "ennemi" } });
+  assert.equal(created.prototypeToken.disposition, -1);
+  assert.equal(created.prototypeToken.ring.colors.ring, "#ff0000"); assert.equal(created.prototypeToken.ring.enabled, true);
+  assert.equal(created.prototypeToken.texture.scaleX, 1.1);
+  await S.createUnit({ name: "PJ", classe: "Soldat", props: { role: "principal" } });
+  assert.equal(created.prototypeToken.ring.colors.ring, "#1fdaff"); assert.equal(created.prototypeToken.disposition, 1);
+  // Allié non joueur : vert, camp amical conservé
+  await S.createUnit({ name: "Ysaline", classe: "Moine", props: { role: "neutre" }, disposition: 1 });
+  assert.equal(created.prototypeToken.ring.colors.ring, "#73ff00"); assert.equal(created.prototypeToken.disposition, 1);
+}
+console.log("jetons OK");

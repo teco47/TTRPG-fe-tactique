@@ -1,7 +1,7 @@
 /**
  * FE Tactique – montée de niveau (réserves de d6), fin de phase, nouvelle unité.
  */
-import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, TERRAINS, masteryReference, maxDicePerStat } from "./config.js";
+import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat } from "./config.js";
 import { readUnit, effectiveStats } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
 import { applyOperations } from "./socket.js";
@@ -200,8 +200,8 @@ export async function newUnitDialog() {
     content: `
       <div class="form-group"><label>Nom</label><input name="name" type="text" value="Nouvelle unité"></div>
       <div class="form-group"><label>Classe</label><select name="classe">${options}</select></div>
-      <div class="form-group"><label>Rôle</label><select name="role"><option value="secondaire">Personnage secondaire</option><option value="principal">Personnage principal</option></select></div>
-      <p class="hint">Stats de classe, 1 dé par stat + 2 dés de classe, 5 PM et l'arme de départ. Les 3 points libres et les dés libres (4 par défaut) restent à placer sur la fiche.</p>`,
+      <div class="form-group"><label>Type</label><select name="role">${Object.entries(UNIT_ROLES).map(([k, r]) => `<option value="${k}" ${k === "secondaire" ? "selected" : ""}>${r.label}</option>`).join("")}</select></div>
+      <p class="hint">Neutre et Ennemi comptent comme secondaires. Le jeton prend la couleur d'anneau du type. Stats de classe, 1 dé par stat + 2 dés de classe, 5 PM et l'arme de départ. Les 3 points libres et les dés libres (4 par défaut) restent à placer sur la fiche.</p>`,
     buttons: [{ action: "ok", label: "Créer", default: true, callback: (e, b) => ({ name: b.form.elements.name.value, classe: b.form.elements.classe.value, role: b.form.elements.role.value }) }, { action: "cancel", label: "Annuler" }],
     rejectClose: false
   }).catch(() => null);
@@ -212,6 +212,14 @@ export async function newUnitDialog() {
 }
 
 export function registerDefaultHooks() {
+  // Changement de type d'unité sur la fiche : camp et couleur d'anneau suivent.
+  Hooks.on("updateActor", async (actor, change, options, userId) => {
+    if (userId !== game.user.id || options?.feLook) return;
+    const role = change?.system?.props?.role;
+    if (!role || actor.system?.template !== TEMPLATE_IDS.unite) return;
+    const { applyTokenLook } = await import("./setup.js");
+    await applyTokenLook(actor);
+  });
   // Un trait ne se débloque qu'une fois.
   Hooks.on("preCreateItem", (item, data, options, userId) => {
     const actor = item.parent;

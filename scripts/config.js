@@ -357,6 +357,18 @@ export const STATUS = {
 export const TOKEN_MAX = 10;
 
 /* ------------------------------------------------------------------ */
+/*  Types d'unité : rôle, camp et anneau dynamique du jeton            */
+/* ------------------------------------------------------------------ */
+// disposition : 1 amical, 0 neutre, -1 hostile
+export const UNIT_ROLES = {
+  principal:  { label: "Personnage principal (joueur)",  disposition: 1,  ring: "#1fdaff" },
+  secondaire: { label: "Personnage secondaire (joueur)", disposition: 1,  ring: "#1fdaff" },
+  neutre:     { label: "Neutre ou allié (secondaire)",   disposition: 0,  ring: "#73ff00" },
+  ennemi:     { label: "Ennemi (secondaire)",            disposition: -1, ring: "#ff0000" }
+};
+export const TOKEN_SCALE = 1.1;
+
+/* ------------------------------------------------------------------ */
 /*  Animations JB2A (premier chemin trouvé dans la base Sequencer)     */
 /* ------------------------------------------------------------------ */
 export const DEFAULT_ANIMATIONS = {

@@ -88,3 +88,8 @@ console.log("range OK");
   assert.ok(!api.itemLabel(it, "effet").includes("'"));
 }
 console.log("apostrophes OK");
+{
+  const potion = mkItem("o", C.TEMPLATE_IDS.objet, { effet_objet: "soin", uses: 2, uses_max: 3 }, "Potion");
+  assert.equal(api.itemLabel(potion, "dur"), "2/3"); assert.equal(api.itemLabel(potion, "type"), "Objet"); assert.equal(api.itemLabel(potion, "pui"), "—");
+}
+console.log("inventaire OK");

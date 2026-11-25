@@ -138,7 +138,7 @@ export async function setupChapter1() {
   for (const u of UNITS) {
     let actor = game.actors.find(a => a.name === u.name && a.folder?.id === folder.id);
     actor ??= await createUnit({
-      name: u.name, classe: u.classe, props: u.props, items: u.items, disposition: u.disp, folder,
+      name: u.name, classe: u.classe, props: { ...u.props, role: u.props?.role ?? (u.disp === H ? "ennemi" : "neutre") }, items: u.items, disposition: u.disp, folder,
       defaultTrait: !!u.pj || u.disp === F
     });
     if (scene.tokens.some(t => t.actorId === actor.id)) continue;

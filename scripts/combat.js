@@ -464,6 +464,7 @@ export async function toggleEquip(item) {
   const actor = item?.parent;
   if (!actor) return;
   const cat = itemCategory(item);
+  if (cat === "objet") return useObject(item);
   if (cat === "trait") {
     const on = !(item.system.props?.equipe === true || item.system.props?.equipe === "true");
     if (on) {

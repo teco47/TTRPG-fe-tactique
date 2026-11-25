@@ -2,7 +2,7 @@
  * FE Tactique – installation du contenu dans le monde : modèles CSB, catalogue d'objets, macros.
  */
 import {
-  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES
+  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES, UNIT_ROLES, TOKEN_SCALE
 } from "./config.js";
 import { buildTemplates } from "./csb-templates.js";
 import { itemCategory, readClass } from "./engine.js";
@@ -346,7 +346,7 @@ export async function installCatalog() {
  * Crée une unité.
  * { name, classe, props (surcharges), items: [noms du catalogue], equip: nom de l'arme équipée, disposition, folder, img }
  */
-export async function createUnit({ name, classe, props = {}, items = null, equip = null, disposition = CONST.TOKEN_DISPOSITIONS.FRIENDLY, folder = null, img = null, link = true, defaultTrait = true }) {
+export async function createUnit({ name, classe, props = {}, items = null, equip = null, disposition = null, folder = null, img = null, link = true, defaultTrait = true }) {
   const tpl = requireTemplate("unite");
   const c = CLASSES[classe];
   const allProps = unitPropsFromClass(classe, props);
@@ -355,7 +355,8 @@ export async function createUnit({ name, classe, props = {}, items = null, equip
     img: img ?? undefined,
     system: { ...appliedTemplateSystem(tpl), props: allProps },
     prototypeToken: {
-      name, actorLink: link, disposition,
+      name, actorLink: link,
+      ...tokenLook(allProps.role, { disposition }),
       displayBars: CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER, displayName: CONST.TOKEN_DISPLAY_MODES.HOVER,
       bar1: { attribute: "attributeBar.pv" }
     },
@@ -397,6 +398,7 @@ export const MACROS = [
   ["FE – Bonus temporaire", "icons/svg/aura.svg", `${API}.bonusDialog();`],
   ["FE – Nouvelle unité", "icons/svg/mystery-man.svg", `${API}.newUnit();`],
   ["FE – Terrain des Régions", "icons/svg/terrain.svg", `${API}.regions();`],
+  ["FE – Couleurs des jetons", "icons/svg/target.svg", `${API}.tokenLook();`],
   ["FE – Nouveau chapitre (jetons à zéro)", "icons/svg/book.svg", `${API}.newChapter();`],
   ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`]
 ];
@@ -482,4 +484,37 @@ export async function newChapter() {
     await a.update({ "system.props.jet_bouclier": 0, "system.props.jet_aile": 0, "system.props.jet_esprit": 0 });
   }
   ui.notifications.info("Jetons remis à zéro.");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Apparence du jeton selon le type d'unité                           */
+/* ------------------------------------------------------------------ */
+
+/** Données de jeton : camp, anneau dynamique coloré et échelle 1.1. disposition : force le camp (sinon celui du rôle). */
+export function tokenLook(role, { disposition = null } = {}) {
+  const r = UNIT_ROLES[role] ?? UNIT_ROLES.secondaire;
+  return {
+    disposition: disposition ?? r.disposition,
+    ring: { enabled: true, colors: { ring: r.ring } },
+    texture: { scaleX: TOKEN_SCALE, scaleY: TOKEN_SCALE }
+  };
+}
+
+/** Applique l'apparence au jeton prototype et aux jetons posés d'une unité. */
+export async function applyTokenLook(actor, { keepDisposition = false } = {}) {
+  const role = actor.system?.props?.role ?? "secondaire";
+  const look = tokenLook(role, { disposition: keepDisposition ? actor.prototypeToken.disposition : null });
+  await actor.update({ prototypeToken: look });
+  for (const t of actor.getActiveTokens?.(false, true) ?? []) {
+    if (t.isOwner) await t.update(look);
+  }
+}
+
+/** Macro : applique couleurs d'anneau et échelle à toutes les unités FE (ou aux jetons sélectionnés). */
+export async function tokenLookMacro() {
+  if (!game.user.isGM) return ui.notifications.warn("Réservé au MJ.");
+  const selected = canvas.tokens?.controlled?.map(t => t.actor).filter(Boolean) ?? [];
+  const actors = selected.length ? [...new Set(selected)] : game.actors.filter(a => a.system?.template === TEMPLATE_IDS.unite);
+  for (const a of actors) await applyTokenLook(a, { keepDisposition: true });
+  ui.notifications.info(`Anneaux et échelle appliqués à ${actors.length} unité(s).`);
 }

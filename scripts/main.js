@@ -13,7 +13,7 @@ import { registerStatusEffects, registerStatusHooks, syncCounters } from "./stat
 import { registerBadgeHooks } from "./badge.js";
 import { attackMacro, staffMacro, useObject, toggleEquip } from "./combat.js";
 import { levelUp, buyDie, endPhase, newUnitDialog, computeLevelUp, registerDefaultHooks, ensureDefaults } from "./progression.js";
-import { installAll, offerInstall, bonusDialog, newChapter, createUnit, catalogItemData } from "./setup.js";
+import { installAll, offerInstall, bonusDialog, newChapter, createUnit, catalogItemData, tokenLookMacro } from "./setup.js";
 import { buildTemplates } from "./csb-templates.js";
 import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } from "./classes.js";
 import { setupChapter1 } from "./chapter1.js";
@@ -66,15 +66,15 @@ function itemLabelRaw(item, field) {
     const cat = itemCategory(item);
     const on = (v) => v === true || v === "true";
     switch (field) {
-      case "equip": return cat === "trait" ? (on(p.equipe) ? "★" : "☆") : (on(p.equipee) ? "★" : "☆");
-      case "type": return cat === "sceptre" ? "Sceptre" : (WEAPON_TYPES[p.type_arme]?.label ?? "");
+      case "equip": return cat === "objet" ? "▶ Utiliser" : (cat === "trait" ? (on(p.equipe) ? "★" : "☆") : (on(p.equipee) ? "★" : "☆"));
+      case "type": return cat === "objet" ? "Objet" : (cat === "sceptre" ? "Sceptre" : (WEAPON_TYPES[p.type_arme]?.label ?? ""));
       case "rang": return p.rang_req ?? "";
-      case "pui": return cat === "sceptre" ? "—" : (p.pui ?? 0);
-      case "prec": return cat === "sceptre" ? "—" : (p.prec ?? 0);
-      case "crit": return cat === "sceptre" ? "—" : (on(p.sans_crit) ? "—" : (p.crit ?? 0));
-      case "poids": return cat === "sceptre" ? "—" : (p.poids ?? 0);
+      case "pui": return ["sceptre", "objet"].includes(cat) ? "—" : (p.pui ?? 0);
+      case "prec": return ["sceptre", "objet"].includes(cat) ? "—" : (p.prec ?? 0);
+      case "crit": return ["sceptre", "objet"].includes(cat) ? "—" : (on(p.sans_crit) ? "—" : (p.crit ?? 0));
+      case "poids": return ["sceptre", "objet"].includes(cat) ? "—" : (p.poids ?? 0);
       case "portee": { const w = readWeapon(item); return w ? (w.porMin === w.porMax ? `${w.porMin}` : `${w.porMin}-${w.porMax}`) : ""; }
-      case "dur": return `${p.dur ?? 0}/${p.dur_max ?? p.dur ?? 0}`;
+      case "dur": return cat === "objet" ? `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}` : `${p.dur ?? 0}/${p.dur_max ?? p.dur ?? 0}`;
       case "uses": return `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}`;
       case "prix": return `${p.prix_pm ?? 0} PM`;
       case "effet": return p.effet ?? "";
@@ -135,7 +135,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
