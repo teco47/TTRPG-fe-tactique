@@ -524,6 +524,11 @@ export function sheetSummary(unit) {
   };
 }
 
+function freeDiceSetting() {
+  try { const v = globalThis.game?.settings?.get?.(MODULE_ID, "freeDice"); if (Number.isFinite(Number(v)) && v !== undefined && v !== null) return Number(v); } catch (e) { /* réglage absent */ }
+  return FREE_DICE;
+}
+
 const signedNum = (v) => (v > 0 ? `+${v}` : (v < 0 ? `−${-v}` : "0"));
 
 /**
@@ -546,7 +551,7 @@ export function allocation(unit) {
   const freeDiceUsed = totalDice - stats.length - classDice - num(unit.diceBought);
   const limit = maxDicePerStat(unit.level);
   const out = {
-    points: FREE_POINTS - spent, des: FREE_DICE - freeDiceUsed, pm: unit.pm, perStat,
+    points: FREE_POINTS - spent, des: freeDiceSetting() - freeDiceUsed, pm: unit.pm, perStat,
     overDice: stats.filter(k => num(unit.dice?.[k], 1) > limit).map(k => k), limit, alerts: []
   };
   const fmt = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1).replace(".", ",");

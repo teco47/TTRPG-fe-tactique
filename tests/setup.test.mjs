@@ -104,21 +104,21 @@ console.log("setup OK");
 {
   const fresh = (props = {}, items = [S.catalogItemData("Soldat")], flags = {}) => E.readUnit({ name: "x", items, effects: [], flags: { "fe-tactique": flags }, system: { props: { ...P.unitPropsFromClass("Soldat"), ...props } } });
   let a = E.allocation(fresh());
-  assert.equal(a.points, 3); assert.equal(a.des, 6); assert.equal(a.pm, 5); assert.deepEqual(a.alerts, []);
+  assert.equal(a.points, 3); assert.equal(a.des, 4); assert.equal(a.pm, 5); assert.deepEqual(a.alerts, []);
   a = E.allocation(fresh({ base_for: 7, base_pv: 12, des_for: 3, des_vit: 3 }));
-  assert.equal(a.points, 0); assert.equal(a.des, 2);
+  assert.equal(a.points, 0); assert.equal(a.des, 0);
   a = E.allocation(fresh({ base_for: 9, des_for: 4 }));
   assert.equal(a.points, -1); assert.ok(a.alerts.some(x => x.includes("en trop"))); assert.ok(a.alerts.some(x => x.includes("3d6")));
   // gains de niveau et dés achetés ne comptent pas
   a = E.allocation(fresh({ niveau: 2, niv_for: 1, base_pv: 12, des_tech: 3 }, undefined, { boosts: { pv: 2 }, diceBought: 0 }));
-  assert.equal(a.points, 3); assert.equal(a.des, 5);
+  assert.equal(a.points, 3); assert.equal(a.des, 3);
   a = E.allocation(fresh({ des_tech: 3 }, undefined, { diceBought: 1 }));
-  assert.equal(a.des, 6);
+  assert.equal(a.des, 4);
   // unité 0.1 sans objet Classe
   a = E.allocation(fresh({}, []));
   assert.equal(a.points, 3);
   const sum = E.sheetSummary(fresh());
-  assert.ok(sum.a_attribuer.includes("3 pts de stats") && sum.a_attribuer.includes("6 dés") && sum.a_attribuer.includes("5 PM"));
+  assert.ok(sum.a_attribuer.includes("3 pts de stats") && sum.a_attribuer.includes("4 dés") && sum.a_attribuer.includes("5 PM"));
 }
 // Colonnes de la fiche et totaux
 {

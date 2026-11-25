@@ -1927,7 +1927,7 @@
 																"role": 0,
 																"permission": 0,
 																"editRole": 0,
-																"tooltip": "6 au niveau 1. Calcul : dés − 1 par stat − dés de classe − dés achetés.",
+																"tooltip": "4 au niveau 1 (réglable). Calcul : dés − 1 par stat − dés de classe − dés achetés.",
 																"visibilityFormula": "",
 																"editableFormula": "",
 																"escapeHTML": false,

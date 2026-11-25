@@ -55,7 +55,7 @@ const F = CONST.TOKEN_DISPOSITIONS?.FRIENDLY ?? 1;
 const st = (pv, f, m, d, r, t, v) => ({ totals: { pv, for: f, mag: m, def: d, res: r, tech: t, vit: v } });
 
 export const UNITS = [
-  // Joueurs (stats de classe : les 3 points libres, les 6 dés libres et les 5 PM restent à placer)
+  // Joueurs (stats de classe : les 3 points libres, les 4 dés libres et les 5 PM restent à placer)
   { name: "Écuyer", classe: "Écuyer", at: "B11", disp: F, props: { role: "principal" }, items: ["Lance de bronze"], pj: true },
   { name: "Mercenaire", classe: "Mercenaire", at: "A11", disp: F, props: { role: "principal" }, items: ["Épée de bronze"], pj: true },
   { name: "Apprentie", classe: "Apprentie", at: "A10", disp: F, props: { role: "principal" }, items: ["Feu"], pj: true },

@@ -150,7 +150,7 @@ function uniteTemplate() {
     table("fe_alloc", [
       [th("Points de stats libres"), th("Dés libres"), th("PM"), th("Contrôle")],
       [val("pts_libres", "pts_libres", { tooltip: "3 au niveau 1 (2 PV = 1 point). Calcul : stats de base − classe − gains de niveau." }),
-       val("des_libres", "des_libres", { tooltip: "6 au niveau 1. Calcul : dés − 1 par stat − dés de classe − dés achetés." }),
+       val("des_libres", "des_libres", { tooltip: "4 au niveau 1 (réglable). Calcul : dés − 1 par stat − dés de classe − dés achetés." }),
        val("pm_restants", "pm_restants"),
        label("alerte", sheetValue("alerte"))]
     ], { layout: "cccc" }),

@@ -1,4 +1,4 @@
-# FE Tactique 0.6.0 – guide d'installation et de test
+# FE Tactique 0.6.1 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.6.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.6.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -56,7 +56,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 
 ### Reste à attribuer
 
-En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de stats libres** (3 au niveau 1, 2 PV = 1 point), **dés libres** (6 au niveau 1) et **PM**, avec une alerte si un total est dépassé ou si une stat a plus de dés que la limite du niveau. Les gains de montée de niveau, les Boosters et les dés achetés avec la macro sont suivis à part et ne consomment pas les points libres. Ajouter un trait à une unité retire son prix en PM, le retirer les rembourse (réglage « Déduire le prix des traits »).
+En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de stats libres** (3 au niveau 1, 2 PV = 1 point), **dés libres** (4 au niveau 1, réglage « Dés libres au niveau 1 ») et **PM**, avec une alerte si un total est dépassé ou si une stat a plus de dés que la limite du niveau. Les gains de montée de niveau, les Boosters et les dés achetés avec la macro sont suivis à part et ne consomment pas les points libres. Ajouter un trait à une unité retire son prix en PM, le retirer les rembourse (réglage « Déduire le prix des traits »).
 
 ### Classes, promotions et mots-clés (objets)
 
@@ -109,7 +109,7 @@ Une Région donne son terrain par son **nom** : `Forêt`, `Colline`, `Fort`, `Tr
 
 1. Crée une scène avec comme image de fond (en v14, le fond du niveau de la scène) `modules/fe-tactique/assets/maps/chap1-carte-foundry.png` (1600 × 1200), grille carrée de **100 px**, distance de grille 1 (unité « case »), sans marge de grille décalée.
 2. Ouvre-la, lance **FE – Préparer le chapitre 1**.
-3. Le module ajoute les Régions (montagnes, forêts, collines, rivière, grenier en fort, bâtiments, maisons et église) et 14 unités dans le dossier « FE – Chapitre 1 » : les 3 personnages des joueurs (stats de classe, à compléter : 3 points libres, 6 dés libres, 5 PM), Ysaline cachée dans l'église, Bram (recrutable, hostile au départ) et les 9 bandits.
+3. Le module ajoute les Régions (montagnes, forêts, collines, rivière, grenier en fort, bâtiments, maisons et église) et 14 unités dans le dossier « FE – Chapitre 1 » : les 3 personnages des joueurs (stats de classe, à compléter : 3 points libres, 4 dés libres, 5 PM), Ysaline cachée dans l'église, Bram (recrutable, hostile au départ) et les 9 bandits.
 4. Donne la propriété des 3 personnages à tes joueurs.
 
 ## 7. Checklist de test (environ 20 minutes)

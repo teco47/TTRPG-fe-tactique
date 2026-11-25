@@ -201,7 +201,7 @@ export async function newUnitDialog() {
       <div class="form-group"><label>Nom</label><input name="name" type="text" value="Nouvelle unité"></div>
       <div class="form-group"><label>Classe</label><select name="classe">${options}</select></div>
       <div class="form-group"><label>Rôle</label><select name="role"><option value="secondaire">Personnage secondaire</option><option value="principal">Personnage principal</option></select></div>
-      <p class="hint">Stats de classe, 1 dé par stat + 2 dés de classe, 5 PM et l'arme de départ. Les 3 points libres et les 6 dés libres restent à placer sur la fiche.</p>`,
+      <p class="hint">Stats de classe, 1 dé par stat + 2 dés de classe, 5 PM et l'arme de départ. Les 3 points libres et les dés libres (4 par défaut) restent à placer sur la fiche.</p>`,
     buttons: [{ action: "ok", label: "Créer", default: true, callback: (e, b) => ({ name: b.form.elements.name.value, classe: b.form.elements.classe.value, role: b.form.elements.role.value }) }, { action: "cancel", label: "Annuler" }],
     rejectClose: false
   }).catch(() => null);
