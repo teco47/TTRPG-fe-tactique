@@ -58,8 +58,30 @@ export async function refreshSheets() {
     if (s) await a.update({ system: s });
     const emb = itemUpdates(a.items.contents);
     if (emb.length) await a.updateEmbeddedDocuments("Item", emb);
+    if (a.system?.template === TEMPLATE_IDS.unite) await migrateStatModel(a);
     await ensureDefaults(a);
   }
+}
+
+/**
+ * 0.6.0 : les stats de la fiche ne contiennent plus les modificateurs de classe ni les gains de niveau.
+ * Ancien base_X (total) -> base_X = total − classes − gains, niv_X = gains.
+ */
+export async function migrateStatModel(actor) {
+  if (actor.getFlag(MODULE_ID, "statModel") >= 2) return;
+  const { classSlots } = await import("./classes.js");
+  const props = actor.system.props ?? {};
+  const slots = Object.values(classSlots(actor.items, props));
+  const gains = actor.getFlag(MODULE_ID, "gains") ?? {};
+  const upd = { [`flags.${MODULE_ID}.statModel`]: 2 };
+  for (const s of ["pv", "for", "mag", "def", "res", "tech", "vit"]) {
+    const total = Number(props[`base_${s}`] ?? (s === "pv" ? 10 : 5));
+    const mods = slots.reduce((a, c) => a + Number(c.mods?.[s] ?? 0), 0);
+    const g = Number(gains[s] ?? 0);
+    upd[`system.props.base_${s}`] = total - mods - g;
+    upd[`system.props.niv_${s}`] = g;
+  }
+  await actor.update(upd);
 }
 
 /** Données à recopier depuis un modèle dans un acteur/objet qui l'utilise (comme le bouton « Recharger » de CSB). */
@@ -247,7 +269,7 @@ export async function createUnit({ name, classe, props = {}, items = null, equip
       displayBars: CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER, displayName: CONST.TOKEN_DISPLAY_MODES.HOVER,
       bar1: { attribute: "attributeBar.pv" }
     },
-    flags: { [MODULE_ID]: { unit: true } }
+    flags: { [MODULE_ID]: { unit: true, statModel: 2 } }
   });
   const itemNames = items ?? [c.depart];
   const itemData = [];

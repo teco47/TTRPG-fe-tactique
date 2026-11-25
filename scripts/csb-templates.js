@@ -136,8 +136,12 @@ function uniteTemplate() {
 
   const statRow = (s) => [
     th(STAT_LABELS[s]),
-    number(`base_${s}`, "", { def: s === "pv" ? 10 : 5, min: 0 }),
-    s === "pv" ? val(`eff_${s}`, "pv_max") : val(`eff_${s}`, s, { tooltip: "Valeur utilisée en combat (blessures, traits, bonus, plafond 50)" }),
+    number(`base_${s}`, "", { def: s === "pv" ? 10 : 5, min: 0, tooltip: "Base du personnage : 10 PV / 5, plus points libres et Boosters" }),
+    val(`cls_${s}`, `cls_${s}`, { tooltip: "Modificateurs des classes obtenues (Base, Avancée, Élite)" }),
+    number(`niv_${s}`, "", { def: 0, tooltip: "Gains des montées de niveau" }),
+    val(`tot_${s}`, `tot_${s}`),
+    s === "pv" ? val(`eff_${s}`, "pv_max", { tooltip: "PV max avec les traits Boost" })
+               : val(`eff_${s}`, s, { tooltip: "Total + traits Boost + bonus temporaires − blessures, plafond 50" }),
     number(`des_${s}`, "", { def: 1, min: 0, max: 12 })
   ];
   const rankTypes = Object.keys(WEAPON_TYPES);
@@ -151,10 +155,10 @@ function uniteTemplate() {
        label("alerte", sheetValue("alerte"))]
     ], { layout: "cccc" }),
     table("fe_stats_table", [
-      [th("Stat"), th("Base"), th("En combat"), th("Dés")],
+      [th("Stat"), th("Base"), th("Classe"), th("Niveau"), th("Total"), th("En combat"), th("Dés")],
       ...["pv", "for", "mag", "def", "res", "tech", "vit"].map(statRow),
-      [th("Mouvement"), number("base_mvt", "", { def: 5, min: 0 }), val("eff_mvt", "mvt"), label("", "—")]
-    ], { layout: "lccc" }),
+      [th("Mouvement"), number("base_mvt", "", { def: 5, min: 0 }), label("", "—"), label("", "—"), val("eff_mvt", "mvt"), val("eff_mvt2", "mvt"), label("", "—")]
+    ], { layout: "lcccccc" }),
     title("Rangs d'arme"),
     table("fe_rangs", [
       rankTypes.map(k => th(`${wicon(k)} ${WEAPON_TYPES[k].label}`)),

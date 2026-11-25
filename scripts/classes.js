@@ -1,9 +1,9 @@
 /**
  * FE Tactique – classes : emplacements Base / Avancée / Élite, choix de classe, promotion et Magister d'équivalence.
  *
- * Les stats de la fiche (base_*) contiennent déjà les modificateurs des classes obtenues.
- * Un changement de classe applique donc un écart : on retire les modificateurs et les dés des classes perdues,
- * puis on ajoute ceux de la nouvelle classe. Le niveau, les stats gagnées, les points libres, les dés achetés,
+ * Les modificateurs de classe ne sont pas recopiés dans les stats : la fiche les calcule à partir des objets Classe
+ * de l'unité (colonne « Classe »). Un changement de classe retire donc les dés des classes perdues, ajoute ceux de
+ * la nouvelle, ajuste les PV actuels et le Mouvement. Le niveau, les stats gagnées, les points libres, les dés achetés,
  * les rangs d'arme et les traits débloqués ne bougent pas.
  */
 import { MODULE_ID, STATS, STAT_LABELS, TIERS, PROMOTION, EQUIVALENCE_ITEM, TRAITS, TEMPLATE_IDS } from "./config.js";
@@ -94,10 +94,9 @@ export function planClassChange(props, slots, cls, mode) {
   const mvtDelta = cls.mvt - (previous?.mvt ?? 5);
   const updates = { classe: cls.nom, palier: String(t), profil: cls.profil, base_mvt: n(props.base_mvt, 5) + mvtDelta };
   for (const s of STATS) {
-    if (delta[s]) updates[`base_${s}`] = n(props[`base_${s}`], s === "pv" ? 10 : 5) + delta[s];
     if (dice[s]) updates[`des_${s}`] = Math.max(0, n(props[`des_${s}`], 1) + dice[s]);
   }
-  if (delta.pv) updates.pv = Math.max(1, n(props.pv, n(props.base_pv, 10)) + delta.pv);
+  if (delta.pv && props.pv !== undefined && props.pv !== null && props.pv !== "") updates.pv = Math.max(1, n(props.pv) + delta.pv);
   const keep = Object.entries(slots).filter(([x]) => !lostTiers.includes(Number(x))).map(([, c]) => c);
   return { updates, lost, keep, delta, dice, mvtDelta, tier: t };
 }

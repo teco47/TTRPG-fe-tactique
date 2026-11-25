@@ -52,7 +52,7 @@ const code = (i, j) => `${COLS[j]}${i + 1}`;
 const H = CONST.TOKEN_DISPOSITIONS?.HOSTILE ?? -1;
 const F = CONST.TOKEN_DISPOSITIONS?.FRIENDLY ?? 1;
 
-const st = (pv, f, m, d, r, t, v) => ({ base_pv: pv, pv, base_for: f, base_mag: m, base_def: d, base_res: r, base_tech: t, base_vit: v });
+const st = (pv, f, m, d, r, t, v) => ({ totals: { pv, for: f, mag: m, def: d, res: r, tech: t, vit: v } });
 
 export const UNITS = [
   // Joueurs (stats de classe : les 3 points libres, les 6 dés libres et les 5 PM restent à placer)

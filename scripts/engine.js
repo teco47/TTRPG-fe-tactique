@@ -151,6 +151,17 @@ export function readUnit(actor, { token = null } = {}) {
   ])];
   const ranks = {};
   for (const t of Object.keys(WEAPON_TYPES)) ranks[t] = str(p[`rang_${t}`], "E");
+  // Stats permanentes = Base (perso + points libres + Boosters) + Classe (modificateurs des classes) + Niveau (gains)
+  const slotList = Object.values(classes).length ? Object.values(classes) : (classData ? [classData] : []);
+  const parts = { perso: {}, classe: {}, niveau: {} };
+  const base = {};
+  for (const k of Object.keys(STAT_BASELINE)) {
+    parts.perso[k] = num(p[`base_${k}`], STAT_BASELINE[k]);
+    parts.classe[k] = slotList.reduce((a, c) => a + num(c.mods?.[k]), 0);
+    parts.niveau[k] = num(p[`niv_${k}`]);
+    base[k] = parts.perso[k] + parts.classe[k] + parts.niveau[k];
+  }
+  base.mvt = num(p.base_mvt, 5);
   return {
     actor, token,
     name: token?.name ?? actor?.name ?? "?",
@@ -160,14 +171,11 @@ export function readUnit(actor, { token = null } = {}) {
     role: str(p.role, "secondaire"),
     profil, keywords,
     tags: keywords.join(","),
-    base: {
-      pv: num(p.base_pv, 10), for: num(p.base_for, 5), mag: num(p.base_mag, 5), def: num(p.base_def, 5),
-      res: num(p.base_res, 5), tech: num(p.base_tech, 5), vit: num(p.base_vit, 5), mvt: num(p.base_mvt, 5)
-    },
-    hp: num(p.pv, num(p.base_pv, 10)),
+    base, parts, classList: slotList,
+    hp: num(p.pv, base.pv),
     pm: num(p.pm),
     dice: Object.fromEntries(Object.keys(STAT_BASELINE).map(k => [k, num(p[`des_${k}`], 1)])),
-    gains: Object.fromEntries(Object.keys(STAT_BASELINE).map(k => [k, num(actor?.flags?.[MODULE_ID]?.gains?.[k])])),
+    boosts: Object.fromEntries(Object.keys(STAT_BASELINE).map(k => [k, num(actor?.flags?.[MODULE_ID]?.boosts?.[k])])),
     diceBought: num(actor?.flags?.[MODULE_ID]?.diceBought),
     wounds: num(p.blessures),
     jetons: { bouclier: num(p.jet_bouclier), aile: num(p.jet_aile), esprit: num(p.jet_esprit) },
@@ -491,6 +499,9 @@ export function sheetSummary(unit) {
     slots_used: unit.traits.filter(t => t.equipped).length,
     weapon: w ? w.name : "—",
     classe: unit.className || "—",
+    ...Object.fromEntries(Object.keys(STAT_BASELINE).flatMap(k => [
+      [`cls_${k}`, signedNum(unit.parts.classe[k])], [`tot_${k}`, unit.base[k]]
+    ])),
     classe_1: unit.classes?.[1]?.nom ?? "—",
     classe_2: unit.classes?.[2]?.nom ?? "—",
     classe_3: unit.classes?.[3]?.nom ?? "—",
@@ -513,20 +524,20 @@ export function sheetSummary(unit) {
   };
 }
 
+const signedNum = (v) => (v > 0 ? `+${v}` : (v < 0 ? `−${-v}` : "0"));
+
 /**
  * Ce qu'il reste à attribuer : points de stats libres, dés libres, PM.
  * Points dépensés = stats de base − (10 PV / 5 + modificateurs des classes + gains de niveau et boosters) ; 2 PV = 1 point.
  * Dés dépensés = dés − (1 par stat + dés des classes + dés achetés).
  */
 export function allocation(unit) {
-  const slots = Object.values(unit.classes ?? {});
-  const classes = slots.length ? slots : (unit.classData ? [unit.classData] : []);
+  const classes = unit.classList ?? [];
   const stats = Object.keys(STAT_BASELINE);
   let spent = 0;
   const perStat = {};
   for (const k of stats) {
-    const mods = classes.reduce((a, c) => a + num(c.mods?.[k]), 0);
-    const extra = unit.base[k] - STAT_BASELINE[k] - mods - num(unit.gains?.[k]);
+    const extra = num(unit.parts?.perso?.[k], unit.base[k]) - STAT_BASELINE[k] - num(unit.boosts?.[k]);
     perStat[k] = extra;
     spent += k === "pv" ? extra / 2 : extra;
   }

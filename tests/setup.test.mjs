@@ -54,7 +54,7 @@ assert.equal(K.currentTier(slots), 0);
 let el = K.classEligibility(bruteC, slots, blank);
 assert.equal(el.mode, "initial");
 let plan = K.planClassChange(blank, slots, bruteC, "initial");
-assert.equal(plan.updates.base_pv, 20); assert.equal(plan.updates.pv, 20); assert.equal(plan.updates.base_tech, 2);
+assert.equal(plan.updates.base_pv, undefined); assert.equal(plan.updates.pv, 20);
 assert.equal(plan.updates.des_for, 2); assert.equal(plan.updates.des_pv, 2); assert.equal(plan.updates.base_mvt, 5);
 // Mercenaire de 0.1 (classe en texte) qui passe Brute au niveau 1 : on retire Mercenaire puis on ajoute Brute
 const merc = P.unitPropsFromClass("Mercenaire");
@@ -62,7 +62,7 @@ slots = K.classSlots([], merc);
 assert.equal(slots[1].nom, "Mercenaire"); assert.ok(slots[1].virtual);
 plan = K.planClassChange(merc, slots, bruteC, K.classEligibility(bruteC, slots, merc).mode);
 const bruteProps = P.unitPropsFromClass("Brute");
-for (const k of ["base_pv", "base_for", "base_mag", "base_def", "base_res", "base_tech", "base_vit"]) assert.equal(plan.updates[k] ?? merc[k], bruteProps[k], k);
+assert.equal(plan.updates.pv, bruteProps.pv);
 for (const k of ["des_pv", "des_for", "des_def"]) assert.equal(plan.updates[k] ?? merc[k], bruteProps[k], k);
 // Promotion : classe avancée fictive (palier 2, bonus +2 For +1 Déf, 1 dé For)
 const adv = { system: { props: { cl_palier: "2", cl_mvt: 6, cl_profil: "monte", cl_mod_for: 2, cl_mod_def: 1, cl_de1: "for", cl_de2: "aucun" } }, name: "Avancée test", id: "adv" };
@@ -75,7 +75,7 @@ assert.equal(el.mode, "promotion"); assert.deepEqual(el.reasons, ["niveau 10 req
 el = K.classEligibility(advC, slots, { ...lvl, niveau: 10 }, (x) => x === "Magister");
 assert.deepEqual(el.reasons, []);
 plan = K.planClassChange(lvl, slots, advC, "promotion");
-assert.equal(plan.updates.base_for, bruteProps.base_for + 2); assert.equal(plan.updates.des_for, bruteProps.des_for + 1);
+assert.equal(plan.updates.base_for, undefined); assert.equal(plan.updates.des_for, bruteProps.des_for + 1);
 assert.equal(plan.updates.base_mvt, 6); assert.equal(plan.updates.palier, "2"); assert.equal(plan.lost.length, 0);
 // Équivalence vers une classe de base depuis une avancée : perd l'avancée et la base
 const advItem = { ...adv };
@@ -83,10 +83,10 @@ slots = K.classSlots([bruteItem, advItem], { ...lvl, niveau: 12 });
 const coursierC = E.readClass(S.catalogItemData("Coursier"));
 el = K.classEligibility(coursierC, slots, { niveau: 12 }, () => true);
 assert.equal(el.mode, "equivalence");
-plan = K.planClassChange({ ...lvl, base_for: lvl.base_for + 2, base_def: lvl.base_def + 1, base_mvt: 6 }, slots, coursierC, "equivalence");
+plan = K.planClassChange({ ...lvl, base_mvt: 6, des_for: lvl.des_for + 1 }, slots, coursierC, "equivalence");
 assert.deepEqual(plan.lost.map(c => c.nom).sort(), ["Avancée test", "Brute"]);
 const coursierProps = P.unitPropsFromClass("Coursier");
-assert.equal(plan.updates.base_for, coursierProps.base_for); assert.equal(plan.updates.base_def, coursierProps.base_def);
+for (const k of ["des_pv", "des_for", "des_vit"]) assert.equal(plan.updates[k] ?? ({ ...lvl, des_for: lvl.des_for + 1 })[k], coursierProps[k], k);
 assert.equal(plan.updates.base_mvt, 6);
 // Classe déjà obtenue
 assert.equal(K.classEligibility(bruteC, slots, lvl).blocking, true);
@@ -105,12 +105,12 @@ console.log("setup OK");
   const fresh = (props = {}, items = [S.catalogItemData("Soldat")], flags = {}) => E.readUnit({ name: "x", items, effects: [], flags: { "fe-tactique": flags }, system: { props: { ...P.unitPropsFromClass("Soldat"), ...props } } });
   let a = E.allocation(fresh());
   assert.equal(a.points, 3); assert.equal(a.des, 6); assert.equal(a.pm, 5); assert.deepEqual(a.alerts, []);
-  a = E.allocation(fresh({ base_for: 8, base_pv: 16, des_for: 3, des_vit: 3 }));
+  a = E.allocation(fresh({ base_for: 7, base_pv: 12, des_for: 3, des_vit: 3 }));
   assert.equal(a.points, 0); assert.equal(a.des, 2);
-  a = E.allocation(fresh({ base_for: 10, des_for: 4 }));
+  a = E.allocation(fresh({ base_for: 9, des_for: 4 }));
   assert.equal(a.points, -1); assert.ok(a.alerts.some(x => x.includes("en trop"))); assert.ok(a.alerts.some(x => x.includes("3d6")));
   // gains de niveau et dés achetés ne comptent pas
-  a = E.allocation(fresh({ niveau: 2, base_for: 7, des_tech: 3 }, undefined, { gains: { for: 1 }, diceBought: 0 }));
+  a = E.allocation(fresh({ niveau: 2, niv_for: 1, base_pv: 12, des_tech: 3 }, undefined, { boosts: { pv: 2 }, diceBought: 0 }));
   assert.equal(a.points, 3); assert.equal(a.des, 5);
   a = E.allocation(fresh({ des_tech: 3 }, undefined, { diceBought: 1 }));
   assert.equal(a.des, 6);
@@ -120,4 +120,27 @@ console.log("setup OK");
   const sum = E.sheetSummary(fresh());
   assert.ok(sum.a_attribuer.includes("3 pts de stats") && sum.a_attribuer.includes("6 dés") && sum.a_attribuer.includes("5 PM"));
 }
+// Colonnes de la fiche et totaux
+{
+  const u = E.readUnit({ name: "x", items: [S.catalogItemData("Soldat")], effects: [], flags: {}, system: { props: { ...P.unitPropsFromClass("Soldat"), base_for: 6, niv_for: 2 } } });
+  assert.equal(u.base.for, 6 + 1 + 2); assert.equal(u.base.pv, 14);
+  const sum = E.sheetSummary(u);
+  assert.equal(sum.cls_for, "+1"); assert.equal(sum.cls_mag, "−2"); assert.equal(sum.tot_for, 9); assert.equal(sum.tot_pv, 14);
+  // Ennemi de niveau 4 : écart avec la classe en gains de niveau
+  const g = P.unitPropsFromClass("Brute", { niveau: 4, totals: { pv: 24, for: 10, mag: 4, def: 6, res: 4, tech: 3, vit: 5 } });
+  assert.equal(g.base_for, 5); assert.equal(g.niv_for, 2); assert.equal(g.niv_pv, 4); assert.equal(g.pv, 24);
+  // PNJ niveau 1 : écart en points libres
+  const y = P.unitPropsFromClass("Moine", { totals: { pv: 14, for: 5, mag: 8, def: 3, res: 7, tech: 5, vit: 6 } });
+  assert.equal(y.base_pv, 12); assert.equal(y.base_mag, 6); assert.equal(y.niv_mag, 0);
+}
 console.log("allocation OK");
+// Migration 0.5 -> 0.6 : Mercenaire niveau 3 (total For 9 = 7 de classe + 2 gagnés)
+{
+  let upd = null;
+  const old = { ...P.unitPropsFromClass("Mercenaire"), base_pv: 12, base_for: 9, base_mag: 5, base_def: 5, base_res: 3, base_tech: 6, base_vit: 6 };
+  const a = { items: [S.catalogItemData("Mercenaire")], system: { props: old }, getFlag: (m, k) => ({ gains: { for: 2 } })[k], update: async (d) => (upd = d) };
+  await S.migrateStatModel(a);
+  assert.equal(upd["system.props.base_for"], 5); assert.equal(upd["system.props.niv_for"], 2);
+  assert.equal(upd["system.props.base_pv"], 10); assert.equal(upd["flags.fe-tactique.statModel"], 2);
+}
+console.log("migration OK");

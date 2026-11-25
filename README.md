@@ -1,4 +1,4 @@
-# FE Tactique 0.5.0 – guide d'installation et de test
+# FE Tactique 0.6.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.5.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.6.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -49,7 +49,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 |---|---|
 | En-tête | Tableau Classe · Niveau · EXP · PM · PV / max · Blessures (et malus), puis la barre de PV. |
 | Combat | Tableau de prévision (Arme, Portée, Atq, Préc, Crit, Esq, Vit. att., Esq. crit) avec l'arme équipée, jetons Bouclier/Ailé/Esprit, armes (☆ pour équiper), bonus manuels dans un bloc repliable. |
-| Stats | Tableau Stat · Base · En combat · Dés pour PV, For, Mag, Déf, Rés, Tech, Vit et Mouvement ; rangs d'arme sur une ligne. |
+| Stats | Reste à attribuer, puis tableau Stat · Base (10 PV / 5 + points libres + Boosters, modifiable) · Classe (modificateurs des classes, calculé) · Niveau (gains de niveau, modifiable) · Total · En combat (Total + traits Boost + bonus temporaires − blessures) · Dés ; rangs d'arme sur une ligne. |
 | Traits | Emplacements équipés et liste des traits (☆ pour équiper ; 4 emplacements, +2 tous les 10 niveaux). |
 | Inventaire | Objets avec bouton *Utiliser*, notes. |
 | Profil | Rôle, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |

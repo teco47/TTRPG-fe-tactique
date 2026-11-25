@@ -53,11 +53,9 @@ export async function levelUp(actor) {
   }
   const res = computeLevelUp(level, dice);
   const upd = { niveau: res.newLevel, exp: Math.max(0, Number(p.exp ?? 0) - 100), pm: Number(p.pm ?? 0) + res.pm };
-  for (const s of STATS) if (res.gains[s]) upd[`base_${s}`] = Number(p[`base_${s}`] ?? 0) + res.gains[s];
+  for (const s of STATS) if (res.gains[s]) upd[`niv_${s}`] = Number(p[`niv_${s}`] ?? 0) + res.gains[s];
   if (res.gains.pv) upd.pv = Number(p.pv ?? 0) + res.gains.pv;
   const data = Object.fromEntries(Object.entries(upd).map(([k, v]) => [`system.props.${k}`, v]));
-  const prevGains = actor.getFlag(MODULE_ID, "gains") ?? {};
-  for (const s of STATS) if (res.gains[s]) data[`flags.${MODULE_ID}.gains.${s}`] = Number(prevGains[s] ?? 0) + res.gains[s];
   await applyOperations([{ op: "update", uuid: actor.uuid, data }]);
 
   const rows = STATS.map(s => {
@@ -171,14 +169,28 @@ export function unitPropsFromClass(className, overrides = {}) {
   if (!c) throw new Error(`Classe inconnue : ${className}`);
   const props = {
     classe: className, niveau: 1, exp: 0, pm: 5, role: "secondaire", palier: "1", profil: c.profil, tags: "",
-    base_pv: c.pv, base_for: c.for, base_mag: c.mag, base_def: c.def, base_res: c.res, base_tech: c.tech, base_vit: c.vit, base_mvt: c.mvt,
+    base_pv: 10, base_for: 5, base_mag: 5, base_def: 5, base_res: 5, base_tech: 5, base_vit: 5, base_mvt: c.mvt,
     pv: c.pv, blessures: 0, jet_bouclier: 0, jet_aile: 0, jet_esprit: 0,
     bon_prec: 0, bon_esq: 0, bon_crit: 0, bon_atq: 0, bon_def: 0
   };
+  for (const s of STATS) props[`niv_${s}`] = 0;
   for (const s of STATS) props[`des_${s}`] = 1;
   for (const d of c.des) props[`des_${d}`] += 1;
   for (const t of ["epee", "lance", "hache", "arc", "lumiere", "anima", "tenebres", "sceptre"]) props[`rang_${t}`] = "E";
-  return { ...props, ...overrides };
+  // totals : stats totales voulues. L'écart avec la classe va dans les points libres (niveau 1) ou les gains de niveau.
+  const { totals, ...rest } = overrides;
+  const out = { ...props, ...rest };
+  if (totals) {
+    const lvl = Number(out.niveau ?? 1);
+    for (const st of STATS) {
+      if (totals[st] === undefined) continue;
+      const diff = totals[st] - c[st];
+      if (lvl <= 1) out[`base_${st}`] = (st === "pv" ? 10 : 5) + diff;
+      else out[`niv_${st}`] = diff;
+    }
+    if (totals.pv !== undefined && rest.pv === undefined) out.pv = totals.pv;
+  }
+  return out;
 }
 
 export async function newUnitDialog() {
@@ -226,8 +238,10 @@ export function registerDefaultHooks() {
     await actor.update({ "system.props.pm": Number(actor.system.props?.pm ?? 0) + price });
     ui.notifications.info(`${actor.name} : ${item.name} retiré, +${price} PM remboursés.`);
   });
-  Hooks.on("createActor", (actor, options, userId) => {
-    if (userId === game.user.id) ensureDefaults(actor);
+  Hooks.on("createActor", async (actor, options, userId) => {
+    if (userId !== game.user.id || actor.type !== "character") return;
+    if (!actor.getFlag(MODULE_ID, "statModel")) await actor.setFlag(MODULE_ID, "statModel", 2);
+    ensureDefaults(actor);
   });
   for (const h of ["renderActorSheet", "renderActorSheetV2"]) Hooks.on(h, (app) => {
     const actor = app.actor ?? app.document;
@@ -243,6 +257,7 @@ export const UNIT_DEFAULTS = {
   jet_bouclier: 0, jet_aile: 0, jet_esprit: 0,
   bon_prec: 0, bon_esq: 0, bon_crit: 0, bon_atq: 0, bon_def: 0,
   base_pv: 10, base_for: 5, base_mag: 5, base_def: 5, base_res: 5, base_tech: 5, base_vit: 5, base_mvt: 5,
+  niv_pv: 0, niv_for: 0, niv_mag: 0, niv_def: 0, niv_res: 0, niv_tech: 0, niv_vit: 0,
   des_pv: 1, des_for: 1, des_mag: 1, des_def: 1, des_res: 1, des_tech: 1, des_vit: 1,
   rang_epee: "E", rang_lance: "E", rang_hache: "E", rang_arc: "E", rang_lumiere: "E", rang_anima: "E", rang_tenebres: "E", rang_sceptre: "E"
 };
