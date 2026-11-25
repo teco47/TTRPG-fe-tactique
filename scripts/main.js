@@ -6,7 +6,7 @@ import { MODULE_ID, WEAPON_TYPES } from "./config.js";
 import * as config from "./config.js";
 import * as engine from "./engine.js";
 import { readUnit, sheetSummary, itemCategory, readWeapon } from "./engine.js";
-import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro } from "./terrain.js";
+import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor } from "./terrain.js";
 import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
 import { registerBadgeHooks } from "./badge.js";
@@ -94,6 +94,12 @@ function registerSettings() {
 /* ------------------------------------------------------------------ */
 Hooks.once("init", () => {
   registerSettings();
+  game.keybindings.register(MODULE_ID, "terrainInfo", {
+    name: "Terrain sous le curseur",
+    hint: "Affiche le terrain de la case survolée, les Régions qui la couvrent et le coût de déplacement pour le jeton sélectionné.",
+    editable: [{ key: "KeyT", modifiers: ["Alt"] }],
+    onDown: () => { reportTerrainAtCursor(); return true; }
+  });
   registerMovementCosts();
   registerStatusHooks();
   registerBadgeHooks();

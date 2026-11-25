@@ -9,6 +9,7 @@ globalThis.foundry = { utils: { deepClone: x => structuredClone(x), escapeHTML: 
 globalThis.game = {
   modules: { get: () => mod },
   settings: { register: (m, k, d) => settings.set(k, d.default), get: (m, k) => settings.get(k), set: (m, k, v) => settings.set(k, v) },
+  keybindings: { register() {} },
   system: { id: "custom-system-builder" }, user: { isGM: true, id: "gm" }, users: { activeGM: { id: "gm" } }
 };
 await import("../scripts/main.js");
@@ -45,6 +46,16 @@ assert.equal(regionTerrain({ name: "Fortification" }), null);
 assert.equal(moveCost("foret", "monte"), 3);
 assert.equal(moveCost("foret", "pied", { forestier: true }), 1);
 assert.equal(moveCost("montagne", "lourd"), null);
+// Fonction de coût du déplacement natif : une Région Forêt sur la colonne j=2
+const forest = { name: "Forêt", flags: {}, polygonTree: { testPoint: (pt) => pt.x >= 200 && pt.x < 300 } };
+const wall = { name: "Mur", flags: {}, polygonTree: { testPoint: (pt) => pt.x >= 500 && pt.x < 600 } };
+globalThis.canvas = { scene: { regions: { contents: [forest, wall], [Symbol.iterator]: function* () { yield forest; yield wall; } } }, grid: { size: 100, getCenterPoint: ({ i, j }) => ({ x: j * 100 + 50, y: i * 100 + 50 }) } };
+const tokenDoc = { parent: canvas.scene, actor };
+const costFn = CONFIG.Token.movement.actions.walk.getCostFunction(tokenDoc, {});
+assert.equal(costFn(1, { i: 0, j: 0 }, { i: 0, j: 1 }, 1, {}), 1);
+assert.equal(costFn(1, { i: 0, j: 1 }, { i: 0, j: 2 }, 1, {}), 2);
+assert.equal(costFn(1, { i: 0, j: 4 }, { i: 0, j: 5 }, 1, {}), Infinity);
+assert.equal(costFn(5, { i: 0, j: 1 }, { i: 0, j: 2 }, 5, {}), 10);
 // Chapitre 1
 const ch = await import("../scripts/chapter1.js");
 const regions = ch.buildRegions({ x: 0, y: 0, size: 100 });

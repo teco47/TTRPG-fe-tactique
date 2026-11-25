@@ -47,6 +47,34 @@ export function terrainAtPoint(point, scene = canvas?.scene) {
   return found ?? "plaine";
 }
 
+/** Régions qui couvrent un point, avec leur terrain reconnu (pour le diagnostic). */
+export function regionsAtPoint(point, scene = canvas?.scene) {
+  return (scene?.regions?.contents ?? []).filter(r => regionContains(r, point)).map(r => ({ name: r.name, terrain: regionTerrain(r) }));
+}
+
+/** Diagnostic (raccourci Alt+T) : terrain sous le curseur et coût pour le jeton sélectionné. */
+export function reportTerrainAtCursor() {
+  const pos = canvas?.mousePosition;
+  if (!pos) return;
+  const center = canvas.grid.getCenterPoint(pos);
+  const terrain = terrainAtPoint(center);
+  const regions = regionsAtPoint(center);
+  const t = TERRAINS[terrain];
+  let msg = `Case : ${t.label} (Esq +${t.esq}, Déf +${t.def}).`;
+  msg += regions.length ? ` Régions : ${regions.map(r => `${r.name} → ${r.terrain ? TERRAINS[r.terrain].label : "ignorée"}`).join(", ")}.` : " Aucune Région.";
+  const token = canvas.tokens.controlled[0];
+  const props = token?.actor?.system?.props;
+  if (props) {
+    const profil = props.profil || "pied";
+    const forestier = token.actor.items.some(i => i.name?.trim().toLowerCase() === "forestier" && (i.system?.props?.equipe === true || i.system?.props?.equipe === "true"));
+    const c = moveCost(terrain, profil, { forestier });
+    msg += ` ${token.name} (${profil}) : ${c === null ? "infranchissable" : `coût ${c}`}.`;
+    if (!game.settings.get(MODULE_ID, "terrainCosts")) msg += " (Coûts par profil désactivés dans les réglages.)";
+  }
+  ui.notifications.info(msg, { permanent: false });
+  console.log(`${MODULE_ID} | terrain`, { center, terrain, regions });
+}
+
 /** Terrain sous un jeton (centre du jeton). */
 export function terrainUnderToken(token) {
   const doc = token?.document ?? token;

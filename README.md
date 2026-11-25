@@ -1,4 +1,4 @@
-# FE Tactique 0.3.1 – guide d'installation et de test
+# FE Tactique 0.3.2 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.3.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.3.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -90,6 +90,10 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 Restent manuels : les autres traits (Garde ferme, Charge, Mur de boucliers, Interposition, Vétéran…), les soutiens (via les bonus manuels), Booster et Magister (le Booster est appliqué, le Magister est seulement annoncé).
 
 ## 5. Terrain et déplacement
+
+**Diagnostic** : survole une case et appuie sur **Alt+T** (raccourci modifiable dans *Configurer les contrôles*) : le module affiche le terrain reconnu, les Régions qui couvrent la case et le coût pour le jeton sélectionné.
+
+**Aedif's Tactical Grid** : la grille tactique est désactivée par défaut sur tous les calques. Active-la dans *Paramètres > Tactical Grid > World Settings > Enable Grid* (calque Tokens), ou appuie sur **G** avec le calque des jetons actif.
 
 Une Région donne son terrain par son **nom** : `Forêt`, `Colline`, `Fort`, `Trône`, `Porte`, `Village`/`Maison`/`Église`, `Rivière`, `Gué`, `Montagne`, `Eau profonde`, `Mur`/`Bâtiment`, `Pont`, `Route`. Les cases sans Région sont des plaines. Le coût de chaque case suit la table À pied / Lourd / Monté / Monté lourd / Volant du document de conception, à partir du **profil** de la fiche ; l'infranchissable est bloqué. Paramètre du module pour désactiver.
 
