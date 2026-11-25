@@ -9699,7 +9699,7 @@
 							"colSpan": 1,
 							"rowSpan": 1,
 							"cols": 4,
-							"rows": 7,
+							"rows": 8,
 							"layout": "lclc",
 							"contents": [
 								[
@@ -9855,6 +9855,78 @@
 											}
 										]
 									}
+								],
+								[
+									{
+										"key": "",
+										"type": "label",
+										"cssClass": "fe-th",
+										"role": 0,
+										"permission": 0,
+										"editRole": 0,
+										"tooltip": "",
+										"visibilityFormula": "",
+										"editableFormula": "",
+										"escapeHTML": false,
+										"colSpan": 1,
+										"rowSpan": 1,
+										"value": "Rang offert dans ses armes",
+										"style": "bold",
+										"size": "full-size",
+										"prefix": "",
+										"suffix": "",
+										"icon": "",
+										"rollMessage": "",
+										"altRollMessage": "",
+										"rollMessageToChat": false,
+										"altRollMessageToChat": false
+									},
+									{
+										"key": "cl_rang",
+										"type": "select",
+										"cssClass": "",
+										"role": 0,
+										"permission": 0,
+										"editRole": 0,
+										"tooltip": "",
+										"visibilityFormula": "",
+										"editableFormula": "",
+										"escapeHTML": false,
+										"colSpan": 1,
+										"rowSpan": 1,
+										"label": "",
+										"defaultValue": "D",
+										"size": "full-size",
+										"selectedOptionType": "custom",
+										"options": [
+											{
+												"key": "E",
+												"value": "E"
+											},
+											{
+												"key": "D",
+												"value": "D"
+											},
+											{
+												"key": "C",
+												"value": "C"
+											},
+											{
+												"key": "B",
+												"value": "B"
+											},
+											{
+												"key": "A",
+												"value": "A"
+											},
+											{
+												"key": "S",
+												"value": "S"
+											}
+										]
+									},
+									null,
+									null
 								],
 								[
 									{

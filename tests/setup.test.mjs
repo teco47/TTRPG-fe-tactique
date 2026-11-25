@@ -168,3 +168,14 @@ console.log("migration OK");
   assert.equal(itemUpd[0]._id, "c1"); assert.equal(itemUpd[0]["system.props.cl_mod_pv"], 4); assert.equal(itemUpd[0]["system.props.cl_mod_mag"], -2);
   assert.equal(upd["system.props.pv"], 18); assert.equal(upd["flags.fe-tactique.classBalance"], 1);
 }
+// Rang D offert par la classe de base
+{
+  const u = E.readUnit({ name: "x", items: [S.catalogItemData("Soldat")], effects: [], flags: {}, system: { props: { ...P.unitPropsFromClass("Soldat"), rang_lance: "E" } } });
+  assert.equal(u.ranks.lance, "D"); assert.equal(u.ranks.epee, "E");
+  assert.equal(P.unitPropsFromClass("Chasseur").rang_arc, "D");
+  const K2 = await import("../scripts/classes.js");
+  const blank2 = { niveau: 1, rang_hache: "E" };
+  const pl = K2.planClassChange(blank2, {}, E.readClass(S.catalogItemData("Brute")), "initial");
+  assert.equal(pl.updates.rang_hache, "D");
+}
+console.log("rangs OK");

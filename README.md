@@ -1,4 +1,4 @@
-# FE Tactique 0.8.0 – guide d'installation et de test
+# FE Tactique 0.9.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.8.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.9.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -99,7 +99,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 ## 4. Ce que le combat applique automatiquement
 
 - Précision = Précision de l'arme + 2 × Tech + 5 × rang ; Esquive = 2 × (Vit − Poids) + terrain ; Attaque = For ou Mag + Puissance + 2 × rang ; Critique = Crit de l'arme + Tech/2 + 5 × rang − Vit/4 de la cible.
-- Triangle ±5 Atq / ±15 Préc (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu).
+- Triangle selon le rang de l'arme (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu) : l'unité avantagée gagne le bonus du rang de son arme, l'unité désavantagée subit le malus du rang de l'arme adverse. E : rien ; D : 2 Puissance / 4 Précision ; C : 4 / 8 ; B : 6 / 12 ; A : 8 / 16 ; S : 10 / 20. Arme « Perso » : rang du porteur. La prévision affiche le bonus ou malus à côté de l'arme.
+- Chaque classe de base offre le rang D dans ses types d'arme (champ « Rang offert » de l'objet Classe) ; les fiches existantes sont mises à jour à l'installation.
 - Terrain sous chaque unité, lu depuis les Régions.
 - 2RN pour toucher (moyenne de deux d100), d100 simple pour le critique, ≥ 100 % touche toujours.
 - Multiplicateur max((3 si critique) + (3 si efficace), 1), minimum 1 dégât.

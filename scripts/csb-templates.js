@@ -369,6 +369,7 @@ function classeTemplate() {
     ], { layout: "c".repeat(STATS.length) }),
     form("fe_cl_info", [
       ["Dé de classe 1", sel("cl_de1", statOptions, "aucun")], ["Dé de classe 2", sel("cl_de2", statOptions, "aucun")],
+      ["Rang offert dans ses armes", sel("cl_rang", rankOptions, "D")],
       ["Types d'arme", txt("cl_armes"), true],
       ["Arme de départ", txt("cl_depart"), true],
       ["Trait par défaut", txt("cl_trait"), true],

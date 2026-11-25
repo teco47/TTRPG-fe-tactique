@@ -51,8 +51,14 @@ export const WEAPON_TYPES = {
 
 /** Rouge bat vert, vert bat bleu, bleu bat rouge. */
 export const TRIANGLE_BEATS = { rouge: "vert", vert: "bleu", bleu: "rouge" };
-/** Triangle des armes : ±5 Puissance et ±15 Précision à l'attaque. */
-export const TRIANGLE_BONUS = { atq: 5, prec: 15 };
+/**
+ * Triangle des armes selon le rang de l'arme (25/11/2026) : l'unité avantagée gagne le bonus du rang de SON arme,
+ * l'unité désavantagée subit le malus du rang de l'arme ADVERSE. Arme « Perso » : rang de son porteur dans ce type.
+ */
+export const TRIANGLE_BY_RANK = {
+  E: { atq: 0, prec: 0 }, D: { atq: 2, prec: 4 }, C: { atq: 4, prec: 8 },
+  B: { atq: 6, prec: 12 }, A: { atq: 8, prec: 16 }, S: { atq: 10, prec: 20 }
+};
 
 /** Seuil de double attaque : Vitesse d'attaque supérieure d'au moins 6. */
 export const DOUBLE_THRESHOLD = 6;

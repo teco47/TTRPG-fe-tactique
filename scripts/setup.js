@@ -58,10 +58,20 @@ export async function refreshSheets() {
     if (s) await a.update({ system: s });
     const emb = itemUpdates(a.items.contents);
     if (emb.length) await a.updateEmbeddedDocuments("Item", emb);
-    if (a.system?.template === TEMPLATE_IDS.unite) await migrateStatModel(a);
+    if (a.system?.template === TEMPLATE_IDS.unite) { await migrateStatModel(a); await syncClassRanks(a); }
     if (a.system?.template === TEMPLATE_IDS.unite) await migrateClassBalance(a);
     await ensureDefaults(a);
   }
+}
+
+/** Recopie sur la fiche les rangs d'arme offerts par les classes (rang D des classes de base). */
+export async function syncClassRanks(actor) {
+  const { readUnit } = await import("./engine.js");
+  const u = readUnit(actor);
+  const p = actor.system.props ?? {};
+  const upd = {};
+  for (const [t, r] of Object.entries(u.ranks)) if (p[`rang_${t}`] !== r) upd[`system.props.rang_${t}`] = r;
+  if (Object.keys(upd).length) await actor.update(upd);
 }
 
 /**
@@ -228,7 +238,7 @@ export function classItemData(nom) {
         cl_mod_res: c.res - 5, cl_mod_tech: c.tech - 5, cl_mod_vit: c.vit - 5, cl_promos: "",
         cl_de1: c.des[0] ?? "aucun", cl_de2: c.des[1] ?? "aucun",
         cl_armes: (c.armes ?? []).join(", "), cl_depart: c.depart ?? "", cl_trait: c.traitDefaut ?? "",
-        cl_mots: (c.motsCles ?? []).join(", "), effet: ""
+        cl_mots: (c.motsCles ?? []).join(", "), cl_rang: "D", effet: ""
       }
     },
     flags: { [MODULE_ID]: { catalog: "classe" } }

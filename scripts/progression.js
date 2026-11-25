@@ -176,7 +176,7 @@ export function unitPropsFromClass(className, overrides = {}) {
   for (const s of STATS) props[`niv_${s}`] = 0;
   for (const s of STATS) props[`des_${s}`] = 1;
   for (const d of c.des) props[`des_${d}`] += 1;
-  for (const t of ["epee", "lance", "hache", "arc", "lumiere", "anima", "tenebres", "sceptre"]) props[`rang_${t}`] = "E";
+  for (const t of ["epee", "lance", "hache", "arc", "lumiere", "anima", "tenebres", "sceptre"]) props[`rang_${t}`] = (c.armes ?? []).includes(t) ? "D" : "E";
   // totals : stats totales voulues. L'écart avec la classe va dans les points libres (niveau 1) ou les gains de niveau.
   const { totals, ...rest } = overrides;
   const out = { ...props, ...rest };
