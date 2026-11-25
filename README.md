@@ -99,7 +99,7 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 ## 4. Ce que le combat applique automatiquement
 
 - Précision = Précision de l'arme + 2 × Tech + 5 × rang ; Esquive = 2 × (Vit − Poids) + terrain ; Attaque = For ou Mag + Puissance + 2 × rang ; Critique = Crit de l'arme + Tech/2 + 5 × rang − Vit/4 de la cible.
-- Triangle selon le rang de l'arme (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu) : l'unité avantagée gagne le bonus du rang de son arme, l'unité désavantagée subit le malus du rang de l'arme adverse. E : rien ; D : 2 Puissance / 4 Précision ; C : 4 / 8 ; B : 6 / 12 ; A : 8 / 16 ; S : 10 / 20. Arme « Perso » : rang du porteur. La prévision affiche le bonus ou malus à côté de l'arme.
+- Triangle selon le rang de l'unité (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu) : l'unité avantagée gagne le bonus de son rang dans le type d'arme utilisé, l'unité désavantagée subit le malus du rang de l'adversaire dans son type d'arme. E : rien ; D : 2 Puissance / 4 Précision ; C : 4 / 8 ; B : 6 / 12 ; A : 8 / 16 ; S : 10 / 20. La prévision affiche le bonus ou malus à côté de l'arme.
 - Chaque classe de base offre le rang D dans ses types d'arme (champ « Rang offert » de l'objet Classe) ; les fiches existantes sont mises à jour à l'installation.
 - Terrain sous chaque unité, lu depuis les Régions.
 - 2RN pour toucher (moyenne de deux d100), d100 simple pour le critique, ≥ 100 % touche toujours.

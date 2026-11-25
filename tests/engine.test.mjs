@@ -80,20 +80,22 @@ assert.equal(E.effectiveStats(hurt).for, 1);
 const steel = { ...merc.weapons[0], name: "Épée d'acier", rang: "C" };
 assert.match(E.weaponRestriction(merc, steel), /rang C requis/);
 
-// Triangle selon le rang (25/11/2026)
+// Triangle selon le rang de l'unité (25/11/2026)
 {
-  const lanceC = unit("L", "Soldat", null, "Lance d'acier"), epE = unit("S", "Mercenaire", null, "Épée de bronze");
-  let t = E.buildForecast(lanceC, epE, lanceC.weapons[0], epE.weapons[0], { distance: 1 });
+  const withRank = (u, t, r) => ({ ...u, ranks: { ...u.ranks, [t]: r } });
+  const lance = withRank(unit("L", "Soldat", null, "Lance de bronze"), "lance", "C");
+  const epee = withRank(unit("S", "Mercenaire", null, "Épée de bronze"), "epee", "A");
+  let t = E.buildForecast(lance, epee, lance.weapons[0], epee.weapons[0], { distance: 1 });
+  // Lance avantagée : bonus de son rang C ; épée désavantagée : malus du rang C de l'adversaire (pas son propre A)
   assert.deepEqual(t.A.triMod, { atq: 4, prec: 8 }); assert.deepEqual(t.D.triMod, { atq: -4, prec: -8 });
-  // Épée d'argent (A) contre lance de bronze (E) : épée désavantagée → malus du rang adverse (E = 0) ; lance avantagée → bonus de son rang (E = 0)
-  const epA = unit("S", "Mercenaire", null, "Épée d'argent"), lanceE = unit("L", "Soldat", null, "Lance de bronze");
-  t = E.buildForecast(epA, lanceE, epA.weapons[0], lanceE.weapons[0], { distance: 1 });
+  // Rang E de l'unité avantagée : rien, même avec une arme d'argent
+  const lE = unit("L", "Soldat", null, "Lance d'argent");
+  t = E.buildForecast(lE, epee, lE.weapons[0], epee.weapons[0], { distance: 1 });
   assert.deepEqual(t.A.triMod, { atq: 0, prec: 0 }); assert.deepEqual(t.D.triMod, { atq: 0, prec: 0 });
-  // Lance d'argent (A) contre hache d'acier (C) : lance désavantagée −8/−16, hache avantagée +4/+8
-  const lA = unit("L", "Soldat", null, "Lance d'argent"), hC = unit("H", "Brute", null, "Hache d'acier");
-  t = E.buildForecast(lA, hC, lA.weapons[0], hC.weapons[0], { distance: 1 });
-  assert.deepEqual(t.A.triMod, { atq: -4, prec: -8 }); assert.deepEqual(t.D.triMod, { atq: 4, prec: 8 });
-  // Arme « Perso » : rang du porteur
-  assert.equal(E.triangleRank({ ranks: { anima: "B" } }, { rang: "Perso", type: "anima" }), "B");
+  // Hache rang B contre lance rang D : hache avantagée +6/+12, lance −6/−12
+  const h = withRank(unit("H", "Brute", null, "Hache de bronze"), "hache", "B");
+  const lD = withRank(unit("L", "Soldat", null, "Lance de bronze"), "lance", "D");
+  t = E.buildForecast(lD, h, lD.weapons[0], h.weapons[0], { distance: 1 });
+  assert.deepEqual(t.A.triMod, { atq: -6, prec: -12 }); assert.deepEqual(t.D.triMod, { atq: 6, prec: 12 });
 }
 console.log("engine OK");

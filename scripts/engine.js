@@ -315,10 +315,10 @@ export function triangle(wA, wB) {
   return 0;
 }
 
-/** Rang d'une arme pour le triangle (« Perso » : rang du porteur dans ce type d'arme). */
+/** Rang pour le triangle : rang de l'unité dans le type de l'arme qu'elle utilise (25/11/2026). */
 export function triangleRank(unit, w) {
   if (!w) return "E";
-  const r = RANKS.includes(w.rang) ? w.rang : (unit?.ranks?.[w.type] ?? "E");
+  const r = unit?.ranks?.[w.type] ?? "E";
   return RANKS.includes(r) ? r : "E";
 }
 

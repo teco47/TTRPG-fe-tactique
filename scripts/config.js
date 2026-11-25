@@ -52,8 +52,8 @@ export const WEAPON_TYPES = {
 /** Rouge bat vert, vert bat bleu, bleu bat rouge. */
 export const TRIANGLE_BEATS = { rouge: "vert", vert: "bleu", bleu: "rouge" };
 /**
- * Triangle des armes selon le rang de l'arme (25/11/2026) : l'unité avantagée gagne le bonus du rang de SON arme,
- * l'unité désavantagée subit le malus du rang de l'arme ADVERSE. Arme « Perso » : rang de son porteur dans ce type.
+ * Triangle des armes selon le rang de l'unité (25/11/2026) : l'unité avantagée gagne le bonus de SON rang dans le type
+ * d'arme qu'elle utilise, l'unité désavantagée subit le malus du rang de l'ADVERSAIRE dans le type de son arme.
  */
 export const TRIANGLE_BY_RANK = {
   E: { atq: 0, prec: 0 }, D: { atq: 2, prec: 4 }, C: { atq: 4, prec: 8 },
