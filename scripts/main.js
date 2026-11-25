@@ -6,7 +6,8 @@ import { MODULE_ID, WEAPON_TYPES } from "./config.js";
 import * as config from "./config.js";
 import * as engine from "./engine.js";
 import { readUnit, sheetSummary, itemCategory, readWeapon } from "./engine.js";
-import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor } from "./terrain.js";
+import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor, makeTerrainListApp, registerRegionConfigHook } from "./terrain.js";
+import { registerRangeHooks, toggleHoverRange, showRange, clearRange } from "./range.js";
 import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
 import { registerBadgeHooks } from "./badge.js";
@@ -85,6 +86,9 @@ function registerSettings() {
   reg("animations", { name: "Animations personnalisées (JSON)", hint: 'Exemple : {"epee": ["jb2a.greatsword.melee.standard.white"]}. Clés : epee, lance, hache, arc, anima, lumiere, tenebres, critique, soin, silence.', type: String, default: "" });
   reg("durabilityOnMiss", { name: "Un coup raté use l'arme", hint: "Décoché : seule une attaque qui touche coûte 1 point de durabilité.", type: Boolean, default: true });
   reg("fortHeal", { name: "Soin des forts et trônes", hint: "La macro de fin de phase soigne 10 % des PV max des unités du camp qui commence sa phase sur un fort, un trône ou une porte.", type: Boolean, default: true });
+  game.settings.register(MODULE_ID, "rangeOnSelect", { name: "Zone de déplacement et de portée", hint: "Quand tu sélectionnes une unité : cases atteignables en bleu, portée de l'arme équipée en rouge (vert pour un sceptre). Alt+R montre la zone de l'unité survolée.", scope: "client", config: true, type: Boolean, default: true, onChange: () => clearRange() });
+  const TerrainApp = makeTerrainListApp();
+  if (TerrainApp) game.settings.registerMenu(MODULE_ID, "terrainList", { name: "Terrains reconnus", label: "Voir la liste des terrains", hint: "Noms exacts, mots reconnus, bonus et coûts de déplacement par profil.", icon: "fas fa-mountain", type: TerrainApp, restricted: false });
   reg("dieCost", { name: "Prix d'un dé de stat (PM)", type: Number, default: 3 });
   game.settings.register(MODULE_ID, "installedVersion", { scope: "world", config: false, type: String, default: "" });
 }
@@ -100,6 +104,14 @@ Hooks.once("init", () => {
     editable: [{ key: "KeyT", modifiers: ["Alt"] }],
     onDown: () => { reportTerrainAtCursor(); return true; }
   });
+  game.keybindings.register(MODULE_ID, "rangeInfo", {
+    name: "Zone de l'unité survolée",
+    hint: "Affiche (ou efface) les cases atteignables et la portée de l'unité survolée, alliée ou ennemie.",
+    editable: [{ key: "KeyR", modifiers: ["Alt"] }],
+    onDown: () => { toggleHoverRange(); return true; }
+  });
+  registerRangeHooks();
+  registerRegionConfigHook();
   registerMovementCosts();
   registerStatusHooks();
   registerBadgeHooks();
@@ -107,7 +119,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB

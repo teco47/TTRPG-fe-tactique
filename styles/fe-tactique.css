@@ -53,3 +53,6 @@
 .custom-system table.fe-traits-list td { padding: 3px 4px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
 table.fe-class-slots { width: 100%; margin: 4px 0 8px; }
 table.fe-class-slots th { text-align: left; width: 30%; }
+table.fe-terrain-table { width: 100%; font-size: 0.9em; }
+table.fe-terrain-table td, table.fe-terrain-table th { text-align: center; padding: 2px 4px; }
+table.fe-terrain-table td:nth-child(2) { text-align: left; }

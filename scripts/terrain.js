@@ -6,7 +6,7 @@
  *  2. par son nom : « Forêt », « Colline nord », « Maison du doyen »… (mots-clés de config.js).
  * Les cases sans Région sont des plaines.
  */
-import { MODULE_ID, TERRAINS, TERRAIN_KEYWORDS, MOVE_COSTS } from "./config.js";
+import { MODULE_ID, TERRAINS, TERRAIN_KEYWORDS, MOVE_COSTS, PROFILES } from "./config.js";
 
 const normalize = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -184,4 +184,50 @@ export async function regionsMacro() {
   await scene.updateEmbeddedDocuments("Region", updates);
   refreshPlannedPaths();
   ui.notifications.info(`Terrain enregistré pour ${regions.length} Région(s).`);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Liste des terrains (réglages) et choix dans la fenêtre de Région   */
+/* ------------------------------------------------------------------ */
+
+export function terrainTableHTML() {
+  const kw = (t) => TERRAIN_KEYWORDS.filter(([, x]) => x === t).map(([k]) => k).join(", ");
+  const cost = (v) => v === null ? "✕" : v;
+  const head = `<tr><th>Terrain</th><th>Mots reconnus dans le nom</th><th>Esq</th><th>Déf</th>${Object.values(PROFILES).map(p => `<th>${p}</th>`).join("")}</tr>`;
+  const rows = Object.entries(TERRAINS).map(([k, t]) =>
+    `<tr><td><b>${t.label}</b></td><td>${kw(k) || "—"}</td><td>+${t.esq}</td><td>+${t.def}</td>${Object.keys(PROFILES).map(p => `<td>${cost(MOVE_COSTS[k]?.[p] ?? null)}</td>`).join("")}</tr>`).join("");
+  return `<p>Une Région prend le terrain choisi dans sa fenêtre de configuration (liste « Terrain FE »). Sinon, le module cherche un de ces mots dans son nom (majuscules et accents ignorés). Cases sans Région : plaine. ✕ = infranchissable.</p>
+    <table class="fe-terrain-table">${head}${rows}</table>`;
+}
+
+export function makeTerrainListApp() {
+  const AppV2 = globalThis.foundry?.applications?.api?.ApplicationV2;
+  if (!AppV2) return null;
+  return class FeTerrainList extends AppV2 {
+    static DEFAULT_OPTIONS = { id: "fe-terrain-list", window: { title: "FE Tactique : terrains reconnus", resizable: true }, position: { width: 820, height: "auto" } };
+    async _renderHTML() { return terrainTableHTML(); }
+    _replaceHTML(result, content) { content.innerHTML = result; }
+  };
+}
+
+/** Ajoute la liste « Terrain FE » dans la fenêtre de configuration d'une Région. */
+export function registerRegionConfigHook() {
+  const inject = (app, element) => {
+    const root = element instanceof HTMLElement ? element : element?.[0];
+    const region = app.document;
+    if (!root || !region || root.querySelector("[name='flags.fe-tactique.terrain']")) return;
+    const anchor = root.querySelector("[name='name']")?.closest(".form-group");
+    if (!anchor) return;
+    const flag = region.getFlag(MODULE_ID, "terrain") ?? "";
+    const fromName = regionTerrain({ name: region.name });
+    const opts = [`<option value="">Automatique (d'après le nom : ${fromName ? TERRAINS[fromName].label : "aucun"})</option>`]
+      .concat(Object.entries(TERRAINS).map(([k, t]) => `<option value="${k}" ${k === flag ? "selected" : ""}>${t.label}</option>`)).join("");
+    const div = document.createElement("div");
+    div.className = "form-group";
+    div.innerHTML = `<label>Terrain FE</label><div class="form-fields"><select name="flags.fe-tactique.terrain">${opts}</select></div>
+      <p class="hint">Terrain utilisé par FE Tactique pour les bonus de combat et les coûts de déplacement.</p>`;
+    anchor.after(div);
+    app.setPosition?.({ height: "auto" });
+  };
+  Hooks.on("renderRegionConfig", inject);
 }

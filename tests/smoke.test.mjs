@@ -8,7 +8,7 @@ globalThis.CONFIG = { Token: { movement: { actions: { walk: { getCostFunction: (
 globalThis.foundry = { utils: { deepClone: x => structuredClone(x), escapeHTML: s => s } };
 globalThis.game = {
   modules: { get: () => mod },
-  settings: { register: (m, k, d) => settings.set(k, d.default), get: (m, k) => settings.get(k), set: (m, k, v) => settings.set(k, v) },
+  settings: { registerMenu() {}, register: (m, k, d) => settings.set(k, d.default), get: (m, k) => settings.get(k), set: (m, k, v) => settings.set(k, v) },
   keybindings: { register() {} },
   system: { id: "custom-system-builder" }, user: { isGM: true, id: "gm" }, users: { activeGM: { id: "gm" } }
 };
@@ -65,3 +65,20 @@ assert.ok(byName["Fort – Grenier (M2)"].shapes[0].x === 1200 && byName["Fort �
 assert.deepEqual(ch.cell("M2"), { i: 1, j: 12 });
 console.log(regions.map(r => `${r.name}:${r.shapes.length}`).join(", "));
 console.log("smoke OK");
+// Zone de déplacement / portée
+const R = await import("../scripts/range.js");
+// Grille 5x7, forêt (coût 2) en colonne 2, mur (null) en colonne 4, ennemi en (0,3)
+const cost = (i, j) => (j === 4 ? null : (j === 2 ? 2 : 1));
+const moves = R.reachableCells({ rows: 5, cols: 7, start: { i: 2, j: 0 }, mvt: 5, cost, enemy: (i, j) => i === 0 && j === 3 });
+assert.equal(moves.get("2,1"), 1);
+assert.equal(moves.get("2,2"), 3);
+assert.equal(moves.get("2,3"), 4);
+assert.ok(!moves.has("2,4"));         // mur
+assert.ok(!moves.has("0,3"));         // ennemi
+assert.ok(!moves.has("2,5"));
+const atk = R.attackCells({ rows: 5, cols: 7, moves, range: [1, 1], start: { i: 2, j: 0 } });
+assert.ok(atk.has("2,4") && atk.has("0,3"));
+assert.ok(!atk.has("2,5"));
+const bow = R.attackCells({ rows: 5, cols: 7, moves: new Map([["2,0", 0]]), range: [2, 2], start: { i: 2, j: 0 } });
+assert.ok(bow.has("2,2") && bow.has("1,1") && !bow.has("2,1"));
+console.log("range OK");
