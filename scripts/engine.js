@@ -71,17 +71,42 @@ export function keywordKey(v) {
   return str(v).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-/** Lit un objet Classe (mêmes champs que CLASSES dans config.js). */
+/** Valeur de base d'une stat avant modificateurs de classe. */
+export const STAT_BASELINE = { pv: 10, for: 5, mag: 5, def: 5, res: 5, tech: 5, vit: 5 };
+const CLASS_STATS = Object.keys(STAT_BASELINE);
+
+/**
+ * Lit un objet Classe.
+ * mods : modificateurs de stats (classe de base) ou bonus de promotion (classe avancée / élite).
+ * Les objets créés en 0.2.0 stockaient des stats absolues (cl_pv…) : on les convertit.
+ */
 export function readClass(item) {
-  const p = item.system.props ?? {};
+  const p = item.system?.props ?? {};
+  const mods = {};
+  for (const k of CLASS_STATS) {
+    if (p[`cl_mod_${k}`] !== undefined && p[`cl_mod_${k}`] !== null && p[`cl_mod_${k}`] !== "") mods[k] = num(p[`cl_mod_${k}`]);
+    else if (p[`cl_${k}`] !== undefined) mods[k] = num(p[`cl_${k}`]) - STAT_BASELINE[k];
+    else mods[k] = 0;
+  }
   return {
-    id: item.id, nom: item.name,
-    pv: num(p.cl_pv, 10), for: num(p.cl_for, 5), mag: num(p.cl_mag, 5), def: num(p.cl_def, 5),
-    res: num(p.cl_res, 5), tech: num(p.cl_tech, 5), vit: num(p.cl_vit, 5),
-    des: [str(p.cl_de1, "aucun"), str(p.cl_de2, "aucun")].filter(d => d !== "aucun"),
+    id: item.id, uuid: item.uuid, nom: item.name, mods,
+    des: [str(p.cl_de1, "aucun"), str(p.cl_de2, "aucun")].filter(d => d !== "aucun" && d !== ""),
     armes: list(p.cl_armes), mvt: num(p.cl_mvt, 5), profil: str(p.cl_profil, "pied"),
-    palier: num(p.cl_palier, 1), depart: str(p.cl_depart), traitDefaut: str(p.cl_trait),
-    motsCles: list(p.cl_mots).map(keywordKey)
+    palier: Math.min(3, Math.max(1, num(p.cl_palier, 1))), depart: str(p.cl_depart), traitDefaut: str(p.cl_trait),
+    motsCles: list(p.cl_mots).map(keywordKey),
+    promotions: str(p.cl_promos).split(/[,;]+/).map(x => x.trim()).filter(Boolean)
+  };
+}
+
+/** Classe tirée de config.js (CLASSES), au même format que readClass. */
+export function classFromConfig(nom) {
+  const c = CLASSES[nom];
+  if (!c) return null;
+  const mods = {};
+  for (const k of CLASS_STATS) mods[k] = c[k] - STAT_BASELINE[k];
+  return {
+    id: null, nom, mods, des: [...c.des], armes: [...c.armes], mvt: c.mvt, profil: c.profil, palier: 1,
+    depart: c.depart ?? "", traitDefaut: c.traitDefaut ?? "", motsCles: [...(c.motsCles ?? [])], promotions: []
   };
 }
 
@@ -106,18 +131,20 @@ export function readUnit(actor, { token = null } = {}) {
   const weapons = [];
   const objects = [];
   const keywordItems = [];
-  let classItem = null;
+  const classes = {};
   for (const item of actor?.items ?? []) {
     const cat = itemCategory(item);
-    if (cat === "classe") { classItem ??= readClass(item); continue; }
+    if (cat === "classe") { const c = readClass(item); classes[c.palier] ??= c; continue; }
     if (cat === "motcle") { keywordItems.push(keywordKey(item.system.props?.mc_cle || item.name)); continue; }
     if (cat === "trait") traits.push(readTrait(item));
     else if (cat === "objet") objects.push(item);
     else if (cat) { const w = readWeapon(item); if (w) weapons.push(w); }
   }
   const temp = readTemporaryEffects(actor);
+  const tiers = Object.keys(classes).map(Number).sort((a, b) => b - a);
+  const classItem = tiers.length ? classes[tiers[0]] : null;
   const className = classItem?.nom ?? str(p.classe).trim();
-  const classData = classItem ?? CLASSES[className] ?? null;
+  const classData = classItem ?? classFromConfig(className);
   const profil = str(p.profil, classData?.profil ?? "pied");
   const keywords = [...new Set([
     ...(classData?.motsCles ?? []).map(keywordKey), ...keywordItems, ...list(p.tags).map(keywordKey)
@@ -127,7 +154,7 @@ export function readUnit(actor, { token = null } = {}) {
   return {
     actor, token,
     name: token?.name ?? actor?.name ?? "?",
-    className, classData,
+    className, classData, classes,
     level: num(p.niveau, 1),
     palier: num(p.palier, classData?.palier ?? 1),
     role: str(p.role, "secondaire"),
@@ -460,6 +487,9 @@ export function sheetSummary(unit) {
     slots_used: unit.traits.filter(t => t.equipped).length,
     weapon: w ? w.name : "—",
     classe: unit.className || "—",
+    classe_1: unit.classes?.[1]?.nom ?? "—",
+    classe_2: unit.classes?.[2]?.nom ?? "—",
+    classe_3: unit.classes?.[3]?.nom ?? "—",
     mots_cles: unit.keywords.length ? unit.keywords.map(k => KEYWORDS.find(x => x.cle === k)?.nom ?? (k[0].toUpperCase() + k.slice(1))).join(" · ") : "—",
     blessures_max: WOUND_LIMIT[unit.role] ?? WOUND_LIMIT.secondaire,
     portee: w ? weaponRange(unit, w).join("-") : "—"

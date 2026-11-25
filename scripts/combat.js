@@ -422,6 +422,10 @@ export async function useObject(item) {
   const unit = readUnit(actor);
   const st = effectiveStats(unit);
   const effet = p.effet_objet ?? "autre";
+  if (effet === "magister") {
+    const { classMacro } = await import("./classes.js");
+    return classMacro({ actor });
+  }
   const ops = [];
   let text = "";
   if (effet === "soin") {

@@ -11,9 +11,10 @@ import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
 import { registerBadgeHooks } from "./badge.js";
 import { attackMacro, staffMacro, useObject, toggleEquip } from "./combat.js";
-import { levelUp, buyDie, endPhase, newUnitDialog, computeLevelUp, registerClassHooks, ensureDefaults } from "./progression.js";
+import { levelUp, buyDie, endPhase, newUnitDialog, computeLevelUp, registerDefaultHooks, ensureDefaults } from "./progression.js";
 import { installAll, offerInstall, bonusDialog, newChapter, createUnit, catalogItemData } from "./setup.js";
 import { buildTemplates } from "./csb-templates.js";
+import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } from "./classes.js";
 import { setupChapter1 } from "./chapter1.js";
 
 /* ------------------------------------------------------------------ */
@@ -62,6 +63,7 @@ function itemLabel(item, field) {
       case "uses": return `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}`;
       case "prix": return `${p.prix_pm ?? 0} PM`;
       case "effet": return p.effet ?? "";
+      case "cl_palier": return config.TIERS[p.cl_palier] ?? "";
       case "cl_profil": return config.PROFILES[p.cl_profil] ?? p.cl_profil ?? "";
       case "cl_armes": return String(p.cl_armes ?? "").split(/[,;]+/).map(x => x.trim()).filter(Boolean).map(x => WEAPON_TYPES[x]?.label ?? x).join(", ");
       case "cl_mots": return String(p.cl_mots ?? "").split(/[,;]+/).map(x => x.trim()).filter(Boolean).map(x => config.KEYWORDS.find(k => k.cle === x)?.nom ?? x).join(", ");
@@ -96,15 +98,16 @@ Hooks.once("init", () => {
   registerStatusHooks();
   registerBadgeHooks();
   registerClassHooks();
+  registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
-    sheet, itemLabel, toggleEquip, useObject,
+    sheet, itemLabel, toggleEquip, useObject, classTraits: classTraitsHTML,
     // Outils
-    createUnit, catalogItemData, ensureDefaults, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
+    createUnit, catalogItemData, ensureDefaults, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
     engine, config
   };
 });

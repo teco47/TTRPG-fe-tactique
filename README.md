@@ -1,4 +1,4 @@
-# FE Tactique 0.2.0 – guide d'installation et de test
+# FE Tactique 0.3.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.2.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.3.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -33,6 +33,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 |---|---|
 | FE – Attaquer | Sélectionne ton unité, cible l'adversaire (touche **T**), lance la macro : prévision, puis Attaquer/Annuler. Avec un sceptre équipé, ouvre l'action de sceptre. |
 | FE – Utiliser un sceptre | Soin, Recouvrement ou Silence sur l'unité ciblée. |
+| FE – Classe et promotion | Choix de la classe de départ, promotion (niveau 10 / 20, Magister) ou Magister d'équivalence, appliqués automatiquement. |
 | FE – Montée de niveau | Lance les réserves de d6 de l'unité sélectionnée, applique les gains, l'EXP et les PM. |
 | FE – Acheter un dé de stat | 3 PM le dé, dans la limite du niveau. |
 | FE – Fin de phase | Expire Silence et bonus temporaires du camp qui finit, soigne 10 % sur fort/trône/porte pour le camp qui commence. |
@@ -52,9 +53,20 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | Inventaire | Objets avec bouton *Utiliser*, notes. |
 | Profil | Rôle, palier, déplacement, mots-clés de l'unité ; objet Classe ; objets Mot-clé ; mots-clés libres. |
 
-### Classes et mots-clés (objets)
+### Classes, promotions et mots-clés (objets)
 
-- Les 12 classes sont dans *FE – Catalogue > Classes*. **Glisse une classe sur une unité** : elle remplace l'ancienne, règle le palier, le déplacement et le Mouvement, et ajoute le trait par défaut. Sur une unité **niveau 1**, elle remplit aussi les stats de base, les PV et les dés de classe ; au-delà, les stats sont conservées (promotion).
+- Les 12 classes de base sont dans *FE – Catalogue > Classes*. Une fiche retient trois emplacements : **Base**, **Avancée** et **Élite** (onglet Profil).
+- Macro **FE – Classe et promotion** (ou *Utiliser* un Magister dans l'inventaire) : sélectionne le jeton, choisis la classe, et tout se fait :
+
+| Cas | Condition | Effet |
+|---|---|---|
+| Classe de départ | Pas encore de classe, ou niveau 1 | Remplace la classe de base : retire ses modificateurs et ses 2 dés, ajoute ceux de la nouvelle. |
+| Promotion | Niveau 10 (Avancée, Magister) ou 20 (Élite, Magister supérieur) ; classe listée dans « Promotions possibles » si ce champ est rempli | Ajoute le bonus de promotion et les dés de la nouvelle classe ; l'ancienne reste dans son emplacement. |
+| Magister d'équivalence | Soutien A avec un allié de cette classe (vérifié par le MJ) | Perd les modificateurs et dés de la classe actuelle (et des classes précédentes si la nouvelle est d'un palier inférieur), ajoute ceux de la nouvelle. |
+
+  Le niveau, les stats gagnées, les points libres, les dés achetés, les rangs d'arme et les traits sont conservés. Le Mouvement, le déplacement, le palier (malus de blessure) et les armes maniables suivent la nouvelle classe, et le trait par défaut est ajouté. Le MJ peut ignorer les conditions ou ne pas consommer l'objet. Glisser une classe sur la fiche fait la même chose, sans vérifier les conditions ni consommer d'objet.
+- L'objet Classe contient ses **modificateurs** (classe de base) ou son **bonus de promotion** (classe avancée ou élite), ses 2 dés, ses armes, son Mouvement, son déplacement, son trait par défaut, ses mots-clés, ses promotions possibles et la liste de ses **traits déblocables avec leur prix en PM** (✓ pour ceux que l'unité possède).
+- Les classes avancées et d'élite ne sont pas encore définies : crée un objet Classe (palier Avancée ou Élite) et des objets Trait dont le champ « Classe(s) » contient son nom.
 - Les mots-clés (Volant, Cavalier, Blindé, Dragon, Monstre) sont dans *FE – Catalogue > Mots-clés*. Une unité a les mots-clés de sa classe (Coursier → Volant, Écuyer → Cavalier), ceux des objets Mot-clé glissés sur elle et ceux du champ libre. Le champ « Efficace contre » d'une arme se compare à ces clés.
 - À la mise à jour, le module recharge toutes les fiches FE depuis les nouveaux modèles et remplit les valeurs vides (Niveau, Blessures, jetons, bonus).
 

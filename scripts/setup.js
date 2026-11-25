@@ -5,6 +5,7 @@ import {
   MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES
 } from "./config.js";
 import { buildTemplates } from "./csb-templates.js";
+import { itemCategory, readClass } from "./engine.js";
 import { unitPropsFromClass, ensureDefaults } from "./progression.js";
 import { timedEffectData } from "./status.js";
 
@@ -40,7 +41,16 @@ export async function refreshSheets() {
     const tpl = d.documentName === "Actor" ? game.actors.get(d.system.template) : game.items.get(d.system.template);
     return tpl ? appliedTemplateSystem(tpl) : null;
   };
-  const itemUpdates = (items) => items.filter(isFe).map(i => ({ _id: i.id, system: sys(i) })).filter(u => u.system);
+  const itemUpdates = (items) => items.filter(isFe).map(i => {
+    const u = { _id: i.id, system: sys(i) };
+    // 0.2.0 : stats de classe absolues -> modificateurs
+    const p = i.system.props ?? {};
+    if (itemCategory(i) === "classe" && p.cl_mod_pv === undefined && p.cl_pv !== undefined && u.system) {
+      const c = readClass(i);
+      u.system.props = Object.fromEntries(Object.entries(c.mods).map(([k, v]) => [`cl_mod_${k}`, v]));
+    }
+    return u;
+  }).filter(u => u.system);
   const worldItems = itemUpdates(game.items.contents);
   if (worldItems.length) await Item.updateDocuments(worldItems);
   for (const a of game.actors.filter(isFe)) {
@@ -146,7 +156,8 @@ export function classItemData(nom) {
       ...appliedTemplateSystem(requireTemplate("classe")),
       props: {
         cl_palier: "1", cl_profil: c.profil, cl_mvt: c.mvt,
-        cl_pv: c.pv, cl_for: c.for, cl_mag: c.mag, cl_def: c.def, cl_res: c.res, cl_tech: c.tech, cl_vit: c.vit,
+        cl_mod_pv: c.pv - 10, cl_mod_for: c.for - 5, cl_mod_mag: c.mag - 5, cl_mod_def: c.def - 5,
+        cl_mod_res: c.res - 5, cl_mod_tech: c.tech - 5, cl_mod_vit: c.vit - 5, cl_promos: "",
         cl_de1: c.des[0] ?? "aucun", cl_de2: c.des[1] ?? "aucun",
         cl_armes: (c.armes ?? []).join(", "), cl_depart: c.depart ?? "", cl_trait: c.traitDefaut ?? "",
         cl_mots: (c.motsCles ?? []).join(", "), effet: ""
@@ -200,9 +211,18 @@ export async function installCatalog() {
   ];
   for (const [name, list] of groups) {
     const folder = await ensureFolder(name, "Item", root);
-    const existing = new Set(game.items.filter(i => i.folder?.id === folder.id).map(i => i.name));
-    const toCreate = list.filter(d => !existing.has(d.name)).map(d => ({ ...d, folder: folder.id }));
+    const inFolder = game.items.filter(i => i.folder?.id === folder.id);
+    const existing = new Set(inFolder.map(i => i.name));
+    const ownership = { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER };
+    const toCreate = list.filter(d => !existing.has(d.name)).map(d => ({ ...d, folder: folder.id, ownership }));
     if (toCreate.length) await Item.createDocuments(toCreate);
+    // Classes du module : mises à jour avec les données de cette version
+    if (name === "Classes") {
+      const upd = inFolder.filter(i => i.getFlag?.(MODULE_ID, "catalog") === "classe")
+        .map(i => ({ _id: i.id, "system.props": list.find(d => d.name === i.name)?.system.props, ownership }))
+        .filter(u => u["system.props"]);
+      if (upd.length) await Item.updateDocuments(upd);
+    }
   }
 }
 
@@ -258,6 +278,7 @@ const API = `game.modules.get("${MODULE_ID}").api`;
 export const MACROS = [
   ["FE – Attaquer", "icons/svg/sword.svg", `${API}.attack();`],
   ["FE – Utiliser un sceptre", "icons/svg/heal.svg", `${API}.staff();`],
+  ["FE – Classe et promotion", "icons/svg/statue.svg", `${API}.classe();`],
   ["FE – Montée de niveau", "icons/svg/upgrade.svg", `${API}.levelUp();`],
   ["FE – Acheter un dé de stat", "icons/svg/d20-grey.svg", `${API}.buyDie();`],
   ["FE – Fin de phase", "icons/svg/clockwork.svg", `${API}.endPhase();`],

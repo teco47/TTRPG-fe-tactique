@@ -48,3 +48,8 @@
 .custom-system .fe-table select { width: 100%; }
 .custom-system img.fe-ico { width: 18px; height: 18px; border: none; vertical-align: middle; image-rendering: pixelated; margin-right: 2px; }
 .custom-system .fe-meter { margin: 2px 0 6px; }
+.custom-system table.fe-traits-list { width: 100%; border-collapse: collapse; font-size: 0.92em; }
+.custom-system table.fe-traits-list th { text-align: left; opacity: 0.8; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.custom-system table.fe-traits-list td { padding: 3px 4px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
+table.fe-class-slots { width: 100%; margin: 4px 0 8px; }
+table.fe-class-slots th { text-align: left; width: 30%; }

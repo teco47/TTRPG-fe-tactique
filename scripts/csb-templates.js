@@ -170,7 +170,13 @@ function uniteTemplate() {
        select("profil", "", Object.entries(PROFILES)),
        val("mots_cles", "mots_cles")]
     ], { layout: "cccc" }),
-    itemContainer("classe_item", "Classe (glisse un objet Classe ici)", [TEMPLATE_IDS.classe], [
+    title("Classes obtenues (macro « FE – Classe et promotion »)"),
+    table("fe_slots_classes", [
+      [th("Base"), th("Avancée"), th("Élite")],
+      [val("classe_1", "classe_1"), val("classe_2", "classe_2"), val("classe_3", "classe_3")]
+    ], { layout: "ccc" }),
+    itemContainer("classe_item", "Objets Classe", [TEMPLATE_IDS.classe], [
+      col("k_palier", "Palier", itemValue("cl_palier")),
       col("k_mvt", "Mvt", itemValue("cl_mvt")),
       col("k_profil", "Déplacement", itemValue("cl_profil")),
       col("k_armes", "Armes", itemValue("cl_armes")),
@@ -311,14 +317,14 @@ const statOptions = [["aucun", "—"], ...STATS.map(k => [k, STAT_LABELS[k]])];
 
 function classeTemplate() {
   return itemTemplate("classe", [
-    select("cl_palier", "Palier", [["1", "I (base)"], ["2", "II (avancée)"], ["3", "III / élite"]]),
+    select("cl_palier", "Palier", [["1", "Base"], ["2", "Avancée"], ["3", "Élite"]]),
     select("cl_profil", "Déplacement", Object.entries(PROFILES)),
     number("cl_mvt", "Mouvement", { def: 5, min: 0 })
   ], [
-    title("Stats de classe (appliquées à une unité de niveau 1)"),
+    title("Modificateurs de stats (classe de base) ou bonus de promotion"),
     table("fe_cl_stats", [
       STATS.map(k => th(SHORT[k])),
-      STATS.map(k => number(`cl_${k}`, "", { def: k === "pv" ? 14 : 5, min: 0 }))
+      STATS.map(k => number(`cl_mod_${k}`, "", { def: 0 }))
     ], { layout: "c".repeat(STATS.length) }),
     table("fe_cl_info", [
       [th("Dé de classe 1"), select("cl_de1", "", statOptions, { def: "aucun" })],
@@ -326,8 +332,11 @@ function classeTemplate() {
       [th("Types d'arme"), text("cl_armes", "", { def: "" })],
       [th("Arme de départ"), text("cl_depart", "", { def: "" })],
       [th("Trait par défaut"), text("cl_trait", "", { def: "" })],
-      [th("Mots-clés"), text("cl_mots", "", { def: "" })]
+      [th("Mots-clés"), text("cl_mots", "", { def: "" })],
+      [th("Promotions possibles"), text("cl_promos", "", { def: "" })]
     ], { layout: "ll" }),
+    title("Traits déblocables"),
+    label("cl_traits", `%{return ${API}?.classTraits(entity) ?? ''}%`, { cssClass: "fe-traits-box" }),
     text("effet", "Description", { def: "" })
   ]);
 }

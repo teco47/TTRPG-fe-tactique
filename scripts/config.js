@@ -170,6 +170,18 @@ export const KEYWORDS = [
   { nom: "Monstre", cle: "monstre", effet: "Créature monstrueuse" }
 ];
 
+/* ------------------------------------------------------------------ */
+/*  Paliers de classe et promotions                                    */
+/* ------------------------------------------------------------------ */
+export const TIERS = { 1: "Base", 2: "Avancée", 3: "Élite" };
+/** Promotion vers le palier indiqué : niveau minimum et objet consommé. */
+export const PROMOTION = {
+  2: { niveau: 10, objet: "Magister" },
+  3: { niveau: 20, objet: "Magister supérieur" }
+};
+/** Changement de classe hors promotion (soutien de rang A avec un allié de cette classe, vérifié par le MJ). */
+export const EQUIVALENCE_ITEM = "Magister d'équivalence";
+
 export const STATS = ["pv", "for", "mag", "def", "res", "tech", "vit"];
 export const STAT_LABELS = { pv: "PV", for: "Force", mag: "Magie", def: "Défense", res: "Résistance", tech: "Technique", vit: "Vitesse", mvt: "Mouvement" };
 
