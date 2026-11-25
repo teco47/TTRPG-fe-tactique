@@ -32,7 +32,17 @@ function summaryFor(actor) {
   return v;
 }
 
+/**
+ * CSB entoure le résultat d'un script de guillemets simples puis le réévalue :
+ * une apostrophe dans le texte casse la formule (affiche ERROR). On la remplace par l'apostrophe typographique.
+ */
+const csbSafe = (v) => typeof v === "string" ? v.replace(/'/g, "’").replace(/\\/g, "/") : v;
+
 function sheet(actor, stat) {
+  return csbSafe(sheetRaw(actor, stat));
+}
+
+function sheetRaw(actor, stat) {
   try {
     if (!actor) return "?";
     const s = summaryFor(actor);
@@ -46,6 +56,10 @@ function sheet(actor, stat) {
 }
 
 function itemLabel(item, field) {
+  return csbSafe(itemLabelRaw(item, field));
+}
+
+function itemLabelRaw(item, field) {
   try {
     if (!item) return "";
     const p = item.system?.props ?? {};
@@ -125,7 +139,7 @@ Hooks.once("init", () => {
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
-    sheet, itemLabel, toggleEquip, useObject, classTraits: classTraitsHTML,
+    sheet, itemLabel, toggleEquip, useObject, classTraits: (item) => csbSafe(classTraitsHTML(item)),
     // Outils
     createUnit, catalogItemData, ensureDefaults, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
     engine, config

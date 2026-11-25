@@ -82,3 +82,9 @@ assert.ok(!atk.has("2,5"));
 const bow = R.attackCells({ rows: 5, cols: 7, moves: new Map([["2,0", 0]]), range: [2, 2], start: { i: 2, j: 0 } });
 assert.ok(bow.has("2,2") && bow.has("1,1") && !bow.has("2,1"));
 console.log("range OK");
+// Apostrophes : CSB réévalue le texte entre guillemets simples
+{
+  const it = mkItem("t2", C.TEMPLATE_IDS.trait, { type_trait: "manuel", effet: "S'il n'a fait aucune action" }, "Lecture");
+  assert.ok(!api.itemLabel(it, "effet").includes("'"));
+}
+console.log("apostrophes OK");

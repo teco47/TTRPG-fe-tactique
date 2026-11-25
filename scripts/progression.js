@@ -288,6 +288,12 @@ export async function ensureDefaults(actor) {
   if (!actor || actor.type !== "character" || actor.system?.template !== TEMPLATE_IDS.unite) return;
   if (pending.has(actor.uuid)) return;
   const miss = missingDefaults(actor.system.props);
+  // PV actuels au-dessus du maximum (après un changement de classe ou une correction de stats)
+  try {
+    const max = effectiveStats(readUnit(actor)).pvMax;
+    const pv = Number(actor.system.props?.pv);
+    if (Number.isFinite(pv) && pv > max) miss.pv = max;
+  } catch (e) { /* ignore */ }
   if (!Object.keys(miss).length) return;
   pending.add(actor.uuid);
   try {
