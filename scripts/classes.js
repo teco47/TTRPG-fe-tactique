@@ -97,6 +97,12 @@ export function planClassChange(props, slots, cls, mode) {
     if (dice[s]) updates[`des_${s}`] = Math.max(0, n(props[`des_${s}`], 1) + dice[s]);
   }
   if (delta.pv && props.pv !== undefined && props.pv !== null && props.pv !== "") updates.pv = Math.max(1, n(props.pv) + delta.pv);
+  // Rang offert par la nouvelle classe dans ses types d'arme
+  const RANKS_ORDER = ["E", "D", "C", "B", "A", "S"];
+  for (const t of cls.armes ?? []) {
+    const cur = String(props[`rang_${t}`] ?? "E");
+    if (RANKS_ORDER.indexOf(cls.rang ?? "E") > RANKS_ORDER.indexOf(cur)) updates[`rang_${t}`] = cls.rang;
+  }
   const keep = Object.entries(slots).filter(([x]) => !lostTiers.includes(Number(x))).map(([, c]) => c);
   return { updates, lost, keep, delta, dice, mvtDelta, tier: t };
 }

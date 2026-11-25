@@ -26,9 +26,9 @@ const actor = {
   items: [mkItem("w", C.TEMPLATE_IDS.arme, { type_arme: "epee", rang_req: "E", pui: 2, prec: 90, crit: 0, sans_crit: true, poids: 0, por_min: 1, por_max: 1, dur: 50, dur_max: 50, equipee: true }, "Épée de bronze"),
           mkItem("t", C.TEMPLATE_IDS.trait, { type_trait: "boost", boost_stat: "esq", boost_val: 10, equipe: true }, "Boost [+10 Esquive]")]
 };
-assert.equal(api.sheet(actor, "atq"), 9);
-assert.equal(api.sheet(actor, "prec"), 102);
-assert.equal(api.sheet(actor, "esq"), 22);
+assert.equal(api.sheet(actor, "atq"), 11); // rang D offert par la classe : +2 Pui
+assert.equal(api.sheet(actor, "prec"), 109);
+assert.equal(api.sheet(actor, "esq"), 24);
 assert.equal(api.sheet(actor, "crit"), 0);
 assert.equal(api.sheet(actor, "slots_text"), "1 / 4");
 assert.equal(api.itemLabel(actor.items[0], "equip"), "★");

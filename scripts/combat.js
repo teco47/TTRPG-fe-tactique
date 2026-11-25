@@ -78,9 +78,10 @@ function weaponChoices(attTok, defTok) {
   });
 }
 
-function triIcon(t) {
-  if (t > 0) return `<span class="fe-tri up" title="Avantage du triangle">▲</span>`;
-  if (t < 0) return `<span class="fe-tri down" title="Désavantage du triangle">▼</span>`;
+function triIcon(t, mod) {
+  const m = mod && (mod.atq || mod.prec) ? ` ${mod.atq > 0 ? "+" : ""}${mod.atq} Atq ${mod.prec > 0 ? "+" : ""}${mod.prec} Préc` : "";
+  if (t > 0) return `<span class="fe-tri up" title="Avantage du triangle${m}">▲${m ? `<small>${m}</small>` : ""}</span>`;
+  if (t < 0) return `<span class="fe-tri down" title="Désavantage du triangle${m}">▼${m ? `<small>${m}</small>` : ""}</span>`;
   return "";
 }
 
@@ -101,7 +102,7 @@ function sideHtml(side, f, key) {
   return `
   <div class="fe-side fe-side-${key}">
     <div class="fe-name">${esc(side.unit.name)}</div>
-    <div class="fe-weapon">${icon}<span>${w ? esc(w.name) : "Aucune arme"}</span>${triIcon(side.triangle)}</div>
+    <div class="fe-weapon">${icon}<span>${w ? esc(w.name) : "Aucune arme"}</span>${triIcon(side.triangle, side.triMod)}</div>
     <div class="fe-hp"><span>PV</span><b>${side.hp}</b><small>/ ${side.pvMax}</small></div>
     <div class="fe-hpbar"><div style="width:${hpPct}%"></div></div>
     <table class="fe-numbers">

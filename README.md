@@ -1,4 +1,4 @@
-# FE Tactique 0.7.1 – guide d'installation et de test
+# FE Tactique 0.9.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.7.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.9.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -60,6 +60,23 @@ En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de sta
 
 ### Classes, promotions et mots-clés (objets)
 
+- **Équilibrage des classes de base (0.8.0)** : la stat d'attaque inutile (Magie des classes physiques, Force des mages et du Moine) est à −2 et ne compte pas dans le budget. Les 6 autres stats (PV/2, stat d'attaque, Déf, Rés, Tech, Vit) totalisent **+7 à pied** et **+5 pour l'Écuyer et le Coursier**, la monture ou le vol valant environ 2 points. À la mise à jour, les objets Classe des unités restés aux valeurs de la 0.7.1 prennent les nouveaux modificateurs et les PV actuels suivent le nouveau maximum ; un objet Classe modifié à la main n'est pas touché. Les ennemis du chapitre 1 gardent leurs stats totales.
+
+| Classe | PV | For | Mag | Déf | Rés | Tech | Vit | Mvt |
+|---|---|---|---|---|---|---|---|---|
+| Soldat | +6 | +1 | −2 | +3 | −1 | +1 | 0 | 5 |
+| Écuyer | +6 | +2 | −2 | +1 | −2 | 0 | +1 | 6 |
+| Coursier | +6 | 0 | −2 | −1 | −1 | +2 | +2 | 6 |
+| Chasseur | +4 | +2 | −2 | −2 | 0 | +3 | +2 | 5 |
+| Voleur | +4 | +1 | −2 | −2 | 0 | +3 | +3 | 5 |
+| Brute | +10 | +3 | −2 | +2 | −1 | −2 | 0 | 5 |
+| Mercenaire | +4 | +2 | −2 | +1 | −2 | +2 | +2 | 5 |
+| Sauvage | +8 | +2 | −2 | 0 | −1 | 0 | +2 | 5 |
+| Scribe | +4 | −2 | +3 | −2 | +2 | +1 | +1 | 5 |
+| Moine | +4 | −2 | +3 | −2 | +3 | 0 | +1 | 5 |
+| Apprentie | +4 | −2 | +3 | −2 | +1 | +2 | +1 | 5 |
+| Shaman | +4 | −2 | +4 | −1 | +2 | +1 | −1 | 5 |
+
 - Les 12 classes de base sont dans *FE – Catalogue > Classes*. Une fiche retient trois emplacements : **Base**, **Avancée** et **Élite** (onglet Profil).
 - Macro **FE – Classe et promotion** (ou *Utiliser* un Magister dans l'inventaire) : sélectionne le jeton, choisis la classe, et tout se fait :
 
@@ -82,7 +99,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 ## 4. Ce que le combat applique automatiquement
 
 - Précision = Précision de l'arme + 2 × Tech + 5 × rang ; Esquive = 2 × (Vit − Poids) + terrain ; Attaque = For ou Mag + Puissance + 2 × rang ; Critique = Crit de l'arme + Tech/2 + 5 × rang − Vit/4 de la cible.
-- Triangle ±5 Atq / ±15 Préc (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu).
+- Triangle selon le rang de l'unité (magie comprise : Lumière rouge, Ténèbres vert, Anima bleu) : l'unité avantagée gagne le bonus de son rang dans le type d'arme utilisé, l'unité désavantagée subit le malus du rang de l'adversaire dans son type d'arme. E : rien ; D : 2 Puissance / 4 Précision ; C : 4 / 8 ; B : 6 / 12 ; A : 8 / 16 ; S : 10 / 20. La prévision affiche le bonus ou malus à côté de l'arme.
+- Chaque classe de base offre le rang D dans ses types d'arme (champ « Rang offert » de l'objet Classe) ; les fiches existantes sont mises à jour à l'installation.
 - Terrain sous chaque unité, lu depuis les Régions.
 - 2RN pour toucher (moyenne de deux d100), d100 simple pour le critique, ≥ 100 % touche toujours.
 - Multiplicateur max((3 si critique) + (3 si efficace), 1), minimum 1 dégât.

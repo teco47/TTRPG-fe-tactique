@@ -4,7 +4,7 @@
  * La fiche CSB affiche les valeurs calculées ici, pour qu'il n'y ait qu'une seule source de vérité.
  */
 import {
-  RANKS, RANK_BONUS, WEAPON_TYPES, TRIANGLE_BEATS, TRIANGLE_BONUS, DOUBLE_THRESHOLD, STAT_CAP,
+  RANKS, RANK_BONUS, WEAPON_TYPES, TRIANGLE_BEATS, TRIANGLE_BY_RANK, DOUBLE_THRESHOLD, STAT_CAP,
   TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE
 } from "./config.js";
 
@@ -94,6 +94,7 @@ export function readClass(item) {
     armes: list(p.cl_armes), mvt: num(p.cl_mvt, 5), profil: str(p.cl_profil, "pied"),
     palier: Math.min(3, Math.max(1, num(p.cl_palier, 1))), depart: str(p.cl_depart), traitDefaut: str(p.cl_trait),
     motsCles: list(p.cl_mots).map(keywordKey),
+    rang: RANKS.includes(str(p.cl_rang)) ? str(p.cl_rang) : (num(p.cl_palier, 1) <= 1 ? "D" : "E"),
     promotions: str(p.cl_promos).split(/[,;]+/).map(x => x.trim()).filter(Boolean)
   };
 }
@@ -106,7 +107,7 @@ export function classFromConfig(nom) {
   for (const k of CLASS_STATS) mods[k] = c[k] - STAT_BASELINE[k];
   return {
     id: null, nom, mods, des: [...c.des], armes: [...c.armes], mvt: c.mvt, profil: c.profil, palier: 1,
-    depart: c.depart ?? "", traitDefaut: c.traitDefaut ?? "", motsCles: [...(c.motsCles ?? [])], promotions: []
+    rang: "D", depart: c.depart ?? "", traitDefaut: c.traitDefaut ?? "", motsCles: [...(c.motsCles ?? [])], promotions: []
   };
 }
 
@@ -162,6 +163,10 @@ export function readUnit(actor, { token = null } = {}) {
     base[k] = parts.perso[k] + parts.classe[k] + parts.niveau[k];
   }
   base.mvt = num(p.base_mvt, 5);
+  // Rang offert par les classes dans leurs types d'arme (classe de base : D)
+  for (const c of slotList) for (const t of c.armes ?? []) {
+    if (ranks[t] !== undefined && RANKS.indexOf(c.rang ?? "E") > RANKS.indexOf(ranks[t])) ranks[t] = c.rang;
+  }
   return {
     actor, token,
     name: token?.name ?? actor?.name ?? "?",
@@ -310,6 +315,20 @@ export function triangle(wA, wB) {
   return 0;
 }
 
+/** Rang pour le triangle : rang de l'unité dans le type de l'arme qu'elle utilise (25/11/2026). */
+export function triangleRank(unit, w) {
+  if (!w) return "E";
+  const r = unit?.ranks?.[w.type] ?? "E";
+  return RANKS.includes(r) ? r : "E";
+}
+
+/** Modificateur du triangle pour l'attaquant att (arme w) contre def (arme wDef), tr = triangle(w, wDef). */
+export function triangleMod(att, w, def, wDef, tr) {
+  if (tr > 0) { const b = TRIANGLE_BY_RANK[triangleRank(att, w)]; return { atq: b.atq, prec: b.prec }; }
+  if (tr < 0) { const b = TRIANGLE_BY_RANK[triangleRank(def, wDef)]; return { atq: -b.atq || 0, prec: -b.prec || 0 }; }
+  return { atq: 0, prec: 0 };
+}
+
 export function isEffective(attacker, w, defender) {
   if (!w) return false;
   const targetTags = [defender.profil, ...(defender.keywords ?? defender.tags.split(/[,; ]+/))].map(keywordKey).filter(Boolean);
@@ -344,9 +363,10 @@ export function buildForecast(A, D, wA, wD, ctx = {}) {
   const defenderCan = attackerCan && !counterReason;
 
   const tri = triangle(wA, wD);
-  const side = (att, def, s, sDef, w, tr, act) => {
-    const atq = s.atq + tr * TRIANGLE_BONUS.atq;
-    const prec = s.prec + tr * TRIANGLE_BONUS.prec;
+  const side = (att, def, s, sDef, w, tr, act, wOpp) => {
+    const triMod = triangleMod(att, w, def, wOpp, tr);
+    const atq = s.atq + triMod.atq;
+    const prec = s.prec + triMod.prec;
     const hit = Math.max(0, prec - sDef.esq);
     const defense = s.isMagic ? (w?.special === "luna" ? 0 : sDef.res) : sDef.def;
     const effective = isEffective(att, w, def);
@@ -356,11 +376,11 @@ export function buildForecast(A, D, wA, wD, ctx = {}) {
       atq, prec, hit, defense, effective, crit,
       dmg: w?.special === "eclipse" ? Math.max(1, Math.floor(def.hp / 2)) : base,
       eclipse: w?.special === "eclipse",
-      triangle: tr
+      triangle: tr, triMod
     };
   };
-  const fa = side(A, D, sA, sD, wA, tri, actA);
-  const fd = side(D, A, sD, sA, wD, -tri, actD);
+  const fa = side(A, D, sA, sD, wA, tri, actA, wD);
+  const fd = side(D, A, sD, sA, wD, -tri, actD, wA);
   const doubleA = attackerCan && sA.vitAtt - sD.vitAtt >= DOUBLE_THRESHOLD;
   const doubleD = defenderCan && sD.vitAtt - sA.vitAtt >= DOUBLE_THRESHOLD;
   const desperation = hasTrait(A, "Désespoir") && A.hp <= sA.pvMax / 2;
