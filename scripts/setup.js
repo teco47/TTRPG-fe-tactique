@@ -49,6 +49,8 @@ export async function refreshSheets() {
       const c = readClass(i);
       u.system.props = Object.fromEntries(Object.entries(c.mods).map(([k, v]) => [`cl_mod_${k}`, v]));
     }
+    // 0.10.1 : les arcs du catalogue frappent à 2 cases (portée 2, plus 1-2)
+    if (u.system && bowRangeFix(i)) u.system.props = { ...(u.system.props ?? {}), por_min: 2 };
     return u;
   }).filter(u => u.system);
   const worldItems = itemUpdates(game.items.contents);
@@ -62,6 +64,13 @@ export async function refreshSheets() {
     if (a.system?.template === TEMPLATE_IDS.unite) await migrateClassBalance(a);
     await ensureDefaults(a);
   }
+}
+
+/** Pure : arc du catalogue resté à la portée 1-2 des versions précédentes. */
+export function bowRangeFix(item) {
+  const p = item?.system?.props ?? {};
+  if (p.type_arme !== "arc" || Number(p.por_min) !== 1 || Number(p.por_max) !== 2) return false;
+  return WEAPONS.some(w => w.type === "arc" && w.nom === item.name);
 }
 
 /** Recopie sur la fiche les rangs d'arme offerts par les classes (rang D des classes de base). */

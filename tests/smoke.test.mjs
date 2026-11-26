@@ -106,3 +106,12 @@ console.log("inventaire OK");
   assert.equal(api.engine.sheetSummary(api.readUnit(e)).a_attribuer, "");
 }
 console.log("chapitre 1 OK");
+// 0.10.1 : l'arc frappe à 2 cases, pas au contact
+{
+  const S = await import("../scripts/setup.js");
+  assert.ok(C.WEAPONS.filter(w => w.type === "arc").every(w => w.porMin === 2 && w.porMax === 2));
+  assert.equal(S.bowRangeFix({ name: "Arc de fer", system: { props: { type_arme: "arc", por_min: 1, por_max: 2 } } }), true);
+  assert.equal(S.bowRangeFix({ name: "Arc maison", system: { props: { type_arme: "arc", por_min: 1, por_max: 2 } } }), false);
+  assert.equal(S.bowRangeFix({ name: "Arc de fer", system: { props: { type_arme: "arc", por_min: 2, por_max: 2 } } }), false);
+}
+console.log("arcs OK");

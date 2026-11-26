@@ -88,7 +88,7 @@ export const WEAPONS = [
   ["Arc d'argent", "arc", 10, 75, 0, 2, 20, 1000, "A"]
 ].map(([nom, type, pui, prec, crit, poids, dur, prix, rang]) => ({
   nom, type, pui, prec, crit, poids, dur, prix, rang,
-  porMin: 1, porMax: type === "arc" ? 2 : 1,
+  porMin: type === "arc" ? 2 : 1, porMax: type === "arc" ? 2 : 1, // l'arc frappe à 2 cases (document de conception)
   efficace: "", special: "aucun", sansRiposte: false, effet: ""
 }));
 
