@@ -409,7 +409,8 @@ export const MACROS = [
   ["FE – Terrain des Régions", "icons/svg/terrain.svg", `${API}.regions();`],
   ["FE – Couleurs des jetons", "icons/svg/target.svg", `${API}.tokenLook();`],
   ["FE – Nouveau chapitre (jetons à zéro)", "icons/svg/book.svg", `${API}.newChapter();`],
-  ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`]
+  ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`],
+  ["FE – Exporter la scène (JSON)", "icons/svg/down.svg", `${API}.exportScene();`]
 ];
 
 export async function installMacros() {

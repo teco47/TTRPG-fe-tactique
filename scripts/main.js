@@ -6,7 +6,7 @@ import { MODULE_ID, WEAPON_TYPES } from "./config.js";
 import * as config from "./config.js";
 import * as engine from "./engine.js";
 import { readUnit, sheetSummary, itemCategory, readWeapon } from "./engine.js";
-import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor, makeTerrainListApp, registerRegionConfigHook } from "./terrain.js";
+import { regionTerrain, registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor, makeTerrainListApp, registerRegionConfigHook } from "./terrain.js";
 import { registerRangeHooks, toggleHoverRange, showRange, clearRange } from "./range.js";
 import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
@@ -17,6 +17,7 @@ import { installAll, offerInstall, bonusDialog, newChapter, createUnit, catalogI
 import { buildTemplates } from "./csb-templates.js";
 import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } from "./classes.js";
 import { setupChapter1 } from "./chapter1.js";
+import { exportSceneMacro, buildSceneExport } from "./export.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -135,13 +136,13 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
     sheet, itemLabel, toggleEquip, useObject, classTraits: (item) => csbSafe(classTraitsHTML(item)),
     // Outils
-    createUnit, catalogItemData, ensureDefaults, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
+    createUnit, catalogItemData, ensureDefaults, regionTerrain, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
     engine, config
   };
 });

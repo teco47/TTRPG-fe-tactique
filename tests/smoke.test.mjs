@@ -115,3 +115,23 @@ console.log("chapitre 1 OK");
   assert.equal(S.bowRangeFix({ name: "Arc de fer", system: { props: { type_arme: "arc", por_min: 2, por_max: 2 } } }), false);
 }
 console.log("arcs OK");
+// Export de la scène
+{
+  const X = await import("../scripts/export.js");
+  const forest2 = { name: "Forêt", flags: {}, getFlag: () => null, behaviors: { contents: [] }, polygonTree: { testPoint: (pt) => pt.x >= 200 && pt.x < 300 && pt.y < 100 } };
+  const td = { name: "Mercenaire", x: 0, y: 100, width: 1, height: 1, disposition: 1, hidden: false, actorLink: true, elevation: 0, actor };
+  actor.items.contents = actor.items; actor.effects.contents = actor.effects;
+  globalThis.canvas = {
+    scene: { name: "Chapitre 1 perso", grid: { type: 1, distance: 1, units: "case" }, padding: 0, background: { src: "map.png" },
+      regions: { contents: [forest2], [Symbol.iterator]: function* () { yield forest2; } }, walls: { contents: [{ c: [300, 0, 300, 200], door: 1, ds: 0, move: 20, sight: 20 }] }, tokens: { contents: [td] } },
+    dimensions: { sceneRect: { x: 0, y: 0, width: 400, height: 200 } }, grid: { size: 100 }
+  };
+  globalThis.game.version = "14.365"; globalThis.game.system.version = "6.1.2";
+  const out = X.buildSceneExport(api);
+  assert.deepEqual(out.terrain, [". . F .", ". . . ."]);
+  assert.deepEqual(out.regions[0].cells, ["C1"]); assert.equal(out.regions[0].terrain, "foret");
+  assert.equal(out.tokens[0].case, "A2"); assert.equal(out.tokens[0].unit.fiche.atq, 11); assert.equal(out.tokens[0].items.length, 2);
+  assert.equal(out.walls[0].type, "porte"); assert.equal(out.walls[0].ouverte, false);
+  JSON.stringify(out);
+}
+console.log("export OK");

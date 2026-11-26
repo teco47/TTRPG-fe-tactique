@@ -43,6 +43,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | FE – Terrain des Régions | (MJ) Liste les Régions de la scène avec le terrain reconnu, et permet de le choisir dans une liste. |
 | FE – Nouveau chapitre | Remet les jetons Bouclier, Ailé et Esprit à zéro. |
 | FE – Préparer le chapitre 1 | Remplit la scène affichée : Régions de terrain et jetons. |
+| FE – Exporter la scène (JSON) | (MJ) Télécharge un fichier JSON de la scène affichée : grille, terrain case par case, Régions, murs et portes, jetons avec la fiche complète de chaque unité. Pour faire analyser une carte hors de Foundry. |
 
 ## 3. La fiche d'unité
 
@@ -138,7 +139,7 @@ Les ennemis gardent leurs stats du scénario : leur fiche n'affiche pas « À at
 
 ## 7. Checklist de test (environ 20 minutes)
 
-1. **Installation** : la fenêtre d'installation apparaît, les 6 modèles, le catalogue et les 9 macros existent.
+1. **Installation** : la fenêtre d'installation apparaît, les 6 modèles, le catalogue et les macros existent.
 2. **Fiche** : ouvre `Mercenaire` (avant de placer ses 3 points libres). Onglet Combat : Attaque 11, Précision 109, Esquive 14 et Critique 0 avec l'Épée de bronze (rang D offert par la classe) (le Bronze ne fait pas de critique). Si une valeur affiche `?` ou `ERROR`, note-la.
 3. **Équiper** : clique l'étoile d'une autre arme : une seule reste équipée, le badge du jeton change.
 4. **Prévision** : Mercenaire adjacent au Bandit (H9) : la fenêtre annonce 8 dégâts à 100 %, riposte 6 à 66 %, ▲ +2 Atq +4 Préc côté Mercenaire.
