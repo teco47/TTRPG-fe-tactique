@@ -4,7 +4,7 @@
  * La fiche CSB affiche les valeurs calculées ici, pour qu'il n'y ait qu'une seule source de vérité.
  */
 import {
-  RANKS, RANK_BONUS, WEAPON_TYPES, TRIANGLE_BEATS, TRIANGLE_BY_RANK, DOUBLE_THRESHOLD, STAT_CAP,
+  RANKS, RANK_BONUS, WEAPON_TYPES, COMBAT_ACTIVATIONS, TRIANGLE_BEATS, TRIANGLE_BY_RANK, DOUBLE_THRESHOLD, STAT_CAP,
   TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE
 } from "./config.js";
 
@@ -273,8 +273,14 @@ export function combatStats(unit, w, ctx = {}) {
   const fracas = act.Fracas && w?.type === "hache";
   const surcharge = act.Surcharge && w?.cat === "tome";
 
-  const forStat = st.for + (fracas ? 5 : 0);
-  const magStat = st.mag + (surcharge ? 5 : 0);
+  // Bonus des traits à condition cochés dans la prévision
+  const ab = { for: 0, mag: 0, prec: 0, def: 0, atq: 0 };
+  for (const [name, on] of Object.entries(act)) {
+    const b = on ? COMBAT_ACTIVATIONS[name]?.bonus : null;
+    if (b) for (const k of Object.keys(ab)) ab[k] += b[k] ?? 0;
+  }
+  const forStat = st.for + (fracas ? 5 : 0) + ab.for;
+  const magStat = st.mag + (surcharge ? 5 : 0) + ab.mag;
   const poids = w ? w.poids : 0;
   const vitAtt = st.vit - poids;
   const lowHp = unit.hp <= st.pvMax / 2;
@@ -285,11 +291,11 @@ export function combatStats(unit, w, ctx = {}) {
     pvMax: st.pvMax,
     vitAtt,
     atq: w && w.cat !== "sceptre"
-      ? (isMagic ? magStat : forStat) + w.pui + rank * RANK_BONUS.pui + unit.manual.atq + (unit.temp.atq ?? 0) + (rage ? 3 : 0) + (sit.atq ?? 0)
+      ? (isMagic ? magStat : forStat) + w.pui + rank * RANK_BONUS.pui + ab.atq + unit.manual.atq + (unit.temp.atq ?? 0) + (rage ? 3 : 0) + (sit.atq ?? 0)
       : 0,
     prec: w && w.cat !== "sceptre"
       ? w.prec + 2 * st.tech + rank * RANK_BONUS.prec + unit.manual.prec + (unit.temp.prec ?? 0) + (boosts.prec ?? 0)
-        - (fracas ? 10 : 0) + (sit.prec ?? 0)
+        - (fracas ? 10 : 0) + ab.prec + (sit.prec ?? 0)
       : 0,
     esq: 2 * vitAtt + terrain.esq + unit.manual.esq + (unit.temp.esq ?? 0) + (boosts.esq ?? 0)
       + (w?.bonusEsq ?? 0) + (sit.esq ?? 0),
@@ -299,7 +305,7 @@ export function combatStats(unit, w, ctx = {}) {
       : 0,
     canCrit: !!(w && w.cat !== "sceptre" && w.crit !== null),
     esqCrit: Math.floor(st.vit / 4),
-    def: st.def + terrain.def + unit.manual.def + (unit.temp.def ?? 0),
+    def: st.def + terrain.def + unit.manual.def + (unit.temp.def ?? 0) + ab.def,
     res: st.res + terrain.def + unit.manual.def + (unit.temp.res ?? 0) + (w?.bonusRes ?? 0)
   };
   return res;

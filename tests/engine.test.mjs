@@ -99,3 +99,16 @@ assert.match(E.weaponRestriction(merc, steel), /rang C requis/);
   assert.deepEqual(t.A.triMod, { atq: -6, prec: -12 }); assert.deepEqual(t.D.triMod, { atq: 6, prec: 12 });
 }
 console.log("engine OK");
+// Traits à condition cochés dans la prévision (0.11.0)
+{
+  const g = unit("Garrec", "Brute", [24, 10, 4, 6, 4, 3, 5], "Hache de fer");
+  const m = unit("Mercenaire", "Mercenaire", null, "Épée de bronze");
+  const base = E.buildForecast(m, g, m.weapons[0], g.weapons[0], { distance: 1 });
+  const on = E.buildForecast(m, g, m.weapons[0], g.weapons[0], { distance: 1, activationsA: { Charge: true }, activationsD: { "Garde ferme": true } });
+  assert.equal(on.A.atq, base.A.atq + 2); assert.equal(on.A.prec, base.A.prec + 5);
+  assert.equal(on.A.dmg, Math.max(1, base.A.dmg - 2 + 2)); assert.equal(on.A.defense, base.A.defense + 2);
+  const a = unit("Apprentie", "Apprentie", null, "Feu");
+  const l = E.buildForecast(a, g, a.weapons[0], g.weapons[0], { distance: 2, activationsA: { Lecture: true } });
+  assert.equal(l.A.atq, E.buildForecast(a, g, a.weapons[0], g.weapons[0], { distance: 2 }).A.atq + 5);
+}
+console.log("activations OK");
