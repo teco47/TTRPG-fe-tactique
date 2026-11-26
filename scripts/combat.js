@@ -107,8 +107,8 @@ function sideHtml(side, f, key) {
     <div class="fe-hpbar"><div style="width:${hpPct}%"></div></div>
     <table class="fe-numbers">
       <tr><th>Dégâts</th><td>${dmgTxt}</td></tr>
-      <tr><th>Précision</th><td>${show ? side.hit + " %" : "—"}</td></tr>
-      <tr><th>Critique</th><td>${show ? side.crit + " %" : "—"}</td></tr>
+      <tr><th>Précision</th><td>${show ? Math.min(100, side.hit) + " %" : "—"}</td></tr>
+      <tr><th>Critique</th><td>${show ? Math.min(100, side.crit) + " %" : "—"}</td></tr>
     </table>
     <div class="fe-terrain">${esc(tTxt)}</div>
     ${tags.length ? `<div class="fe-tags">${tags.map(esc).join(" · ")}</div>` : ""}
@@ -402,6 +402,8 @@ export async function staffMacro(srcTok, tgtTok) {
     text = `${esc(w.name)} est utilisé : effet à appliquer par le MJ.`;
   }
   const dur = Math.max(0, w.dur - 1);
+  // Le sceptre utilisé devient l'arme équipée : les autres armes sont déséquipées
+  for (const o of S.weapons) if (o.id !== w.id && o.equipped) ops.push({ op: "update", uuid: o.uuid, data: { "system.props.equipee": false } });
   ops.push({ op: "update", uuid: w.uuid, data: { "system.props.dur": dur, "system.props.equipee": true } });
   await applyOperations(ops);
   return ChatMessage.create({

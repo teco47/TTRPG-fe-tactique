@@ -60,10 +60,10 @@ export const UNITS = [
   { name: "Mercenaire", classe: "Mercenaire", at: "A11", disp: F, props: { role: "principal" }, items: ["Épée de bronze"], pj: true },
   { name: "Apprentie", classe: "Apprentie", at: "A10", disp: F, props: { role: "principal" }, items: ["Feu"], pj: true },
   // Alliée à recruter (cachée dans l'église)
-  { name: "Ysaline", classe: "Moine", at: "D2", disp: F, hidden: true, props: { ...st(14, 5, 8, 3, 7, 5, 6), notes: "Barricadée dans l'église (D2). Une unité alliée qui visite l'église la libère : révèle son jeton sur une case libre adjacente." }, items: ["Soin"] },
+  { name: "Ysaline", classe: "Moine", at: "D2", disp: F, hidden: true, props: { ...st(16, 3, 9, 3, 8, 5, 7), notes: "Barricadée dans l'église (D2). Une unité alliée qui visite l'église la libère : révèle son jeton sur une case libre adjacente. Stats de Moine + 3 points (Mag, Vit, 2 PV) ; ses 5 PM restent à dépenser par le joueur qui la prend." }, items: ["Soin"] },
   // Ennemis (sans trait)
   { name: "Garrec le Borgne", classe: "Brute", at: "M2", disp: H, props: { niveau: 4, ...st(24, 10, 4, 6, 4, 3, 5), notes: "Chef. Immobile sur le fort (grenier)." }, items: ["Hache de fer"] },
-  { name: "Bram", classe: "Brute", at: "M3", disp: H, props: { niveau: 2, ...st(22, 9, 4, 5, 4, 2, 5), notes: "Recrutable : un personnage principal adjacent peut lui parler. Immobile, ne fait que riposter. Une fois recruté, passe son jeton en Amical." }, items: ["Hache de bronze"] },
+  { name: "Bram", classe: "Brute", at: "M3", disp: H, props: { niveau: 2, ...st(22, 9, 4, 5, 4, 2, 5), notes: "Recrutable : un personnage principal adjacent peut lui parler. Immobile, ne fait que riposter. Une fois recruté : onglet Profil, Type = Personnage secondaire (le jeton passe en Amical, anneau bleu) et donne-le à un joueur. Ses 5 PM restent à dépenser." }, items: ["Hache de bronze"] },
   { name: "Grisard (pillard)", classe: "Sauvage", at: "P4", disp: H, props: { niveau: 2, ...st(20, 8, 3, 5, 4, 4, 6), notes: "Pillard : G2 puis D7." }, items: ["Hache de bronze"] },
   { name: "Tanche (pillard)", classe: "Sauvage", at: "P3", disp: H, props: { niveau: 2, ...st(20, 8, 3, 5, 4, 4, 6), notes: "Pillard : K10 puis H12." }, items: ["Hache de bronze"] },
   { name: "Bandit", classe: "Brute", at: "H9", disp: H, props: { niveau: 1, ...st(20, 8, 4, 5, 4, 2, 5), notes: "Agressif." }, items: ["Hache de bronze"] },

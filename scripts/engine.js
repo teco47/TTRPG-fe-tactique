@@ -527,6 +527,8 @@ export function sheetSummary(unit) {
     classe_3: unit.classes?.[3]?.nom ?? "—",
     mots_cles: unit.keywords.length ? unit.keywords.map(k => KEYWORDS.find(x => x.cle === k)?.nom ?? (k[0].toUpperCase() + k.slice(1))).join(" · ") : "—",
     ...(() => {
+      // Les ennemis ont des stats fixées par le scénario : rien à attribuer, pas d'alerte.
+      if (unit.role === "ennemi") return { pts_libres: "—", des_libres: "—", pm_restants: unit.pm, alerte: "<span class=\"fe-ok\">Ennemi : stats du scénario</span>", a_attribuer: "" };
       const a = allocation(unit);
       const parts = [];
       if (a.points > 0) parts.push(`${a.pointsText} pt${a.points > 1 ? "s" : ""} de stats`);

@@ -93,3 +93,16 @@ console.log("apostrophes OK");
   assert.equal(api.itemLabel(potion, "dur"), "2/3"); assert.equal(api.itemLabel(potion, "type"), "Objet"); assert.equal(api.itemLabel(potion, "pui"), "—");
 }
 console.log("inventaire OK");
+// 0.10.1 : Ysaline aux stats de Moine + 3 points, ennemis sans « À attribuer »
+{
+  const P = await import("../scripts/progression.js");
+  const ys = ch.UNITS.find(u => u.name === "Ysaline");
+  const props = P.unitPropsFromClass(ys.classe, ys.props);
+  const cls = { id: "c", name: "Moine", system: { template: C.TEMPLATE_IDS.classe, props: { cl_palier: "1", cl_mod_pv: 4, cl_mod_for: -2, cl_mod_mag: 3, cl_mod_def: -2, cl_mod_res: 3, cl_mod_tech: 0, cl_mod_vit: 1, cl_de1: "res", cl_de2: "pv", cl_armes: "sceptre", cl_mvt: 5, cl_rang: "D" } } };
+  const a = { uuid: "A.ys", id: "ys", name: "Ysaline", effects: [], system: { props }, items: [cls], flags: {} };
+  const s = api.engine.sheetSummary(api.readUnit(a));
+  assert.equal(s.pts_libres, "0"); assert.equal(s.tot_mag, 9); assert.equal(s.pv_max, 16);
+  const e = { ...a, uuid: "A.en", system: { props: { ...props, role: "ennemi" } } };
+  assert.equal(api.engine.sheetSummary(api.readUnit(e)).a_attribuer, "");
+}
+console.log("chapitre 1 OK");
