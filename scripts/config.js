@@ -243,7 +243,12 @@ export const COMBAT_ACTIVATIONS = {
   "Spectre": { jeton: "esprit", cout: 10, label: "Spectre (10 Esprit) : critique garanti" },
   "Siphon":  { jeton: "esprit", cout: 5,  label: "Siphon (5 Esprit) : soigne la moitié des dégâts" },
   "Fracas":  { jeton: null,     cout: 0,  label: "Fracas : −10 Préc, +5 For, −5 durabilité par coup" },
-  "Surcharge": { jeton: null,   cout: 0,  label: "Surcharge : +1 portée, +5 Mag, −5 durabilité par coup" }
+  "Surcharge": { jeton: null,   cout: 0,  label: "Surcharge : +1 portée, +5 Mag, −5 durabilité par coup" },
+  // Traits à condition (le joueur coche s'il remplit la condition) : bonus appliqués pendant le combat
+  "Garde ferme": { jeton: null, cout: 0, label: "Garde ferme : +2 Déf (ne s'est pas déplacé ce tour)", bonus: { def: 2 } },
+  "Charge":      { jeton: null, cout: 0, label: "Charge : +2 For, +5 Préc (déplacé d'au moins 6 cases)", bonus: { for: 2, prec: 5 } },
+  "Lecture":     { jeton: null, cout: 0, label: "Lecture : +5 Mag (aucune action au tour précédent)", bonus: { mag: 5 } },
+  "Chasteté":    { jeton: null, cout: 0, label: "Chasteté : +10 Préc, +3 Mag (condition du trait remplie)", bonus: { prec: 10, mag: 3 } }
 };
 
 /* ------------------------------------------------------------------ */

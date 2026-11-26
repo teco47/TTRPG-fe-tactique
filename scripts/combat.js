@@ -60,7 +60,7 @@ function computeForecast(attTok, defTok, choice) {
   const sitD = situational(D, defTok, terrainD, attTok);
   const f = buildForecast(A, D, wA, wD, {
     distance, terrainA, terrainD,
-    activationsA: choice.activations ?? {}, activationsD: {},
+    activationsA: choice.activations ?? {}, activationsD: choice.activationsD ?? {},
     situationalA: sitA.s, situationalD: sitD.s
   });
   f.notes = { A: sitA.notes, D: sitD.notes };
@@ -129,25 +129,46 @@ function forecastBodyHtml(f) {
 function controlsHtml(attTok, defTok, choice) {
   const opts = weaponChoices(attTok, defTok).map(({ w, ok, reason }) =>
     `<option value="${w.id}" ${w.id === choice.weaponId ? "selected" : ""} ${ok ? "" : "disabled"}>${esc(w.name)} (${w.dur}/${w.durMax})${ok ? "" : ` – ${esc(reason)}`}</option>`).join("");
-  const A = readUnit(attTok.actor);
-  const acts = Object.entries(COMBAT_ACTIVATIONS).filter(([name]) => hasTrait(A, name)).map(([name, a]) => {
-    const enough = !a.jeton || A.jetons[a.jeton] >= a.cout;
-    return `<label class="fe-act"><input type="checkbox" name="act_${name}" ${choice.activations?.[name] ? "checked" : ""} ${enough ? "" : "disabled"}> ${esc(a.label)}</label>`;
-  }).join("");
   return `
   <div class="fe-controls">
     <label>Arme : <select name="weaponId">${opts}</select></label>
-    ${acts ? `<div class="fe-acts">${acts}</div>` : ""}
   </div>`;
 }
 
+const TRAIT_TYPE_LABEL = { auto: "auto", boost: "auto", jetons: "jetons" };
+
+/** Panneau latéral des traits d'une unité : traits à activer (cases à cocher), automatiques et manuels. */
+function traitPanelHtml(token, key, active = {}) {
+  const U = readUnit(token.actor, { token: token.document });
+  const equipped = U.traits.filter(t => t.equipped);
+  const acts = equipped.filter(t => COMBAT_ACTIVATIONS[t.name]).map(t => {
+    const a = COMBAT_ACTIVATIONS[t.name];
+    const enough = !a.jeton || U.jetons[a.jeton] >= a.cout;
+    const left = a.jeton ? ` <small>(${U.jetons[a.jeton]} jeton${U.jetons[a.jeton] > 1 ? "s" : ""})</small>` : "";
+    return `<label class="fe-act ${enough ? "" : "off"}"><input type="checkbox" name="act_${key}_${esc(t.name)}" ${active[t.name] ? "checked" : ""} ${enough ? "" : "disabled"}> ${esc(a.label)}${left}</label>`;
+  }).join("");
+  const autos = equipped.filter(t => !COMBAT_ACTIVATIONS[t.name] && TRAIT_TYPE_LABEL[t.type]).map(t => `<li>${esc(t.name)}</li>`).join("");
+  const manual = equipped.filter(t => !COMBAT_ACTIVATIONS[t.name] && !TRAIT_TYPE_LABEL[t.type]).map(t => `<li>${esc(t.name)}</li>`).join("");
+  const jetons = Object.entries({ Bouclier: U.jetons.bouclier, "Ailé": U.jetons.aile, Esprit: U.jetons.esprit }).filter(([, v]) => v > 0).map(([k, v]) => `${k} ${v}`).join(" · ");
+  return `
+  <aside class="fe-traits fe-traits-${key}">
+    <h4>${key === "A" ? "Attaquant" : "Défenseur"} : ${esc(U.name)}</h4>
+    ${jetons ? `<div class="fe-jetons">${jetons}</div>` : ""}
+    <div class="fe-tsec">À activer</div>
+    ${acts || `<p class="fe-none">Aucun trait activable équipé.</p>`}
+    ${autos ? `<div class="fe-tsec">Automatiques</div><ul>${autos}</ul>` : ""}
+    ${manual ? `<div class="fe-tsec">À gérer à la main</div><ul>${manual}</ul>` : ""}
+  </aside>`;
+}
+
 function readChoice(form) {
-  const activations = {};
-  for (const name of Object.keys(COMBAT_ACTIVATIONS)) {
-    const el = form?.elements?.namedItem?.(`act_${name}`);
-    if (el?.checked) activations[name] = true;
+  const activations = {}, activationsD = {};
+  for (const el of form?.querySelectorAll?.("input[type=checkbox][name^='act_']") ?? []) {
+    if (!el.checked) continue;
+    const m = el.name.match(/^act_([AD])_(.+)$/);
+    if (m) (m[1] === "A" ? activations : activationsD)[m[2]] = true;
   }
-  return { weaponId: form?.elements?.namedItem?.("weaponId")?.value ?? null, activations };
+  return { weaponId: form?.elements?.namedItem?.("weaponId")?.value ?? null, activations, activationsD };
 }
 
 /** Point d'entrée : jeton contrôlé = attaquant, jeton ciblé (touche T) = défenseur. */
@@ -168,9 +189,9 @@ export async function attackMacro() {
   const choices = weaponChoices(attTok, defTok);
   const first = choices.find(c => c.w.id === eq?.id && c.ok) ?? choices.find(c => c.ok) ?? choices[0];
   if (!first) return ui.notifications.warn(`${A.name} n'a aucune arme.`);
-  let choice = { weaponId: first.w.id, activations: {} };
+  let choice = { weaponId: first.w.id, activations: {}, activationsD: {} };
 
-  const content = `<div class="fe-forecast-root">${controlsHtml(attTok, defTok, choice)}<div class="fe-forecast-body">${forecastBodyHtml(computeForecast(attTok, defTok, choice))}</div></div>`;
+  const content = `<div class="fe-forecast-root">${controlsHtml(attTok, defTok, choice)}<div class="fe-forecast-layout">${traitPanelHtml(attTok, "A")}<div class="fe-forecast-body">${forecastBodyHtml(computeForecast(attTok, defTok, choice))}</div>${traitPanelHtml(defTok, "D")}</div></div>`;
 
   let bound = false;
   const bind = (root) => {
@@ -190,7 +211,7 @@ export async function attackMacro() {
   const result = await DialogV2().wait({
     window: { title: `Combat : ${A.name} contre ${defTok.name}`, icon: "fa-solid fa-swords" },
     classes: ["fe-forecast-dialog"],
-    position: { width: 640 },
+    position: { width: 980 },
     content,
     buttons: [
       { action: "attack", label: "Attaquer", icon: "fa-solid fa-hand-fist", default: true, callback: (event, button) => readChoice(button.form) },

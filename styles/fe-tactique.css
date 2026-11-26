@@ -64,3 +64,16 @@ table.fe-terrain-table td:nth-child(2) { text-align: left; }
 .custom-system .fe-form .custom-system-field-full-size, .custom-system .fe-form input[type="text"], .custom-system .fe-form select { width: 100%; }
 .custom-system .fe-form .custom-system-field-small { width: 5em; }
 .custom-system .fe-traits-box a.content-link { white-space: nowrap; }
+
+/* Panneaux de traits de part et d'autre de la prévision */
+.fe-forecast-layout { display: grid; grid-template-columns: 200px 1fr 200px; gap: 8px; align-items: start; }
+.fe-traits { border-radius: 8px; padding: 6px 8px; font-size: 0.88em; background: rgba(0,0,0,0.06); border: 2px solid; }
+.fe-traits-A { border-color: #1e4f9c; }
+.fe-traits-D { border-color: #a82727; }
+.fe-traits h4 { margin: 0 0 4px; font-size: 1em; border: none; }
+.fe-traits .fe-jetons { font-weight: bold; margin-bottom: 4px; }
+.fe-traits .fe-tsec { font-weight: bold; margin: 6px 0 2px; opacity: 0.8; text-transform: uppercase; font-size: 0.8em; }
+.fe-traits .fe-act { display: flex; gap: 4px; align-items: flex-start; margin: 2px 0; }
+.fe-traits .fe-act.off { opacity: 0.5; }
+.fe-traits ul { margin: 0; padding-left: 16px; }
+.fe-traits .fe-none { margin: 0; opacity: 0.7; font-style: italic; }
