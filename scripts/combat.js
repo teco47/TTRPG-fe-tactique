@@ -9,7 +9,7 @@ import {
 import { terrainUnderToken, tokenOffset } from "./terrain.js";
 import { applyOperations } from "./socket.js";
 import { timedEffectData } from "./status.js";
-import { showFloat, strikeFloat } from "./floating.js";
+import { showFloat, showDodge, strikeFloat } from "./floating.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -355,6 +355,7 @@ export function findAnimation(kind) {
 async function playStrike(src, tgt, weapon, strike) {
   await playStrikeAnimation(src, tgt, weapon, strike);
   const fl = strikeFloat(strike);
+  if (!strike.hit) showDodge(tgt, src);
   showFloat(tgt, fl.text, fl.kind);
   if (strike.drain) showFloat(src, `+${strike.drain}`, "soin");
   if (strike.siphon) showFloat(src, `+${strike.siphon} Siphon`, "soin");
