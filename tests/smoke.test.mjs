@@ -141,5 +141,10 @@ console.log("export OK");
   assert.deepEqual(Fl.strikeFloat({ hit: false }), { text: "Raté", kind: "rate" });
   assert.deepEqual(Fl.strikeFloat({ hit: true, dmg: 8 }), { text: "−8", kind: "degats" });
   assert.deepEqual(Fl.strikeFloat({ hit: true, crit: true, dmg: 24 }), { text: "CRITIQUE ! −24", kind: "critique" });
+  // Esquive : pas perpendiculaire à l'attaque (attaque venant de la gauche → pas vers le haut ou le bas)
+  const o = Fl.dodgeOffset({ x: 0, y: 0 }, { x: 100, y: 0 }, 35, 1);
+  assert.ok(Math.abs(o.x) < 1e-9 && Math.abs(Math.abs(o.y) - 35) < 1e-9);
+  const o2 = Fl.dodgeOffset({ x: 0, y: 0 }, { x: 0, y: 0 }, 35, -1);
+  assert.ok(Number.isFinite(o2.x) && Number.isFinite(o2.y));
 }
 console.log("flottants OK");
