@@ -6,7 +6,7 @@ import { MODULE_ID, WEAPON_TYPES } from "./config.js";
 import * as config from "./config.js";
 import * as engine from "./engine.js";
 import { readUnit, sheetSummary, itemCategory, readWeapon } from "./engine.js";
-import { registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor, makeTerrainListApp, registerRegionConfigHook } from "./terrain.js";
+import { regionTerrain, registerMovementCosts, refreshPlannedPaths, terrainUnderToken, terrainAtPoint, regionsMacro, reportTerrainAtCursor, makeTerrainListApp, registerRegionConfigHook } from "./terrain.js";
 import { registerRangeHooks, toggleHoverRange, showRange, clearRange } from "./range.js";
 import { registerSocket } from "./socket.js";
 import { registerStatusEffects, registerStatusHooks, syncCounters } from "./status.js";
@@ -17,6 +17,7 @@ import { installAll, offerInstall, bonusDialog, newChapter, createUnit, catalogI
 import { buildTemplates } from "./csb-templates.js";
 import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } from "./classes.js";
 import { setupChapter1 } from "./chapter1.js";
+import { exportSceneMacro, buildSceneExport } from "./export.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -97,7 +98,8 @@ function registerSettings() {
   reg("terrainCosts", { name: "Coûts de déplacement par profil", hint: "Remplace le coût natif des cases par la table du jeu (À pied, Lourd, Monté, Monté lourd, Volant) selon les Régions de terrain.", type: Boolean, default: true, onChange: refreshPlannedPaths });
   reg("weaponBadge", { name: "Badge d'arme sur les jetons", hint: "Affiche l'icône de l'arme équipée en bas à droite du jeton.", type: Boolean, default: true, onChange: () => canvas?.tokens?.placeables.forEach(t => t.renderFlags?.set?.({ refreshState: true })) });
   reg("animations_on", { name: "Animations JB2A", hint: "Joue les animations avec Sequencer et JB2A pendant les combats.", type: Boolean, default: true });
-  reg("animations", { name: "Animations personnalisées (JSON)", hint: 'Exemple : {"epee": ["jb2a.greatsword.melee.standard.white"]}. Clés : epee, lance, hache, arc, anima, lumiere, tenebres, critique, soin, silence.', type: String, default: "" });
+  reg("animations", { name: "Animations personnalisées (JSON)", hint: 'Exemple : {"epee": ["jb2a.greatsword.melee.standard.white"]}. Clés : epee, lance, hache, arc, anima, lumiere, tenebres, critique, critique_charge, rate, soin, silence.', type: String, default: "" });
+  game.settings.register(MODULE_ID, "damageNumbers", { name: "Nombres de dégâts sur les jetons", hint: "Affiche au-dessus des jetons les dégâts, les critiques, les coups ratés et les soins (texte flottant natif de Foundry, visible par tous). Réglage propre à chaque joueur.", scope: "client", config: true, type: Boolean, default: true });
   reg("durabilityOnMiss", { name: "Un coup raté use l'arme", hint: "Décoché : seule une attaque qui touche coûte 1 point de durabilité.", type: Boolean, default: true });
   reg("fortHeal", { name: "Soin des forts et trônes", hint: "La macro de fin de phase soigne 10 % des PV max des unités du camp qui commence sa phase sur un fort, un trône ou une porte.", type: Boolean, default: true });
   game.settings.register(MODULE_ID, "rangeOnSelect", { name: "Zone de déplacement et de portée", hint: "Quand tu sélectionnes une unité : cases atteignables en bleu, portée de l'arme équipée en rouge (vert pour un sceptre). Alt+R montre la zone de l'unité survolée.", scope: "client", config: true, type: Boolean, default: true, onChange: () => clearRange() });
@@ -135,13 +137,13 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
     sheet, itemLabel, toggleEquip, useObject, classTraits: (item) => csbSafe(classTraitsHTML(item)),
     // Outils
-    createUnit, catalogItemData, ensureDefaults, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
+    createUnit, catalogItemData, ensureDefaults, regionTerrain, applyClassChange, readUnit, terrainUnderToken, terrainAtPoint, syncCounters, computeLevelUp,
     engine, config
   };
 });

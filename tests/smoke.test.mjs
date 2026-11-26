@@ -93,3 +93,53 @@ console.log("apostrophes OK");
   assert.equal(api.itemLabel(potion, "dur"), "2/3"); assert.equal(api.itemLabel(potion, "type"), "Objet"); assert.equal(api.itemLabel(potion, "pui"), "—");
 }
 console.log("inventaire OK");
+// 0.10.1 : Ysaline aux stats de Moine + 3 points, ennemis sans « À attribuer »
+{
+  const P = await import("../scripts/progression.js");
+  const ys = ch.UNITS.find(u => u.name === "Ysaline");
+  const props = P.unitPropsFromClass(ys.classe, ys.props);
+  const cls = { id: "c", name: "Moine", system: { template: C.TEMPLATE_IDS.classe, props: { cl_palier: "1", cl_mod_pv: 4, cl_mod_for: -2, cl_mod_mag: 3, cl_mod_def: -2, cl_mod_res: 3, cl_mod_tech: 0, cl_mod_vit: 1, cl_de1: "res", cl_de2: "pv", cl_armes: "sceptre", cl_mvt: 5, cl_rang: "D" } } };
+  const a = { uuid: "A.ys", id: "ys", name: "Ysaline", effects: [], system: { props }, items: [cls], flags: {} };
+  const s = api.engine.sheetSummary(api.readUnit(a));
+  assert.equal(s.pts_libres, "0"); assert.equal(s.tot_mag, 9); assert.equal(s.pv_max, 16);
+  const e = { ...a, uuid: "A.en", system: { props: { ...props, role: "ennemi" } } };
+  assert.equal(api.engine.sheetSummary(api.readUnit(e)).a_attribuer, "");
+}
+console.log("chapitre 1 OK");
+// 0.10.1 : l'arc frappe à 2 cases, pas au contact
+{
+  const S = await import("../scripts/setup.js");
+  assert.ok(C.WEAPONS.filter(w => w.type === "arc").every(w => w.porMin === 2 && w.porMax === 2));
+  assert.equal(S.bowRangeFix({ name: "Arc de fer", system: { props: { type_arme: "arc", por_min: 1, por_max: 2 } } }), true);
+  assert.equal(S.bowRangeFix({ name: "Arc maison", system: { props: { type_arme: "arc", por_min: 1, por_max: 2 } } }), false);
+  assert.equal(S.bowRangeFix({ name: "Arc de fer", system: { props: { type_arme: "arc", por_min: 2, por_max: 2 } } }), false);
+}
+console.log("arcs OK");
+// Export de la scène
+{
+  const X = await import("../scripts/export.js");
+  const forest2 = { name: "Forêt", flags: {}, getFlag: () => null, behaviors: { contents: [] }, polygonTree: { testPoint: (pt) => pt.x >= 200 && pt.x < 300 && pt.y < 100 } };
+  const td = { name: "Mercenaire", x: 0, y: 100, width: 1, height: 1, disposition: 1, hidden: false, actorLink: true, elevation: 0, actor };
+  actor.items.contents = actor.items; actor.effects.contents = actor.effects;
+  globalThis.canvas = {
+    scene: { name: "Chapitre 1 perso", grid: { type: 1, distance: 1, units: "case" }, padding: 0, background: { src: "map.png" },
+      regions: { contents: [forest2], [Symbol.iterator]: function* () { yield forest2; } }, walls: { contents: [{ c: [300, 0, 300, 200], door: 1, ds: 0, move: 20, sight: 20 }] }, tokens: { contents: [td] } },
+    dimensions: { sceneRect: { x: 0, y: 0, width: 400, height: 200 } }, grid: { size: 100 }
+  };
+  globalThis.game.version = "14.365"; globalThis.game.system.version = "6.1.2";
+  const out = X.buildSceneExport(api);
+  assert.deepEqual(out.terrain, [". . F .", ". . . ."]);
+  assert.deepEqual(out.regions[0].cells, ["C1"]); assert.equal(out.regions[0].terrain, "foret");
+  assert.equal(out.tokens[0].case, "A2"); assert.equal(out.tokens[0].unit.fiche.atq, 11); assert.equal(out.tokens[0].items.length, 2);
+  assert.equal(out.walls[0].type, "porte"); assert.equal(out.walls[0].ouverte, false);
+  JSON.stringify(out);
+}
+console.log("export OK");
+// Nombres flottants
+{
+  const Fl = await import("../scripts/floating.js");
+  assert.deepEqual(Fl.strikeFloat({ hit: false }), { text: "Raté", kind: "rate" });
+  assert.deepEqual(Fl.strikeFloat({ hit: true, dmg: 8 }), { text: "−8", kind: "degats" });
+  assert.deepEqual(Fl.strikeFloat({ hit: true, crit: true, dmg: 24 }), { text: "CRITIQUE ! −24", kind: "critique" });
+}
+console.log("flottants OK");
