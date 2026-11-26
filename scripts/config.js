@@ -380,6 +380,8 @@ export const DEFAULT_ANIMATIONS = {
   lumiere: ["jb2a.guiding_bolt.01.yellowblue", "jb2a.guiding_bolt", "jb2a.magic_missile"],
   tenebres: ["jb2a.eldritch_blast.purple", "jb2a.eldritch_blast", "jb2a.ray_of_enfeeblement"],
   critique: ["jb2a.impact.ground_crack.orange.01", "jb2a.impact.004.orange", "jb2a.impact.orange"],
+  critique_charge: ["jb2a.extras.tmfx.outpulse.circle.01.fast", "jb2a.energy_strands.overlay.orange.01", "jb2a.static_electricity.01.orange", "jb2a.divine_smite.caster.reversed.orange"],
+  rate: ["jb2a.ui.miss.white", "jb2a.ui.miss", "jb2a.smoke.puff.side.grey"],
   soin: ["jb2a.healing_generic.200px.green", "jb2a.healing_generic", "jb2a.cure_wounds.400px.blue"],
   silence: ["jb2a.markers.light.complete.purple", "jb2a.markers.light"]
 };

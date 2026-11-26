@@ -135,3 +135,11 @@ console.log("arcs OK");
   JSON.stringify(out);
 }
 console.log("export OK");
+// Nombres flottants
+{
+  const Fl = await import("../scripts/floating.js");
+  assert.deepEqual(Fl.strikeFloat({ hit: false }), { text: "Raté", kind: "rate" });
+  assert.deepEqual(Fl.strikeFloat({ hit: true, dmg: 8 }), { text: "−8", kind: "degats" });
+  assert.deepEqual(Fl.strikeFloat({ hit: true, crit: true, dmg: 24 }), { text: "CRITIQUE ! −24", kind: "critique" });
+}
+console.log("flottants OK");

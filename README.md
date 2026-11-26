@@ -109,7 +109,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 - Durabilité −1 par attaque (option : seulement si elle touche), arme cassée à 0.
 - PV, jetons Bouclier/Ailé/Esprit, blessure de l'allié qui tombe (mort au-delà de la limite), ennemi vaincu marqué.
 - Traits automatiques : Bouclier, Ailé, Esprit, Boosts, Rage, Miracle, Désespoir, Tir au pigeon, Grande corde, Être des bois, Serment, Duelliste, Forestier (déplacement), Prime (message). Activables dans la prévision : Piqué, Spectre, Siphon, Fracas, Surcharge (le recul de Fracas reste au MJ).
-- Animations JB2A via Sequencer (chemins réglables dans les paramètres du module).
+- Animations JB2A via Sequencer (chemins réglables dans les paramètres du module). Critique : l'attaquant se charge, impact au sol et secousse de l'écran. Coup raté : le projectile passe à côté, avec un effet « Miss » si ton pack JB2A en a un.
+- Nombres flottants au-dessus des jetons, visibles par tous : dégâts (blanc), CRITIQUE ! (jaune), Raté (gris), soins (vert). Texte natif de Foundry, sans module. Réglage « Nombres de dégâts sur les jetons », propre à chaque joueur.
 - Résultat détaillé dans le chat, avec les dés.
 
 Restent manuels : les autres traits (Garde ferme, Charge, Mur de boucliers, Interposition, Vétéran…), les soutiens (via les bonus manuels), Booster et Magister (le Booster est appliqué, le Magister est seulement annoncé).

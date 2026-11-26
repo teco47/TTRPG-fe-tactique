@@ -9,6 +9,7 @@ import {
 import { terrainUnderToken, tokenOffset } from "./terrain.js";
 import { applyOperations } from "./socket.js";
 import { timedEffectData } from "./status.js";
+import { showFloat, strikeFloat } from "./floating.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -331,15 +332,33 @@ export function findAnimation(kind) {
 }
 
 async function playStrike(src, tgt, weapon, strike) {
+  await playStrikeAnimation(src, tgt, weapon, strike);
+  const fl = strikeFloat(strike);
+  showFloat(tgt, fl.text, fl.kind);
+  if (strike.drain) showFloat(src, `+${strike.drain}`, "soin");
+  if (strike.siphon) showFloat(src, `+${strike.siphon} Siphon`, "soin");
+  if (strike.broke) showFloat(src, `${strike.broke} se brise !`, "info");
+}
+
+async function playStrikeAnimation(src, tgt, weapon, strike) {
   if (!game.settings.get(MODULE_ID, "animations_on")) return;
   const key = weapon ? findAnimation(weapon.type) : null;
   if (!key) { await new Promise(r => setTimeout(r, 250)); return; }
   try {
     const seq = new Sequence();
+    // Critique : l'attaquant se charge avant de frapper
+    if (strike.crit) {
+      const charge = findAnimation("critique_charge");
+      if (charge) seq.effect().file(charge).atLocation(src).scaleToObject(1.8).waitUntilFinished(-500);
+    }
     seq.effect().file(key).atLocation(src).stretchTo(tgt).missed(!strike.hit).waitUntilFinished(-300);
     if (strike.crit) {
       const impact = findAnimation("critique");
       if (impact) seq.effect().file(impact).atLocation(tgt).scaleToObject(1.6);
+      try { seq.canvasPan().shake({ duration: 450, strength: 12, rotation: false }); } catch (e) { /* Sequencer trop ancien */ }
+    } else if (!strike.hit) {
+      const miss = findAnimation("rate");
+      if (miss) seq.effect().file(miss).atLocation(tgt).scaleToObject(1.2);
     }
     await seq.play();
   } catch (err) {
@@ -394,8 +413,10 @@ export async function staffMacro(srcTok, tgtTok) {
     await playOn(tgtTok, "soin");
     ops.push(propsUpdate(tgtTok.actor, { pv: newHp }));
     text = `${esc(T.name)} récupère ${newHp - T.hp} PV (${newHp}/${tStats.pvMax}).`;
+    showFloat(tgtTok, `+${newHp - T.hp}`, "soin");
   } else if (w.effetCle === "silence") {
     await playOn(tgtTok, "silence");
+    showFloat(tgtTok, "Silence", "info");
     ops.push({ op: "createEffect", uuid: tgtTok.actor.uuid, data: timedEffectData({ kind: "silence", name: "Silence", expireCamp: camp(tgtTok), phases: 1 }) });
     text = `${esc(T.name)} est réduit au Silence jusqu'à la fin de sa prochaine phase.`;
   } else {
@@ -436,7 +457,7 @@ export async function useObject(item) {
     ops.push(propsUpdate(actor, { pv: newHp }));
     text = `${esc(actor.name)} récupère ${newHp - unit.hp} PV (${newHp}/${st.pvMax}).`;
     const t = actor.getActiveTokens?.()[0];
-    if (t) playOn(t, "soin");
+    if (t) { playOn(t, "soin"); showFloat(t, `+${newHp - unit.hp}`, "soin"); }
   } else if (effet === "booster") {
     const stat = await DialogV2().wait({
       window: { title: `${item.name} : quelle stat ?` },
