@@ -148,6 +148,18 @@ export function showRange(token) {
 }
 
 let shown = null;
+
+/** Attend la fin de l'animation de déplacement d'un jeton (v13+ : movementAnimationPromise). */
+async function afterMovement(doc) {
+  const t = doc.object;
+  try {
+    for (let n = 0; n < 3; n++) {
+      const p = t?.movementAnimationPromise ?? t?.animationContexts?.values?.().next?.().value?.promise ?? null;
+      if (!p) break;
+      await p;
+    }
+  } catch (e) { /* animation interrompue */ }
+}
 export function clearRange() {
   const grid = canvas?.interface?.grid ?? canvas?.grid;
   try { grid?.clearHighlightLayer?.(LAYER); } catch (e) { /* ignore */ }
@@ -165,7 +177,15 @@ export function registerRangeHooks() {
   Hooks.on("controlToken", () => setTimeout(refreshForControlled, 0));
   // Après un déplacement ou un changement d'équipement, on recalcule.
   const later = foundry.utils.debounce ? foundry.utils.debounce(refreshForControlled, 150) : refreshForControlled;
-  Hooks.on("updateToken", () => { if (shown) later(); });
+  // Fin de déplacement : on efface la zone au départ, puis on la recalcule quand l'animation du jeton est finie.
+  Hooks.on("updateToken", (doc, change) => {
+    const moved = ["x", "y", "elevation"].some(k => k in (change ?? {}));
+    if (!moved) { if (shown) later(); return; }
+    const watched = shown === doc.id || canvas.tokens?.controlled?.some(t => t.id === doc.id);
+    if (!watched) { if (shown) later(); return; }
+    clearRange();
+    afterMovement(doc).then(() => later());
+  });
   Hooks.on("updateItem", () => { if (shown) later(); });
   Hooks.on("updateActor", () => { if (shown) later(); });
   Hooks.on("canvasTearDown", clearRange);

@@ -1,4 +1,4 @@
-# FE Tactique 0.10.1 – guide d'installation et de test
+# FE Tactique 0.10.2 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.10.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.10.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -119,7 +119,7 @@ Restent manuels : les autres traits (Garde ferme, Charge, Mur de boucliers, Inte
 
 **Choisir le terrain d'une Région** : ouvre la configuration de la Région ; sous son nom, la liste **Terrain FE** propose tous les terrains (Automatique = d'après le nom). La liste des noms reconnus, bonus et coûts est aussi dans *Paramètres > FE Tactique > Voir la liste des terrains*.
 
-**Zone à la Fire Emblem** : sélectionne une unité : cases atteignables en bleu (Mouvement, coûts du profil, murs, ennemis bloquants), portée de l'arme équipée en rouge (vert pour un sceptre). **Alt+R** sur une unité survolée (ennemie comprise) affiche ou efface sa zone. Réglage « Zone de déplacement et de portée » pour la désactiver.
+**Zone à la Fire Emblem** : sélectionne une unité : cases atteignables en bleu (Mouvement, coûts du profil, murs, ennemis bloquants), portée de l'arme équipée en rouge (vert pour un sceptre). La zone se recalcule à la fin de chaque déplacement de l'unité sélectionnée. **Alt+R** sur une unité survolée (ennemie comprise) affiche ou efface sa zone. Réglage « Zone de déplacement et de portée » pour la désactiver.
 
 **Diagnostic** : survole une case et appuie sur **Alt+T** (raccourci modifiable dans *Configurer les contrôles*) : le module affiche le terrain reconnu, les Régions qui couvrent la case et le coût pour le jeton sélectionné.
 
