@@ -238,4 +238,9 @@ console.log("flottants OK");
   assert.equal(lord.system.props.pv, rec.system.props.pv + C.LORD_BONUS.pv);
   assert.equal(E2.allocation(api.readUnit(lord)).des, E2.allocation(api.readUnit(rec)).des + C.LORD_BONUS.des);
   console.log("lord OK");
+  const pl = Cb.critCutInPayload({ name: "Payreb", actorId: "abc", weaponName: "Épée de fer", dmg: 24 }, { theme: "blitz", duration: 3 });
+  assert.deepEqual(pl, { theme: "blitz", format: "popout", text: "Payreb – CRITIQUE !", subText: "Épée de fer · −24 PV", customDuration: 3, actorId: "abc", characterImageSource: "actor" });
+  const pl2 = Cb.critCutInPayload({ name: "Bandit", img: "x.png", dmg: 9 }, { theme: "", duration: 0 });
+  assert.equal(pl2.theme, "impact"); assert.equal(pl2.img, "x.png"); assert.equal(pl2.customDuration, 2.5); assert.ok(!("actorId" in pl2));
+  console.log("cut-in OK");
 }

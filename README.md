@@ -1,4 +1,4 @@
-# FE Tactique 0.13.1 – guide d'installation et de test
+# FE Tactique 0.13.2 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.13.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.13.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -122,7 +122,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 - Convoi (modèle « FE – Convoi », macro « FE – Convoi ») : acteur partagé par toute l'équipe, créé à l'installation (tous les joueurs en sont propriétaires). En-tête : or, chapitre, renommée, nombre d'objets. Onglets : Tout, Armes, Tomes, Sceptres, Objets, Traits et classes, Suivi (6 compteurs à nom libre et journal de l'équipe). Colonne 📦 de l'inventaire d'une unité : envoie l'objet au convoi ; colonne 🎁 du convoi : donne l'objet au jeton sélectionné. L'or du Loot et des Primes (+25) arrive automatiquement au convoi.
 - Macro « FE – Générer un ennemi » (MJ) : classe et niveau, plus en option nom, difficulté (Facile, Normal, Difficile, Extrême), boss, croissance (moyenne attendue ou lancée aux dés), comportement, arme principale et arme en plus, objet porté (aléatoire, aucun ou au choix, lâché à sa mort) et pose du jeton au centre de l'écran. Mêmes règles que les joueurs : stats de classe, 3 points libres dans les stats de classe, une montée par niveau avec les réserves de dés (1 par stat + dés de classe, +1 dé de classe tous les 10 niveaux, dans la limite du niveau). Équipement : bronze jusqu'au niveau 4, fer 5-9, acier 10-29, argent 30+ ; rang d'arme D, C au 10, B au 20, A au 30. Difficulté : croissance ×0,75 / ×1 / ×1,25 / ×1,5 et −1 / 0 / +1 / +2 à toutes les stats (Difficile et Extrême : un dé de plus par stat). Boss : +3 partout, +8 PV, croissance +25 %, un dé et un rang d'arme de plus. L'ennemi est créé dans le dossier « Ennemis générés », en Ennemi, jeton non lié (duplicable). Le comportement s'affiche au-dessus du jeton pour le MJ seulement. Un objet « lâché à sa mort » ouvre un message Loot quand l'ennemi tombe. En script : `api.createEnemy({ classe: "Brute", niveau: 5, boss: true })`.
 - Personnage principal (Type « Personnage principal » sur la fiche, comme les lords) : +3 PV max et 2 dés libres de plus à placer (6 au lieu de 4 par défaut). Les PV actuels gagnent +3 une seule fois quand l'unité devient principale (les fiches déjà principales les reçoivent à la mise à jour du module).
-- Critique et modules de cut-in : réglage « Macro de critique » (nom d'une macro lancée à chaque critique avec attacker, target, actor, token, weapon, strike) et crochet `Hooks.on("feTactique.critique", ({ attacker, target, weapon, strike }) => …)`. Modèle : macro-critique-cutin.js.
+- Cut-in de critique avec Cinematic Cut-ins (s'il est actif) : portrait de l'attaquant, « CRITIQUE ! », l'arme et les dégâts, diffusé à tous au moment de l'impact. Réglages « Cut-in sur les critiques », « Thème du cut-in de critique » (impact par défaut ; blitz, brush, cinematic…) et « Durée du cut-in de critique ».
+- Critique et autres modules : réglage « Macro de critique » (nom d'une macro lancée à chaque critique avec attacker, target, actor, token, weapon, strike) et crochet `Hooks.on("feTactique.critique", ({ attacker, target, weapon, strike }) => …)`. Modèle : macro-critique-cutin.js.
 - Macro « FE – Loot » (MJ) : glisse des objets (barre latérale ou compendium) dans la fenêtre, règle les quantités, l'or et la présentation (préréglages : coffre, ennemi vaincu, village, trouvaille, récompense, marchand, ou texte libre). Le message du chat porte un bouton « Récupérer » : le premier joueur qui clique donne le butin au jeton qu'il a sélectionné. Son du coffre, et le chat annonce ce qui a été gagné. Les armes arrivent non équipées ; l'or va au convoi.
 - Résultat détaillé dans le chat, avec les dés.
 
