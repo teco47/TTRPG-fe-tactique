@@ -379,6 +379,7 @@ async function playStrike(src, tgt, weapon, strike) {
   const impact = () => {
     if (impact.fired) return;
     impact.fired = true;
+    if (strike.crit) triggerCritHook(src, tgt, weapon, strike);
     playImpactEffects(src, tgt, strike);
     const fl = strikeFloat(strike);
     playSound(strikeSound(strike));
@@ -391,6 +392,22 @@ async function playStrike(src, tgt, weapon, strike) {
   };
   await playStrikeAnimation(src, tgt, weapon, strike, impact);
   impact(); // sans animation, ou si l'animation a échoué avant l'impact
+}
+
+/**
+ * Critique : crochet pour les modules de mise en scène (Cinematic Cut-ins, etc.).
+ * - Hooks.callAll("feTactique.critique", { attacker, target, weapon, strike }) ;
+ * - réglage « Macro de critique » : la macro nommée est exécutée avec attacker, target (jetons), actor, token, weapon, strike.
+ */
+function triggerCritHook(src, tgt, weapon, strike) {
+  const data = { attacker: src, target: tgt, weapon, strike };
+  try { Hooks.callAll("feTactique.critique", data); } catch (err) { console.warn(`${MODULE_ID} | crochet critique`, err); }
+  let name = "";
+  try { name = String(game.settings.get(MODULE_ID, "critMacro") ?? "").trim(); } catch (e) { /* ignore */ }
+  if (!name) return;
+  const macro = game.macros?.getName?.(name) ?? game.macros?.find(m => m.name === name) ?? (name.includes(".") ? fromUuidSync(name) : null);
+  if (!macro) return console.warn(`${MODULE_ID} | macro de critique introuvable : ${name}`);
+  try { macro.execute({ ...data, actor: src?.actor, token: src }); } catch (err) { console.warn(`${MODULE_ID} | macro de critique`, err); }
 }
 
 /** Impact : craquement et secousse d'écran du critique, animation de raté éventuelle. Ne bloque pas. */

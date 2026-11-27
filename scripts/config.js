@@ -354,6 +354,8 @@ export function traitSlots(level) {
 export const WOUND_MALUS = { 1: 3, 2: 5, 3: 7 };
 /** Blessures supportées : la mort survient à la blessure suivante. */
 export const WOUND_LIMIT = { principal: 3, secondaire: 2 };
+/** Personnage principal (lord) : meilleure croissance (dés libres en plus) et PV de départ en plus. */
+export const LORD_BONUS = { des: 2, pv: 3 };
 
 /* ------------------------------------------------------------------ */
 /*  États                                                              */
