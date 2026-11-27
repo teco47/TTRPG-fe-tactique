@@ -75,7 +75,7 @@ function itemLabelRaw(item, field) {
       case "rang": return p.rang_req ?? "";
       case "pui": return ["sceptre", "objet"].includes(cat) ? "—" : (p.pui ?? 0);
       case "prec": return ["sceptre", "objet"].includes(cat) ? "—" : (p.prec ?? 0);
-      case "crit": return ["sceptre", "objet"].includes(cat) ? "—" : (on(p.sans_crit) ? "—" : (p.crit ?? 0));
+      case "crit": return ["sceptre", "objet"].includes(cat) ? "—" : (on(p.sans_crit) ? Number(p.crit ?? 0) - config.BRONZE_CRIT_MALUS : (p.crit ?? 0));
       case "poids": return ["sceptre", "objet"].includes(cat) ? "—" : (p.poids ?? 0);
       case "portee": { const w = readWeapon(item); return w ? (w.porMin === w.porMax ? `${w.porMin}` : `${w.porMin}-${w.porMax}`) : ""; }
       case "dur": return cat === "objet" ? `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}` : `${p.dur ?? 0}/${p.dur_max ?? p.dur ?? 0}`;

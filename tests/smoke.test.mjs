@@ -30,10 +30,10 @@ const actor = {
 assert.equal(api.sheet(actor, "atq"), 11); // rang D offert par la classe : +2 Pui
 assert.equal(api.sheet(actor, "prec"), 109);
 assert.equal(api.sheet(actor, "esq"), 24);
-assert.equal(api.sheet(actor, "crit"), 0);
+assert.equal(api.sheet(actor, "crit"), 3); // Bronze : −5 au critique
 assert.equal(api.sheet(actor, "slots_text"), "1 / 4");
 assert.equal(api.itemLabel(actor.items[0], "equip"), "★");
-assert.equal(api.itemLabel(actor.items[0], "crit"), "—");
+assert.equal(api.itemLabel(actor.items[0], "crit"), -5);
 assert.equal(api.itemLabel(actor.items[0], "dur"), "50/50");
 // Terrain
 const { regionTerrain, moveCost } = await import("../scripts/terrain.js");

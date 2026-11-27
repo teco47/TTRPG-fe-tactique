@@ -5,7 +5,7 @@
  */
 import {
   RANKS, RANK_BONUS, WEAPON_TYPES, COMBAT_ACTIVATIONS, TRIANGLE_BEATS, TRIANGLE_BY_RANK, DOUBLE_THRESHOLD, STAT_CAP,
-  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE
+  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE, BRONZE_CRIT_MALUS
 } from "./config.js";
 
 /* ================================================================== */
@@ -43,7 +43,7 @@ export function readWeapon(item) {
   return {
     id: item.id, uuid: item.uuid, name: item.name, cat, type,
     rang: str(p.rang_req, "E"),
-    pui: num(p.pui), prec: num(p.prec), crit: bool(p.sans_crit) ? null : num(p.crit),
+    pui: num(p.pui), prec: num(p.prec), crit: num(p.crit) - (bool(p.sans_crit) ? BRONZE_CRIT_MALUS : 0), bronze: bool(p.sans_crit),
     poids: num(p.poids),
     porMin: num(p.por_min, 1), porMax: num(p.por_max, cat === "tome" ? 2 : 1),
     dur: num(p.dur, 1), durMax: num(p.dur_max, num(p.dur, 1)),
@@ -299,11 +299,11 @@ export function combatStats(unit, w, ctx = {}) {
       : 0,
     esq: 2 * vitAtt + terrain.esq + unit.manual.esq + (unit.temp.esq ?? 0) + (boosts.esq ?? 0)
       + (w?.bonusEsq ?? 0) + (sit.esq ?? 0),
-    crit: w && w.cat !== "sceptre" && w.crit !== null
-      ? w.crit + Math.floor(st.tech / 2) + rank * RANK_BONUS.crit + unit.manual.crit + (unit.temp.crit ?? 0)
+    crit: w && w.cat !== "sceptre"
+      ? (w.crit ?? -BRONZE_CRIT_MALUS) + Math.floor(st.tech / 2) + rank * RANK_BONUS.crit + unit.manual.crit + (unit.temp.crit ?? 0)
         + (boosts.crit ?? 0) + (rage ? 15 : 0) + (act["Piqué"] ? 10 : 0) + (sit.crit ?? 0)
       : 0,
-    canCrit: !!(w && w.cat !== "sceptre" && w.crit !== null),
+    canCrit: !!(w && w.cat !== "sceptre"),
     esqCrit: Math.floor(st.vit / 4),
     def: st.def + terrain.def + unit.manual.def + (unit.temp.def ?? 0) + ab.def,
     res: st.res + terrain.def + unit.manual.def + (unit.temp.res ?? 0) + (w?.bonusRes ?? 0)
@@ -518,7 +518,7 @@ export function sheetSummary(unit) {
     ...s.stats,
     pv_max: s.pvMax,
     vit_att: s.vitAtt,
-    atq: s.atq, prec: s.prec, esq: s.esq, crit: s.canCrit ? s.crit : 0,
+    atq: s.atq, prec: s.prec, esq: s.esq, crit: s.canCrit ? Math.max(0, s.crit) : 0,
     esq_crit: s.esqCrit,
     malus: woundMalus(unit),
     slots: traitSlots(unit.level),
