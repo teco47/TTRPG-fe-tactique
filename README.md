@@ -1,4 +1,4 @@
-# FE Tactique 0.12.1 – guide d'installation et de test
+# FE Tactique 0.12.2 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.12.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.12.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -151,7 +151,7 @@ Les ennemis gardent leurs stats du scénario : leur fiche n'affiche pas « À at
 ## 7. Checklist de test (environ 20 minutes)
 
 1. **Installation** : la fenêtre d'installation apparaît, les 6 modèles, le catalogue et les macros existent.
-2. **Fiche** : ouvre `Mercenaire` (avant de placer ses 3 points libres). Onglet Combat : Attaque 11, Précision 109, Esquive 14 et Critique 0 avec l'Épée de bronze (rang D offert par la classe) (le Bronze ne fait pas de critique). Si une valeur affiche `?` ou `ERROR`, note-la.
+2. **Fiche** : ouvre `Mercenaire` (avant de placer ses 3 points libres). Onglet Combat : Attaque 11, Précision 109, Esquive 14 et Critique 3 avec l’Épée de bronze (rang D offert par la classe) (le Bronze a −5 au critique, plancher 0). Si une valeur affiche `?` ou `ERROR`, note-la.
 3. **Équiper** : clique l'étoile d'une autre arme : une seule reste équipée, le badge du jeton change.
 4. **Prévision** : Mercenaire adjacent au Bandit (H9) : la fenêtre annonce 8 dégâts à 100 %, riposte 6 à 66 %, ▲ +2 Atq +4 Préc côté Mercenaire.
 5. **Combat** : clique Attaquer : animation, PV du Bandit −8, durabilité 49/50, message de chat avec les dés.

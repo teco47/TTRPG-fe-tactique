@@ -75,7 +75,8 @@ export const STAT_CAP = 50;
 /* ------------------------------------------------------------------ */
 /*  Catalogue d'équipement                                             */
 /* ------------------------------------------------------------------ */
-// crit: null = « Aucun » (le Bronze ne peut pas faire de critique)
+// crit: null = Bronze : malus de critique (BRONZE_CRIT_MALUS)
+export const BRONZE_CRIT_MALUS = 5;
 export const WEAPONS = [
   ["Épée de bronze", "epee", 2, 90, null, 0, 50, 120, "E"],
   ["Épée de fer", "epee", 4, 85, 0, 1, 40, 200, "E"],

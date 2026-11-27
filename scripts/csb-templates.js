@@ -327,7 +327,7 @@ function weaponBody(magic) {
     title("Caractéristiques"),
     form("fe_w_stats", [
       ["Puissance", n("pui")], ["Précision", n("prec", 80)],
-      ["Critique", n("crit")], ["Pas de critique (Bronze)", chk("sans_crit")],
+      ["Critique", n("crit")], ["Bronze (−5 Critique)", chk("sans_crit")],
       ["Poids", n("poids")], ["Prix (or)", n("prix", 0, { min: 0 })],
       ["Portée min", n("por_min", 1, { min: 0 })], ["Portée max", n("por_max", magic ? 2 : 1, { min: 0 })],
       ["Durabilité", n("dur", 40, { min: 0, controls: true })], ["Durabilité max", n("dur_max", 40, { min: 0 })]
