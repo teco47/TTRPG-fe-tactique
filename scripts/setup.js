@@ -413,7 +413,8 @@ export const MACROS = [
   ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`],
   ["FE – Exporter la scène (JSON)", "icons/svg/down.svg", `${API}.exportScene();`],
   ["FE – Loot", "icons/svg/chest.svg", `${API}.loot();`],
-  ["FE – Convoi", "icons/svg/item-bag.svg", `${API}.convoi();`]
+  ["FE – Convoi", "icons/svg/item-bag.svg", `${API}.convoi();`],
+  ["FE – Générer un ennemi", "icons/svg/skull.svg", `${API}.enemy();`]
 ];
 
 export async function installMacros() {

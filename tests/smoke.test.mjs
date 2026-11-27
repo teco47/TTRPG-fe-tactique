@@ -196,4 +196,37 @@ console.log("flottants OK");
   assert.equal(Cb.computeImpactDelay("inconnu"), C.DEFAULT_IMPACT_DELAYS.defaut);
   assert.equal(Cb.computeImpactDelay("hache", { hache: "abc" }), C.DEFAULT_IMPACT_DELAYS.defaut);
   console.log("impact OK");
+  const G = await import("../scripts/enemies.js");
+  // Niveau 1 : stats de classe + 3 points libres (Brute : +1 For, +4 PV)
+  const b1 = G.generateEnemyStats({ classe: "Brute", niveau: 1 });
+  assert.deepEqual(b1.totals, { pv: 24, for: 9, mag: 3, def: 7, res: 4, tech: 3, vit: 5 });
+  assert.equal(b1.rank, "D");
+  // Plus haut niveau = stats plus hautes, croissance moyenne stable
+  const b10 = G.generateEnemyStats({ classe: "Brute", niveau: 10 });
+  assert.ok(b10.totals.for > b1.totals.for && b10.totals.pv > b1.totals.pv);
+  assert.deepEqual(G.generateEnemyStats({ classe: "Brute", niveau: 10 }).totals, b10.totals);
+  assert.equal(b10.rank, "C");
+  // Difficulté et boss
+  const hard = G.generateEnemyStats({ classe: "Brute", niveau: 10, difficulte: "difficile" });
+  const boss = G.generateEnemyStats({ classe: "Brute", niveau: 10, boss: true });
+  assert.ok(hard.totals.for > b10.totals.for && boss.totals.for > hard.totals.for && boss.totals.pv >= b10.totals.pv + 8);
+  assert.ok(G.generateEnemyStats({ classe: "Brute", niveau: 10, difficulte: "facile" }).totals.for < b10.totals.for);
+  // Aux dés : que des 6 = maximum, que des 1 = stats de niveau 1
+  const lucky = G.generateEnemyStats({ classe: "Brute", niveau: 10, croissance: "des", rng: () => 0.99 });
+  const unlucky = G.generateEnemyStats({ classe: "Brute", niveau: 10, croissance: "des", rng: () => 0 });
+  assert.ok(lucky.totals.for > b10.totals.for);
+  assert.deepEqual(unlucky.totals, b1.totals);
+  // Réserves : limite du niveau respectée
+  for (const l of [1, 9, 10, 25, 40]) for (const v of Object.values(G.enemyDice("Coursier", l, 1))) assert.ok(v <= C.maxDicePerStat(l));
+  // Armes de base
+  assert.equal(G.defaultWeapon("Brute", 1, "D"), "Hache de bronze");
+  assert.equal(G.defaultWeapon("Brute", 6, "D"), "Hache de fer");
+  assert.equal(G.defaultWeapon("Mercenaire", 12, "C"), "Épée d'acier");
+  assert.equal(G.defaultWeapon("Soldat", 32, "A"), "Lance d'argent");
+  assert.equal(G.defaultWeapon("Apprentie", 1, "D"), "Feu");
+  assert.equal(G.defaultWeapon("Apprentie", 6, "D"), "Foudre");
+  assert.equal(G.defaultWeapon("Moine", 1, "D"), "Soin");
+  assert.equal(G.randomDrop(() => 0.9), null);
+  assert.ok(G.randomDrop(() => 0.1));
+  console.log("ennemis OK");
 }

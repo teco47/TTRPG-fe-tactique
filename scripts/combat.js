@@ -12,6 +12,7 @@ import { timedEffectData } from "./status.js";
 import { showFloat, showDodge, showShake, strikeFloat } from "./floating.js";
 import { playSound, strikeSound } from "./sounds.js";
 import { addGold } from "./convoi.js";
+import { dropOnDeath } from "./enemies.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -272,6 +273,7 @@ async function executeCombat(attTok, defTok, f) {
     await applyOperations(hpOps);
   }
   if (result.fallen.A || result.fallen.D) setTimeout(() => playSound("mort"), 300);
+  for (const k of ["A", "D"]) if (result.fallen[k] && camp(tok[k]) === "ennemis") dropOnDeath(tok[k].actor);
 
   // Durabilité, jetons, chute
   for (const k of ["A", "D"]) {
