@@ -1,4 +1,4 @@
-# FE Tactique 0.12.0 – guide d'installation et de test
+# FE Tactique 0.12.1 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.12.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.12.1.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -109,7 +109,12 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 - Durabilité −1 par attaque (option : seulement si elle touche), arme cassée à 0.
 - PV, jetons Bouclier/Ailé/Esprit, blessure de l'allié qui tombe (mort au-delà de la limite), ennemi vaincu marqué.
 - Traits automatiques : Bouclier, Ailé, Esprit, Boosts, Rage, Miracle, Désespoir, Tir au pigeon, Grande corde, Être des bois, Serment, Duelliste, Forestier (déplacement), Prime (message). Activables dans la prévision, pour l'attaquant comme pour le défenseur, dans un panneau de chaque côté de la fenêtre : Piqué, Spectre, Siphon, Fracas, Surcharge (le recul de Fracas reste au MJ), et les traits à condition Garde ferme (+2 Déf), Charge (+2 For, +5 Préc), Lecture (+5 Mag) et Chasteté (+10 Préc, +3 Mag), à cocher quand la condition est remplie. Chaque panneau liste aussi les traits automatiques et ceux à gérer à la main.
-- Animations JB2A via Sequencer (chemins réglables dans les paramètres du module). Critique : l'attaquant se charge, impact au sol et secousse de l'écran. Coup raté : le projectile passe à côté, avec un effet « Miss » si ton pack JB2A en a un.
+- Animations JB2A via Sequencer. Critique : l'attaquant se charge, impact au sol et secousse de l'écran. Coup raté : le projectile passe à côté.
+- Réglage des animations (Paramètres du jeu > Configurer les paramètres > FE Tactique) :
+  - « Animations JB2A » : tout couper.
+  - « Animations personnalisées (JSON) » : remplacer l'animation d'un type, ex. `{"epee": ["jb2a.greatsword.melee.standard.white"]}`. Clés : epee, lance, hache, arc, anima, lumiere, tenebres, critique, critique_charge, rate, soin, silence. Le chemin se copie depuis la Sequencer Database Viewer (bouton Sequencer dans la barre d'outils > Database).
+  - « Décalage de l'impact (ms) » : avance (négatif) ou retarde (positif) le son, les chiffres et le tremblement.
+  - « Moment de l'impact par arme (JSON) » : délai depuis le début de l'animation, par type, ex. `{"arc": 900, "hache": 450}`. Défauts : épée et lance 500, hache 600, arc 700, magies 750.
 - Nombres flottants qui jaillissent du jeton et rebondissent, visibles par tous : dégâts (blanc), CRITIQUE ! (jaune), Raté (gris), soins (vert). Rendu par Sequencer quand il est actif, sinon par le texte natif de Foundry. Un coup raté n'affiche que « Raté » (l'animation JB2A « Miss » est désactivée par défaut ; clé `rate` des animations pour la remettre). Réglage « Nombres de dégâts sur les jetons », propre à chaque joueur.
 - Esquive : quand une attaque rate, le jeton visé fait un pas de côté puis revient sur sa case (effet visuel seulement, sa position ne change pas). Suit le réglage « Animations JB2A ».
 - Coup reçu : le jeton touché tremble (plus fort sur un critique). Même réglage.

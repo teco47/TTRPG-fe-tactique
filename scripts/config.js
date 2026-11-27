@@ -383,6 +383,14 @@ export const TOKEN_SCALE = 1.1;
 /* ------------------------------------------------------------------ */
 /*  Animations JB2A (premier chemin trouvé dans la base Sequencer)     */
 /* ------------------------------------------------------------------ */
+/**
+ * Délai (ms) entre le début de l'animation d'arme et le moment où le coup porte : son, chiffres, tremblement.
+ * Réglable par type dans « Moment de l'impact (JSON) », plus un décalage global.
+ */
+export const DEFAULT_IMPACT_DELAYS = {
+  epee: 500, lance: 500, hache: 600, arc: 700, anima: 750, lumiere: 750, tenebres: 750, sceptre: 500, defaut: 500
+};
+
 export const DEFAULT_ANIMATIONS = {
   epee: ["jb2a.sword.melee.01.white", "jb2a.shortsword.melee.01.white", "jb2a.melee_generic.slash.01.orange"],
   lance: ["jb2a.spear.melee.01.white", "jb2a.melee_generic.piercing.01.orange", "jb2a.melee_generic.slash.01.orange"],

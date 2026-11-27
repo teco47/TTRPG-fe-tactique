@@ -1,7 +1,7 @@
 /**
  * FE Tactique – fenêtre de prévision façon tactical RPG, résolution du combat, sceptres et objets.
  */
-import { MODULE_ID, MODULE_PATH, WEAPON_TYPES, TERRAINS, COMBAT_ACTIVATIONS, STATUS, DEFAULT_ANIMATIONS, TOKEN_MAX, isUnitActor } from "./config.js";
+import { MODULE_ID, MODULE_PATH, WEAPON_TYPES, TERRAINS, COMBAT_ACTIVATIONS, STATUS, DEFAULT_ANIMATIONS, DEFAULT_IMPACT_DELAYS, TOKEN_MAX, isUnitActor } from "./config.js";
 import {
   readUnit, buildForecast, resolveCombat, weaponRestriction, weaponRange, equippedWeapon, effectiveStats,
   hasTrait, gridDistance, itemCategory
@@ -358,22 +358,64 @@ export function findAnimation(kind) {
   return null;
 }
 
-async function playStrike(src, tgt, weapon, strike) {
-  await playStrikeAnimation(src, tgt, weapon, strike);
-  const fl = strikeFloat(strike);
-  playSound(strikeSound(strike));
-  if (strike.hit) showShake(tgt, !!strike.crit);
-  else showDodge(tgt, src);
-  showFloat(tgt, fl.text, fl.kind);
-  if (strike.drain) showFloat(src, `+${strike.drain}`, "soin");
-  if (strike.siphon) showFloat(src, `+${strike.siphon} Siphon`, "soin");
-  if (strike.broke) { showFloat(src, `${strike.broke} se brise !`, "info"); setTimeout(() => playSound("arme_brisee"), 350); }
+/** Délai (ms) entre le début de l'animation d'arme et l'impact : réglages, sinon valeurs par défaut. */
+export function impactDelay(type) {
+  let custom = {};
+  try { custom = JSON.parse(game.settings.get(MODULE_ID, "impactTiming") || "{}"); } catch (e) { /* JSON invalide : ignoré */ }
+  let offset = 0;
+  try { offset = Number(game.settings.get(MODULE_ID, "impactOffset")) || 0; } catch (e) { /* ignore */ }
+  return computeImpactDelay(type, custom, offset);
 }
 
-async function playStrikeAnimation(src, tgt, weapon, strike) {
+/** Pure : délai d'impact d'un type d'arme, avec surcharges et décalage global (jamais négatif). */
+export function computeImpactDelay(type, custom = {}, offset = 0) {
+  const base = Number(custom?.[type] ?? DEFAULT_IMPACT_DELAYS[type] ?? DEFAULT_IMPACT_DELAYS.defaut);
+  return Math.max(0, Math.round((Number.isFinite(base) ? base : DEFAULT_IMPACT_DELAYS.defaut) + offset));
+}
+
+async function playStrike(src, tgt, weapon, strike) {
+  const impact = () => {
+    if (impact.fired) return;
+    impact.fired = true;
+    playImpactEffects(src, tgt, strike);
+    const fl = strikeFloat(strike);
+    playSound(strikeSound(strike));
+    if (strike.hit) showShake(tgt, !!strike.crit);
+    else showDodge(tgt, src);
+    showFloat(tgt, fl.text, fl.kind);
+    if (strike.drain) showFloat(src, `+${strike.drain}`, "soin");
+    if (strike.siphon) showFloat(src, `+${strike.siphon} Siphon`, "soin");
+    if (strike.broke) { showFloat(src, `${strike.broke} se brise !`, "info"); setTimeout(() => playSound("arme_brisee"), 350); }
+  };
+  await playStrikeAnimation(src, tgt, weapon, strike, impact);
+  impact(); // sans animation, ou si l'animation a échoué avant l'impact
+}
+
+/** Impact : craquement et secousse d'écran du critique, animation de raté éventuelle. Ne bloque pas. */
+function playImpactEffects(src, tgt, strike) {
+  if (!game.settings.get(MODULE_ID, "animations_on") || !globalThis.Sequence) return;
+  try {
+    const seq = new Sequence();
+    let any = false;
+    if (strike.crit) {
+      const crack = findAnimation("critique");
+      if (crack) { seq.effect().file(crack).atLocation(tgt).scaleToObject(1.6); any = true; }
+      try { seq.canvasPan().shake({ duration: 450, strength: 12, rotation: false }); any = true; } catch (e) { /* Sequencer trop ancien */ }
+    } else if (!strike.hit) {
+      const miss = findAnimation("rate");
+      if (miss) { seq.effect().file(miss).atLocation(tgt).scaleToObject(1.2); any = true; }
+    }
+    if (any) seq.play();
+  } catch (err) {
+    console.warn(`${MODULE_ID} | impact`, err);
+  }
+}
+
+async function playStrikeAnimation(src, tgt, weapon, strike, onImpact) {
   if (!game.settings.get(MODULE_ID, "animations_on")) return;
   const key = weapon ? findAnimation(weapon.type) : null;
   if (!key) { await new Promise(r => setTimeout(r, 250)); return; }
+  const delay = impactDelay(weapon.type);
   try {
     const seq = new Sequence();
     // Critique : l'attaquant se charge avant de frapper
@@ -381,16 +423,13 @@ async function playStrikeAnimation(src, tgt, weapon, strike) {
       const charge = findAnimation("critique_charge");
       if (charge) seq.effect().file(charge).atLocation(src).scaleToObject(1.8).waitUntilFinished(-500);
     }
+    // L'impact (son, chiffres, tremblement) part à un délai fixe après le début de l'animation d'arme
+    seq.thenDo(() => { setTimeout(onImpact, delay); });
     seq.effect().file(key).atLocation(src).stretchTo(tgt).missed(!strike.hit).waitUntilFinished(-300);
-    if (strike.crit) {
-      const impact = findAnimation("critique");
-      if (impact) seq.effect().file(impact).atLocation(tgt).scaleToObject(1.6);
-      try { seq.canvasPan().shake({ duration: 450, strength: 12, rotation: false }); } catch (e) { /* Sequencer trop ancien */ }
-    } else if (!strike.hit) {
-      const miss = findAnimation("rate");
-      if (miss) seq.effect().file(miss).atLocation(tgt).scaleToObject(1.2);
-    }
     await seq.play();
+    // Laisse le temps à l'impact de partir si l'animation est plus courte que le délai
+    const t0 = performance.now();
+    while (performance.now() - t0 < delay + 50 && !onImpact.fired) await new Promise(r => setTimeout(r, 50));
   } catch (err) {
     console.warn(`${MODULE_ID} | animation`, err);
   }
