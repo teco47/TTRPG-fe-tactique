@@ -2,7 +2,7 @@
  * FE Tactique – montée de niveau (réserves de d6), fin de phase, nouvelle unité.
  */
 import { playSound } from "./sounds.js";
-import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat, isUnitActor } from "./config.js";
+import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat, isUnitActor, LORD_BONUS } from "./config.js";
 import { readUnit, effectiveStats } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
 import { applyOperations } from "./socket.js";
@@ -192,6 +192,8 @@ export function unitPropsFromClass(className, overrides = {}) {
     }
     if (totals.pv !== undefined && rest.pv === undefined) out.pv = totals.pv;
   }
+  // Personnage principal : PV de départ en plus (ajoutés au maximum par le moteur)
+  if (out.role === "principal" && rest.pv === undefined) out.pv = Number(out.pv) + LORD_BONUS.pv;
   return out;
 }
 
@@ -221,6 +223,7 @@ export function registerDefaultHooks() {
     if (!role || actor.system?.template !== TEMPLATE_IDS.unite) return;
     const { applyTokenLook } = await import("./setup.js");
     await applyTokenLook(actor);
+    await syncLordHp(actor);
   });
   // Un trait ne se débloque qu'une fois.
   Hooks.on("preCreateItem", (item, data, options, userId) => {
@@ -310,5 +313,21 @@ export async function ensureDefaults(actor) {
     await actor.update(Object.fromEntries(Object.entries(miss).map(([k, v]) => [`system.props.${k}`, v])));
   } finally {
     pending.delete(actor.uuid);
+  }
+}
+
+/**
+ * PV du personnage principal : le maximum gagne LORD_BONUS.pv (moteur) ; les PV actuels suivent une seule fois
+ * (drapeau lordHp). Une unité qui perd ce statut redescend au nouveau maximum (ensureDefaults).
+ */
+export async function syncLordHp(actor) {
+  if (!actor || actor.system?.template !== TEMPLATE_IDS.unite) return;
+  const lord = actor.system.props?.role === "principal";
+  const has = !!actor.getFlag(MODULE_ID, "lordHp");
+  if (lord && !has) {
+    await actor.update({ "system.props.pv": Number(actor.system.props?.pv ?? 0) + LORD_BONUS.pv, [`flags.${MODULE_ID}.lordHp`]: true });
+  } else if (!lord && has) {
+    await actor.unsetFlag(MODULE_ID, "lordHp");
+    await ensureDefaults(actor);
   }
 }

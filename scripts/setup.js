@@ -7,7 +7,7 @@ import {
 import { ensureConvoy } from "./convoi.js";
 import { buildTemplates } from "./csb-templates.js";
 import { itemCategory, readClass } from "./engine.js";
-import { unitPropsFromClass, ensureDefaults } from "./progression.js";
+import { unitPropsFromClass, ensureDefaults, syncLordHp } from "./progression.js";
 import { timedEffectData } from "./status.js";
 
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -63,6 +63,7 @@ export async function refreshSheets() {
     if (emb.length) await a.updateEmbeddedDocuments("Item", emb);
     if (a.system?.template === TEMPLATE_IDS.unite) { await migrateStatModel(a); await syncClassRanks(a); }
     if (a.system?.template === TEMPLATE_IDS.unite) await migrateClassBalance(a);
+    if (a.system?.template === TEMPLATE_IDS.unite) await syncLordHp(a); // 0.13.1 : +3 PV des personnages principaux
     await ensureDefaults(a);
   }
 }
@@ -370,7 +371,7 @@ export async function createUnit({ name, classe, props = {}, items = null, equip
       displayBars: CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER, displayName: CONST.TOKEN_DISPLAY_MODES.HOVER,
       bar1: { attribute: "attributeBar.pv" }
     },
-    flags: { [MODULE_ID]: { unit: true, statModel: 2 } }
+    flags: { [MODULE_ID]: { unit: true, statModel: 2, ...(allProps.role === "principal" ? { lordHp: true } : {}) } }
   });
   const itemNames = items ?? [c.depart];
   const itemData = [];

@@ -5,7 +5,7 @@
  */
 import {
   RANKS, RANK_BONUS, WEAPON_TYPES, COMBAT_ACTIVATIONS, TRIANGLE_BEATS, TRIANGLE_BY_RANK, DOUBLE_THRESHOLD, STAT_CAP,
-  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE, BRONZE_CRIT_MALUS
+  TERRAINS, WOUND_MALUS, WOUND_LIMIT, CLASSES, TEMPLATE_IDS, TOKEN_MAX, STATUS, MODULE_ID, KEYWORDS, traitSlots, maxDicePerStat, FREE_POINTS, FREE_DICE, BRONZE_CRIT_MALUS, LORD_BONUS
 } from "./config.js";
 
 /* ================================================================== */
@@ -154,13 +154,15 @@ export function readUnit(actor, { token = null } = {}) {
   for (const t of Object.keys(WEAPON_TYPES)) ranks[t] = str(p[`rang_${t}`], "E");
   // Stats permanentes = Base (perso + points libres + Boosters) + Classe (modificateurs des classes) + Niveau (gains)
   const slotList = Object.values(classes).length ? Object.values(classes) : (classData ? [classData] : []);
-  const parts = { perso: {}, classe: {}, niveau: {} };
+  const parts = { perso: {}, classe: {}, niveau: {}, lord: {} };
   const base = {};
+  const isLord = str(p.role, "secondaire") === "principal";
   for (const k of Object.keys(STAT_BASELINE)) {
     parts.perso[k] = num(p[`base_${k}`], STAT_BASELINE[k]);
     parts.classe[k] = slotList.reduce((a, c) => a + num(c.mods?.[k]), 0);
     parts.niveau[k] = num(p[`niv_${k}`]);
-    base[k] = parts.perso[k] + parts.classe[k] + parts.niveau[k];
+    parts.lord[k] = isLord ? num(LORD_BONUS[k]) * (k === "pv" ? 1 : 0) : 0; // personnage principal : PV en plus
+    base[k] = parts.perso[k] + parts.classe[k] + parts.niveau[k] + parts.lord[k];
   }
   base.mvt = num(p.base_mvt, 5);
   // Rang offert par les classes dans leurs types d'arme (classe de base : D)
@@ -579,7 +581,7 @@ export function allocation(unit) {
   const freeDiceUsed = totalDice - stats.length - classDice - num(unit.diceBought);
   const limit = maxDicePerStat(unit.level);
   const out = {
-    points: FREE_POINTS - spent, des: freeDiceSetting() - freeDiceUsed, pm: unit.pm, perStat,
+    points: FREE_POINTS - spent, des: freeDiceSetting() + (unit.role === "principal" ? LORD_BONUS.des : 0) - freeDiceUsed, pm: unit.pm, perStat,
     overDice: stats.filter(k => num(unit.dice?.[k], 1) > limit).map(k => k), limit, alerts: []
   };
   const fmt = (v) => Number.isInteger(v) ? String(v) : v.toFixed(1).replace(".", ",");

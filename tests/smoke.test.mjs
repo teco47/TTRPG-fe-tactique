@@ -229,4 +229,13 @@ console.log("flottants OK");
   assert.equal(G.randomDrop(() => 0.9), null);
   assert.ok(G.randomDrop(() => 0.1));
   console.log("ennemis OK");
+  // Personnage principal : +3 PV max, +2 dés libres, +3 PV actuels à la création
+  const P = await import("../scripts/progression.js");
+  const mk = (role) => ({ uuid: "A." + role, id: role, name: role, effects: [], items: [], system: { props: P.unitPropsFromClass("Mercenaire", { role }) } });
+  const lord = mk("principal"), rec = mk("secondaire");
+  const E2 = api.engine;
+  assert.equal(E2.effectiveStats(api.readUnit(lord)).pvMax, E2.effectiveStats(api.readUnit(rec)).pvMax + C.LORD_BONUS.pv);
+  assert.equal(lord.system.props.pv, rec.system.props.pv + C.LORD_BONUS.pv);
+  assert.equal(E2.allocation(api.readUnit(lord)).des, E2.allocation(api.readUnit(rec)).des + C.LORD_BONUS.des);
+  console.log("lord OK");
 }
