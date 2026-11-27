@@ -115,42 +115,83 @@ export function dodgeOffset(from, to, distance, side = 1) {
   return { x: (-dy / len) * distance * side, y: (dx / len) * distance * side };
 }
 
-/** Déplace l'image du jeton (pas sa position réelle) sur ce client. */
-export async function showDodgeLocal(tokenId, fromId) {
-  if (!animationsOn()) return;
-  const token = canvas?.tokens?.get(tokenId);
-  if (!token || (token.document.hidden && !game.user.isGM)) return;
-  const from = canvas.tokens.get(fromId)?.center ?? { x: token.center.x - 1, y: token.center.y };
-  const off = dodgeOffset(from, token.center, canvas.grid.size * 0.35, Math.random() < 0.5 ? -1 : 1);
+/**
+ * Décale l'image du jeton (pas sa position réelle) le long d'images clés, sur ce client.
+ * frames : [{ x, y, ms, ease? }] en pixels, relatifs à la position de départ.
+ */
+async function animateTokenOffset(token, frames) {
   const parts = [token.mesh, token].filter(Boolean);
   const start = parts.map(o => ({ o, x: o.x, y: o.y }));
-  const move = async (k, ms, ease) => {
-    const t0 = performance.now();
-    const from0 = start.map(s => ({ x: s.o.x, y: s.o.y }));
-    await new Promise(resolve => {
-      const step = () => {
-        const p = Math.min(1, (performance.now() - t0) / ms);
-        const e = ease(p);
-        start.forEach((s, i) => {
-          if (s.o.destroyed) return;
-          s.o.x = from0[i].x + (s.x + off.x * k - from0[i].x) * e;
-          s.o.y = from0[i].y + (s.y + off.y * k - from0[i].y) * e;
-        });
-        if (p < 1) requestAnimationFrame(step); else resolve();
-      };
-      requestAnimationFrame(step);
-    });
-  };
+  let cur = { x: 0, y: 0 };
+  const linear = (p) => p;
   try {
-    await move(1, 130, p => 1 - (1 - p) * (1 - p));  // pas de côté rapide
-    await wait(180);
-    await move(0, 220, p => p * p * (3 - 2 * p));     // retour en douceur
+    for (const fr of frames) {
+      const from = { ...cur }, ease = fr.ease ?? linear, t0 = performance.now();
+      if (!fr.ms) { cur = { x: fr.x, y: fr.y }; continue; }
+      await new Promise(resolve => {
+        const step = () => {
+          const p = Math.min(1, (performance.now() - t0) / fr.ms), e = ease(p);
+          const dx = from.x + (fr.x - from.x) * e, dy = from.y + (fr.y - from.y) * e;
+          for (const s of start) if (!s.o.destroyed) { s.o.x = s.x + dx; s.o.y = s.y + dy; }
+          if (p < 1) requestAnimationFrame(step); else resolve();
+        };
+        requestAnimationFrame(step);
+      });
+      cur = { x: fr.x, y: fr.y };
+    }
   } catch (err) {
-    console.warn(`${MODULE_ID} | esquive`, err);
+    console.warn(`${MODULE_ID} | animation du jeton`, err);
   } finally {
-    start.forEach(s => { if (!s.o.destroyed) { s.o.x = s.x; s.o.y = s.y; } });
+    for (const s of start) if (!s.o.destroyed) { s.o.x = s.x; s.o.y = s.y; }
     try { token.renderFlags?.set({ refreshPosition: true, refreshMesh: true }); } catch (e) { /* ignore */ }
   }
+}
+
+function localToken(tokenId) {
+  if (!animationsOn()) return null;
+  const token = canvas?.tokens?.get(tokenId);
+  if (!token || (token.document.hidden && !game.user.isGM)) return null;
+  return token;
+}
+
+/** Pas de côté sur ce client. */
+export async function showDodgeLocal(tokenId, fromId) {
+  const token = localToken(tokenId);
+  if (!token) return;
+  const from = canvas.tokens.get(fromId)?.center ?? { x: token.center.x - 1, y: token.center.y };
+  const off = dodgeOffset(from, token.center, canvas.grid.size * 0.35, Math.random() < 0.5 ? -1 : 1);
+  await animateTokenOffset(token, [
+    { ...off, ms: 130, ease: p => 1 - (1 - p) * (1 - p) },   // pas de côté rapide
+    { ...off, ms: 180 },                                     // pause
+    { x: 0, y: 0, ms: 220, ease: p => p * p * (3 - 2 * p) }  // retour en douceur
+  ]);
+}
+
+/** Pure : images clés d'un tremblement qui s'amortit, en pixels. */
+export function shakeFrames(amplitude, count = 8, ms = 40) {
+  const frames = [];
+  for (let i = 0; i < count; i++) {
+    const a = amplitude * (1 - i / count);
+    frames.push({ x: (i % 2 ? -1 : 1) * a, y: (i % 3 - 1) * a * 0.25, ms });
+  }
+  frames.push({ x: 0, y: 0, ms });
+  return frames;
+}
+
+/** Tremblement sur ce client (plus fort sur un critique). */
+export async function showShakeLocal(tokenId, strong = false) {
+  const token = localToken(tokenId);
+  if (!token) return;
+  const g = canvas.grid.size;
+  await animateTokenOffset(token, shakeFrames(g * (strong ? 0.12 : 0.07), strong ? 12 : 8, strong ? 38 : 40));
+}
+
+/** Tremblement visible par tout le monde. */
+export function showShake(token, strong = false) {
+  const id = token?.id ?? token?.document?.id;
+  if (!id) return;
+  showShakeLocal(id, strong);
+  try { game.socket.emit(CHANNEL, { type: "shake", sceneId: canvas.scene?.id, tokenId: id, strong }); } catch (e) { /* ignore */ }
 }
 
 /** Esquive visible par tout le monde. */
@@ -172,9 +213,10 @@ export function showFloat(token, text, kind = "degats") {
 
 /** Réception d'un texte envoyé par un autre client. */
 export function handleFloatMessage(msg) {
-  if (msg?.type !== "float" && msg?.type !== "dodge") return false;
+  if (!["float", "dodge", "shake"].includes(msg?.type)) return false;
   if (msg.sceneId !== canvas?.scene?.id) return true;
   if (msg.type === "dodge") showDodgeLocal(msg.tokenId, msg.fromId);
+  else if (msg.type === "shake") showShakeLocal(msg.tokenId, !!msg.strong);
   else showFloatLocal(msg.tokenId, msg.text, msg.kind);
   return true;
 }

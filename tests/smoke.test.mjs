@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import assert from "node:assert/strict";
 const hooks = {};
 globalThis.Hooks = { once: (h, f) => (hooks[h] ??= []).push(f), on: (h, f) => (hooks[h] ??= []).push(f), off() {}, call() {}, callAll() {} };
@@ -146,5 +147,17 @@ console.log("export OK");
   assert.ok(Math.abs(o.x) < 1e-9 && Math.abs(Math.abs(o.y) - 35) < 1e-9);
   const o2 = Fl.dodgeOffset({ x: 0, y: 0 }, { x: 0, y: 0 }, 35, -1);
   assert.ok(Number.isFinite(o2.x) && Number.isFinite(o2.y));
+  // Tremblement : s'amortit et revient à zéro
+  const sh = Fl.shakeFrames(10, 8, 40);
+  assert.equal(sh.length, 9);
+  assert.deepEqual(sh.at(-1), { x: 0, y: 0, ms: 40 });
+  assert.ok(Math.abs(sh[0].x) > Math.abs(sh[6].x));
+  const Snd = await import("../scripts/sounds.js");
+  assert.equal(Snd.strikeSound({ hit: false }), "rate");
+  assert.equal(Snd.strikeSound({ hit: true }), "touche");
+  assert.equal(Snd.strikeSound({ hit: true, crit: true }), "critique");
+  for (const list of Object.values(Snd.DEFAULT_SOUNDS)) for (const f of list) {
+    assert.ok(fs.existsSync(new URL("../" + f.replace(/^modules\/fe-tactique\//, ""), import.meta.url)), f);
+  }
 }
 console.log("flottants OK");
