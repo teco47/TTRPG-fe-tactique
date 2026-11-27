@@ -77,3 +77,19 @@ table.fe-terrain-table td:nth-child(2) { text-align: left; }
 .fe-traits .fe-act.off { opacity: 0.5; }
 .fe-traits ul { margin: 0; padding-left: 16px; }
 .fe-traits .fe-none { margin: 0; opacity: 0.7; font-style: italic; }
+
+/* ---------- Loot ---------- */
+.fe-loot-dialog .fe-loot-drop { border: 2px dashed #8a7a5a; border-radius: 6px; padding: 8px; min-height: 80px; margin: 6px 0; }
+.fe-loot-dialog .fe-loot-drop.over { background: rgba(255, 210, 63, 0.15); border-color: #d4a017; }
+.fe-loot-dialog .fe-loot-hint { text-align: center; opacity: 0.75; margin: 18px 0; }
+.fe-loot-dialog .fe-loot-table { width: 100%; margin: 0; }
+.fe-loot-dialog .fe-loot-table td { vertical-align: middle; padding: 2px 4px; }
+.fe-loot-dialog .fe-loot-table img { border: none; vertical-align: middle; }
+.fe-loot-dialog .fe-loot-qty { width: 56px; }
+.fe-loot-dialog .fe-loot-del { cursor: pointer; }
+.fe-loot-list { list-style: none; margin: 6px 0; padding: 0; }
+.fe-loot-list li { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+.fe-loot-list li img { width: 26px; height: 26px; border: none; }
+.fe-loot-list li b { margin-left: auto; }
+.fe-loot-action { text-align: center; margin-top: 6px; }
+.fe-loot-done { color: #2e7d32; font-weight: bold; }

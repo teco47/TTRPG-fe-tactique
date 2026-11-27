@@ -19,6 +19,7 @@ import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } fro
 import { setupChapter1 } from "./chapter1.js";
 import { exportSceneMacro, buildSceneExport } from "./export.js";
 import { playSound } from "./sounds.js";
+import { lootMacro, registerLootHooks } from "./loot.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -119,6 +120,7 @@ function registerSettings() {
 /*  Hooks                                                              */
 /* ------------------------------------------------------------------ */
 Hooks.once("init", () => {
+  registerLootHooks();
   registerSettings();
   game.keybindings.register(MODULE_ID, "terrainInfo", {
     name: "Terrain sous le curseur",
@@ -141,7 +143,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB
