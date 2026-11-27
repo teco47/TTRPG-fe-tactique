@@ -18,6 +18,7 @@ import { buildTemplates } from "./csb-templates.js";
 import { classMacro, classTraitsHTML, registerClassHooks, applyClassChange } from "./classes.js";
 import { setupChapter1 } from "./chapter1.js";
 import { exportSceneMacro, buildSceneExport } from "./export.js";
+import { playSound } from "./sounds.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -99,6 +100,9 @@ function registerSettings() {
   reg("weaponBadge", { name: "Badge d'arme sur les jetons", hint: "Affiche l'icône de l'arme équipée en bas à droite du jeton.", type: Boolean, default: true, onChange: () => canvas?.tokens?.placeables.forEach(t => t.renderFlags?.set?.({ refreshState: true })) });
   reg("animations_on", { name: "Animations JB2A", hint: "Joue les animations avec Sequencer et JB2A pendant les combats.", type: Boolean, default: true });
   reg("animations", { name: "Animations personnalisées (JSON)", hint: 'Exemple : {"epee": ["jb2a.greatsword.melee.standard.white"]}. Clés : epee, lance, hache, arc, anima, lumiere, tenebres, critique, critique_charge, rate, soin, silence.', type: String, default: "" });
+  reg("sounds_on", { name: "Sons de combat", hint: "Touché, critique, raté, arme brisée, unité vaincue, montée de niveau. Entendus par tous les joueurs (volume « Interface » de Foundry).", type: Boolean, default: true });
+  reg("soundVolume", { name: "Volume des sons FE", hint: "De 0 à 1, multiplié par le volume Interface de chaque joueur.", type: Number, default: 0.7, range: { min: 0, max: 1, step: 0.05 } });
+  reg("sounds", { name: "Sons personnalisés (JSON)", hint: 'Exemple : {"critique": ["sounds/mon-crit.ogg"]}. Clés : touche, critique, rate, arme_brisee, mort, niveau, coffre.', type: String, default: "" });
   game.settings.register(MODULE_ID, "damageNumbers", { name: "Nombres de dégâts sur les jetons", hint: "Affiche au-dessus des jetons les dégâts, les critiques, les coups ratés et les soins (effet texte Sequencer, ou texte natif de Foundry sans Sequencer ; visible par tous). Réglage propre à chaque joueur.", scope: "client", config: true, type: Boolean, default: true });
   reg("durabilityOnMiss", { name: "Un coup raté use l'arme", hint: "Décoché : seule une attaque qui touche coûte 1 point de durabilité.", type: Boolean, default: true });
   reg("fortHeal", { name: "Soin des forts et trônes", hint: "La macro de fin de phase soigne 10 % des PV max des unités du camp qui commence sa phase sur un fort, un trône ou une porte.", type: Boolean, default: true });
@@ -137,7 +141,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB

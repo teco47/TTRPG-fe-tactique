@@ -9,7 +9,8 @@ import {
 import { terrainUnderToken, tokenOffset } from "./terrain.js";
 import { applyOperations } from "./socket.js";
 import { timedEffectData } from "./status.js";
-import { showFloat, showDodge, strikeFloat } from "./floating.js";
+import { showFloat, showDodge, showShake, strikeFloat } from "./floating.js";
+import { playSound, strikeSound } from "./sounds.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -269,6 +270,7 @@ async function executeCombat(attTok, defTok, f) {
     }
     await applyOperations(hpOps);
   }
+  if (result.fallen.A || result.fallen.D) setTimeout(() => playSound("mort"), 300);
 
   // Durabilité, jetons, chute
   for (const k of ["A", "D"]) {
@@ -355,11 +357,13 @@ export function findAnimation(kind) {
 async function playStrike(src, tgt, weapon, strike) {
   await playStrikeAnimation(src, tgt, weapon, strike);
   const fl = strikeFloat(strike);
-  if (!strike.hit) showDodge(tgt, src);
+  playSound(strikeSound(strike));
+  if (strike.hit) showShake(tgt, !!strike.crit);
+  else showDodge(tgt, src);
   showFloat(tgt, fl.text, fl.kind);
   if (strike.drain) showFloat(src, `+${strike.drain}`, "soin");
   if (strike.siphon) showFloat(src, `+${strike.siphon} Siphon`, "soin");
-  if (strike.broke) showFloat(src, `${strike.broke} se brise !`, "info");
+  if (strike.broke) { showFloat(src, `${strike.broke} se brise !`, "info"); setTimeout(() => playSound("arme_brisee"), 350); }
 }
 
 async function playStrikeAnimation(src, tgt, weapon, strike) {

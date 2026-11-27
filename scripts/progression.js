@@ -1,6 +1,7 @@
 /**
  * FE Tactique – montée de niveau (réserves de d6), fin de phase, nouvelle unité.
  */
+import { playSound } from "./sounds.js";
 import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat } from "./config.js";
 import { readUnit, effectiveStats } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
@@ -57,6 +58,7 @@ export async function levelUp(actor) {
   if (res.gains.pv) upd.pv = Number(p.pv ?? 0) + res.gains.pv;
   const data = Object.fromEntries(Object.entries(upd).map(([k, v]) => [`system.props.${k}`, v]));
   await applyOperations([{ op: "update", uuid: actor.uuid, data }]);
+  playSound("niveau");
 
   const rows = STATS.map(s => {
     const faces = dice[s].map(v => `<span class="fe-die ${v === 6 ? "six" : ""}">${v}</span>`).join("");

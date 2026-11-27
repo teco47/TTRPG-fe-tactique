@@ -1,4 +1,4 @@
-# FE Tactique 0.11.2 – guide d'installation et de test
+# FE Tactique 0.11.3 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.11.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.11.3.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -112,6 +112,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 - Animations JB2A via Sequencer (chemins réglables dans les paramètres du module). Critique : l'attaquant se charge, impact au sol et secousse de l'écran. Coup raté : le projectile passe à côté, avec un effet « Miss » si ton pack JB2A en a un.
 - Nombres flottants qui jaillissent du jeton et rebondissent, visibles par tous : dégâts (blanc), CRITIQUE ! (jaune), Raté (gris), soins (vert). Rendu par Sequencer quand il est actif, sinon par le texte natif de Foundry. Un coup raté n'affiche que « Raté » (l'animation JB2A « Miss » est désactivée par défaut ; clé `rate` des animations pour la remettre). Réglage « Nombres de dégâts sur les jetons », propre à chaque joueur.
 - Esquive : quand une attaque rate, le jeton visé fait un pas de côté puis revient sur sa case (effet visuel seulement, sa position ne change pas). Suit le réglage « Animations JB2A ».
+- Coup reçu : le jeton touché tremble (plus fort sur un critique). Même réglage.
+- Sons, entendus par tous : touché (un des trois sons de dégâts au hasard), critique, raté (souffle), arme brisée, unité vaincue, montée de niveau. La macro « FE – Son : coffre ouvert » joue le son du coffre. Réglages « Sons de combat », « Volume des sons FE » et « Sons personnalisés (JSON) » (clés touche, critique, rate, arme_brisee, mort, niveau, coffre). Fichiers dans `assets/sounds/`.
 - Résultat détaillé dans le chat, avec les dés.
 
 Restent manuels : les autres traits (Mur de boucliers, Interposition, Vétéran…), les soutiens (via les bonus manuels), Booster et Magister (le Booster est appliqué, le Magister est seulement annoncé).
