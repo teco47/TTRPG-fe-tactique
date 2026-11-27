@@ -20,6 +20,7 @@ import { setupChapter1 } from "./chapter1.js";
 import { exportSceneMacro, buildSceneExport } from "./export.js";
 import { playSound } from "./sounds.js";
 import { lootMacro, registerLootHooks } from "./loot.js";
+import { enemyMacro, createEnemy, registerEnemyHooks } from "./enemies.js";
 import { convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy } from "./convoi.js";
 
 /* ------------------------------------------------------------------ */
@@ -126,6 +127,7 @@ function registerSettings() {
 /* ------------------------------------------------------------------ */
 Hooks.once("init", () => {
   registerLootHooks();
+  registerEnemyHooks();
   registerSettings();
   game.keybindings.register(MODULE_ID, "terrainInfo", {
     name: "Terrain sous le curseur",
@@ -148,7 +150,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, convoi: convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, enemy: enemyMacro, createEnemy, convoi: convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB

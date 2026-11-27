@@ -164,7 +164,7 @@ export async function lootMacro() {
 /*  Message de chat et récupération                                    */
 /* ------------------------------------------------------------------ */
 
-async function postLootMessage({ title, text, gold, items }) {
+export async function postLootMessage({ title, text, gold, items }) {
   const content = `
   <div class="fe-chat fe-loot">
     ${title ? `<h3><i class="fa-solid fa-gem"></i> ${esc(title)}</h3>` : ""}
