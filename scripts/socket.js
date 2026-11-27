@@ -28,6 +28,12 @@ async function runOperations(ops) {
       } else if (o.op === "createEffect") {
         const actor = await fromUuid(o.uuid);
         if (actor) await actor.createEmbeddedDocuments("ActiveEffect", [o.data]);
+      } else if (o.op === "createItems") {
+        const actor = await fromUuid(o.uuid);
+        if (actor) await actor.createEmbeddedDocuments("Item", o.data);
+      } else if (o.op === "delete") {
+        const doc = await fromUuid(o.uuid);
+        if (doc) await doc.delete();
       } else if (o.op === "deleteEffect") {
         const effect = await fromUuid(o.uuid);
         if (effect) await effect.delete();

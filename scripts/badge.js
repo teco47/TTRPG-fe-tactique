@@ -1,7 +1,7 @@
 /**
  * FE Tactique – badge de l'arme équipée en bas à droite du jeton.
  */
-import { MODULE_ID, MODULE_PATH, WEAPON_TYPES } from "./config.js";
+import { MODULE_ID, MODULE_PATH, WEAPON_TYPES, isUnitActor } from "./config.js";
 import { readUnit, equippedWeapon } from "./engine.js";
 
 const BADGE = "feWeaponBadge";
@@ -9,7 +9,7 @@ const findBadge = (token) => token.children?.find(c => c._feBadge) ?? null;
 
 function iconFor(token) {
   const actor = token?.actor;
-  if (!actor?.system?.props) return null;
+  if (!isUnitActor(actor)) return null;
   const w = equippedWeapon(readUnit(actor));
   if (!w) return null;
   const file = WEAPON_TYPES[w.type]?.icon;

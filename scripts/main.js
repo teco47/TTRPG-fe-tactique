@@ -20,6 +20,7 @@ import { setupChapter1 } from "./chapter1.js";
 import { exportSceneMacro, buildSceneExport } from "./export.js";
 import { playSound } from "./sounds.js";
 import { lootMacro, registerLootHooks } from "./loot.js";
+import { convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy } from "./convoi.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -80,6 +81,8 @@ function itemLabelRaw(item, field) {
       case "dur": return cat === "objet" ? `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}` : `${p.dur ?? 0}/${p.dur_max ?? p.dur ?? 0}`;
       case "uses": return `${p.uses ?? 0}/${p.uses_max ?? p.uses ?? 0}`;
       case "prix": return `${p.prix_pm ?? 0} PM`;
+      case "prix_or": return p.prix !== undefined ? `${p.prix} or` : "—";
+      case "categorie": return { arme: "Arme", tome: "Tome", sceptre: "Sceptre", objet: "Objet", trait: "Trait", classe: "Classe", motcle: "Mot-clé" }[cat] ?? "";
       case "effet": return p.effet ?? "";
       case "cl_palier": return config.TIERS[p.cl_palier] ?? "";
       case "cl_profil": return config.PROFILES[p.cl_profil] ?? p.cl_profil ?? "";
@@ -143,7 +146,7 @@ Hooks.once("init", () => {
   registerDefaultHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, convoi: convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB

@@ -2,7 +2,7 @@
  * FE Tactique – montée de niveau (réserves de d6), fin de phase, nouvelle unité.
  */
 import { playSound } from "./sounds.js";
-import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat } from "./config.js";
+import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_ROLES, TERRAINS, masteryReference, maxDicePerStat, isUnitActor } from "./config.js";
 import { readUnit, effectiveStats } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
 import { applyOperations } from "./socket.js";
@@ -36,7 +36,7 @@ export function computeLevelUp(level, dice) {
 
 export async function levelUp(actor) {
   actor ??= targetActors()[0];
-  if (!actor?.system?.props) return ui.notifications.warn("Sélectionne une unité FE.");
+  if (!isUnitActor(actor)) return ui.notifications.warn("Sélectionne une unité FE.");
   const p = actor.system.props;
   const level = Number(p.niveau ?? 1);
   if (level >= MAX_LEVEL) return ui.notifications.warn(`${actor.name} est déjà au niveau maximum (${MAX_LEVEL}).`);
@@ -79,7 +79,7 @@ export async function levelUp(actor) {
 /** Achat d'un dé de stat avec des PM (3 PM par défaut). */
 export async function buyDie(actor) {
   actor ??= targetActors()[0];
-  if (!actor?.system?.props) return ui.notifications.warn("Sélectionne une unité FE.");
+  if (!isUnitActor(actor)) return ui.notifications.warn("Sélectionne une unité FE.");
   const p = actor.system.props;
   const level = Number(p.niveau ?? 1);
   const limit = maxDicePerStat(level);
@@ -132,7 +132,7 @@ export async function endPhase(endingCamp) {
   const seen = new Set();
   for (const t of canvas.tokens.placeables) {
     const actor = t.actor;
-    if (!actor?.system?.props || seen.has(actor.uuid)) continue;
+    if (!isUnitActor(actor) || seen.has(actor.uuid)) continue;
     seen.add(actor.uuid);
     // Effets temporaires
     for (const e of actor.effects) {

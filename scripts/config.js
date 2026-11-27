@@ -11,6 +11,7 @@ export const MODULE_PATH = `modules/${MODULE_ID}`;
 /* ------------------------------------------------------------------ */
 export const TEMPLATE_IDS = {
   unite: "feTplUnite000001",
+  convoi: "feTplConvoi00001",
   arme: "feTplArme0000001",
   tome: "feTplTome0000001",
   sceptre: "feTplSceptre0001",
@@ -20,8 +21,14 @@ export const TEMPLATE_IDS = {
   motcle: "feTplMotCle00001"
 };
 
+/** Vrai pour un acteur Convoi (inventaire et compteurs de l'équipe), qui n'est pas une unité. */
+export const isConvoi = (actor) => actor?.system?.template === TEMPLATE_IDS.convoi;
+/** Vrai pour une unité FE (fiche CSB qui n'est pas un convoi). */
+export const isUnitActor = (actor) => !!actor?.system?.props && !isConvoi(actor);
+
 export const TEMPLATE_NAMES = {
   unite: "FE – Unité",
+  convoi: "FE – Convoi",
   arme: "FE – Arme",
   tome: "FE – Tome",
   sceptre: "FE – Sceptre",

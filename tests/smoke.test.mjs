@@ -173,4 +173,17 @@ console.log("flottants OK");
   assert.equal(L.lootSummary([], 0), "");
   assert.ok(L.LOOT_PRESETS.coffre.text.length > 0);
   console.log("loot OK");
+  const Cv = await import("../scripts/convoi.js");
+  assert.equal(Cv.goldAfter(100, 25), 125);
+  assert.equal(Cv.goldAfter(10, -50), 0);
+  assert.equal(Cv.goldAfter("", 7), 7);
+  const { buildTemplates } = await import("../scripts/csb-templates.js");
+  const tpl = buildTemplates().actors.find(t => t.id === C.TEMPLATE_IDS.convoi);
+  assert.ok(tpl, "modèle Convoi");
+  const json = JSON.stringify(tpl);
+  for (const k of ["cv_tout", "cv_armes", "cv_tomes", "cv_sceptres", "cv_objets", "cv_suivi", '"key":"or"']) assert.ok(json.includes(k), k);
+  assert.ok(C.isConvoi({ system: { template: C.TEMPLATE_IDS.convoi } }));
+  assert.ok(!C.isUnitActor({ system: { template: C.TEMPLATE_IDS.convoi, props: {} } }));
+  assert.ok(C.isUnitActor({ system: { template: C.TEMPLATE_IDS.unite, props: {} } }));
+  console.log("convoi OK");
 }
