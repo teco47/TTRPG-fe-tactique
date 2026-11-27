@@ -1,7 +1,7 @@
 /**
  * FE Tactique – fenêtre de prévision façon tactical RPG, résolution du combat, sceptres et objets.
  */
-import { MODULE_ID, MODULE_PATH, WEAPON_TYPES, TERRAINS, COMBAT_ACTIVATIONS, STATUS, DEFAULT_ANIMATIONS, TOKEN_MAX } from "./config.js";
+import { MODULE_ID, MODULE_PATH, WEAPON_TYPES, TERRAINS, COMBAT_ACTIVATIONS, STATUS, DEFAULT_ANIMATIONS, TOKEN_MAX, isUnitActor } from "./config.js";
 import {
   readUnit, buildForecast, resolveCombat, weaponRestriction, weaponRange, equippedWeapon, effectiveStats,
   hasTrait, gridDistance, itemCategory
@@ -11,6 +11,7 @@ import { applyOperations } from "./socket.js";
 import { timedEffectData } from "./status.js";
 import { showFloat, showDodge, showShake, strikeFloat } from "./floating.js";
 import { playSound, strikeSound } from "./sounds.js";
+import { addGold } from "./convoi.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -178,7 +179,7 @@ export async function attackMacro() {
   const defTok = [...game.user.targets][0];
   if (!attTok || !defTok) return ui.notifications.warn("Sélectionne ton unité, puis cible l'adversaire (touche T).");
   if (attTok === defTok) return ui.notifications.warn("L'attaquant et la cible sont la même unité.");
-  if (!attTok.actor?.system?.props || !defTok.actor?.system?.props) return ui.notifications.warn("Les deux jetons doivent être des unités FE (modèle « FE – Unité »).");
+  if (!isUnitActor(attTok.actor) || !isUnitActor(defTok.actor)) return ui.notifications.warn("Les deux jetons doivent être des unités FE (modèle « FE – Unité »).");
 
   const A = readUnit(attTok.actor);
   const eq = equippedWeapon(A);
@@ -292,6 +293,9 @@ async function executeCombat(attTok, defTok, f) {
   }
   await applyOperations(ops);
 
+  // Prime : l'or va au convoi
+  if (result.fallen.D && hasTrait(f.A.unit, "Prime") && camp(defTok) === "ennemis") await addGold(25, { reason: "Prime" });
+
   await postCombatMessage(attTok, defTok, f, result, roll);
 }
 
@@ -317,7 +321,7 @@ async function postCombatMessage(attTok, defTok, f, result, roll) {
     if (fall.dead) return `<p class="fe-fall dead">${name} tombe et reçoit sa ${fall.wounds}e blessure : <b>mort définitive</b> (voir avec le MJ).</p>`;
     return `<p class="fe-fall">${name} tombe : ${fall.wounds}e blessure, il quitte la carte.</p>`;
   };
-  const prime = result.fallen.D && hasTrait(f.A.unit, "Prime") && camp(defTok) === "ennemis" ? `<p>Prime : +25 or pour ${esc(f.A.unit.name)}.</p>` : "";
+  const prime = result.fallen.D && hasTrait(f.A.unit, "Prime") && camp(defTok) === "ennemis" ? `<p>Prime : +25 or au convoi (${esc(f.A.unit.name)}).</p>` : "";
 
   const content = `
   <div class="fe-chat">

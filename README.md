@@ -1,4 +1,4 @@
-# FE Tactique 0.11.4 – guide d'installation et de test
+# FE Tactique 0.12.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.11.4.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.12.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -114,7 +114,8 @@ Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
 - Esquive : quand une attaque rate, le jeton visé fait un pas de côté puis revient sur sa case (effet visuel seulement, sa position ne change pas). Suit le réglage « Animations JB2A ».
 - Coup reçu : le jeton touché tremble (plus fort sur un critique). Même réglage.
 - Sons, entendus par tous : touché (un des trois sons de dégâts au hasard), critique, raté (souffle), arme brisée, unité vaincue, montée de niveau. Réglages « Sons de combat », « Volume des sons FE » et « Sons personnalisés (JSON) » (clés touche, critique, rate, arme_brisee, mort, niveau, coffre). Fichiers dans `assets/sounds/`.
-- Macro « FE – Loot » (MJ) : glisse des objets (barre latérale ou compendium) dans la fenêtre, règle les quantités, l'or et la présentation (préréglages : coffre, ennemi vaincu, village, trouvaille, récompense, marchand, ou texte libre). Le message du chat porte un bouton « Récupérer » : le premier joueur qui clique donne le butin au jeton qu'il a sélectionné. Son du coffre, et le chat annonce ce qui a été gagné. Les armes arrivent non équipées ; l'or est seulement annoncé (pas de bourse dans les fiches).
+- Convoi (modèle « FE – Convoi », macro « FE – Convoi ») : acteur partagé par toute l'équipe, créé à l'installation (tous les joueurs en sont propriétaires). En-tête : or, chapitre, renommée, nombre d'objets. Onglets : Tout, Armes, Tomes, Sceptres, Objets, Traits et classes, Suivi (6 compteurs à nom libre et journal de l'équipe). Colonne 📦 de l'inventaire d'une unité : envoie l'objet au convoi ; colonne 🎁 du convoi : donne l'objet au jeton sélectionné. L'or du Loot et des Primes (+25) arrive automatiquement au convoi.
+- Macro « FE – Loot » (MJ) : glisse des objets (barre latérale ou compendium) dans la fenêtre, règle les quantités, l'or et la présentation (préréglages : coffre, ennemi vaincu, village, trouvaille, récompense, marchand, ou texte libre). Le message du chat porte un bouton « Récupérer » : le premier joueur qui clique donne le butin au jeton qu'il a sélectionné. Son du coffre, et le chat annonce ce qui a été gagné. Les armes arrivent non équipées ; l'or va au convoi.
 - Résultat détaillé dans le chat, avec les dés.
 
 Restent manuels : les autres traits (Mur de boucliers, Interposition, Vétéran…), les soutiens (via les bonus manuels), Booster et Magister (le Booster est appliqué, le Magister est seulement annoncé).

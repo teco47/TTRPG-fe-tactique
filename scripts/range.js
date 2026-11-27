@@ -2,7 +2,7 @@
  * FE Tactique – affichage à la Fire Emblem : cases atteignables en bleu, portée d'attaque en rouge
  * (vert pour un sceptre). Tient compte des coûts de terrain du profil, des murs, des ennemis et de l'arme équipée.
  */
-import { MODULE_ID } from "./config.js";
+import { MODULE_ID, isUnitActor } from "./config.js";
 import { readUnit, effectiveStats, equippedWeapon, weaponRange, hasTrait } from "./engine.js";
 import { terrainAtPoint, moveCost, tokenOffset } from "./terrain.js";
 
@@ -101,7 +101,7 @@ function wallBetween(a, b) {
 /** Calcule et affiche la zone d'une unité. */
 export function showRange(token) {
   clearRange();
-  if (!token?.actor?.system?.props || !canvas?.grid || canvas.grid.isGridless) return;
+  if (!isUnitActor(token?.actor) || !canvas?.grid || canvas.grid.isGridless) return;
   const grid = canvas.interface?.grid ?? canvas.grid;
   if (!grid.highlightPosition) return;
   const unit = readUnit(token.actor, { token: token.document });

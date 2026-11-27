@@ -7,6 +7,7 @@
 import { MODULE_ID } from "./config.js";
 import { playSound } from "./sounds.js";
 import { activeGM } from "./socket.js";
+import { addGold } from "./convoi.js";
 
 const CHANNEL = `module.${MODULE_ID}`;
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -241,11 +242,12 @@ export async function runClaim({ messageId, actorUuid, userId }) {
   await message.update({ content: newContent });
 
   playSound("coffre");
+  const total = loot.gold > 0 ? await addGold(loot.gold, { reason: "butin" }) : null;
   const got = lootSummary(created, loot.gold);
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ actor }),
     content: `<div class="fe-chat fe-loot-got"><p><b>${esc(actor.name)}</b> obtient : ${esc(got) || "rien"}.</p>
-      ${loot.gold > 0 ? `<p class="fe-sub">L'or (${loot.gold}) va dans la bourse du groupe : à noter par le MJ.</p>` : ""}
+      ${loot.gold > 0 ? (total !== null ? `<p class="fe-sub">+${loot.gold} or au convoi (total : ${total} or).</p>` : `<p class="fe-sub">Pas de convoi dans ce monde : l'or (${loot.gold}) est à noter par le MJ.</p>`) : ""}
       ${missing.length ? `<p class="fe-sub">Introuvables (supprimés ?) : ${esc(missing.join(", "))}.</p>` : ""}</div>`
   });
 }

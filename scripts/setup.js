@@ -2,8 +2,9 @@
  * FE Tactique – installation du contenu dans le monde : modèles CSB, catalogue d'objets, macros.
  */
 import {
-  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES, UNIT_ROLES, TOKEN_SCALE
+  MODULE_ID, MODULE_PATH, TEMPLATE_IDS, TEMPLATE_NAMES, WEAPONS, TOMES, STAVES, OBJECTS, TRAITS, CLASSES, KEYWORDS, WEAPON_TYPES, UNIT_ROLES, TOKEN_SCALE, isUnitActor
 } from "./config.js";
+import { ensureConvoy } from "./convoi.js";
 import { buildTemplates } from "./csb-templates.js";
 import { itemCategory, readClass } from "./engine.js";
 import { unitPropsFromClass, ensureDefaults } from "./progression.js";
@@ -411,7 +412,8 @@ export const MACROS = [
   ["FE – Nouveau chapitre (jetons à zéro)", "icons/svg/book.svg", `${API}.newChapter();`],
   ["FE – Préparer le chapitre 1", "icons/svg/village.svg", `${API}.setupChapter1();`],
   ["FE – Exporter la scène (JSON)", "icons/svg/down.svg", `${API}.exportScene();`],
-  ["FE – Loot", "icons/svg/chest.svg", `${API}.loot();`]
+  ["FE – Loot", "icons/svg/chest.svg", `${API}.loot();`],
+  ["FE – Convoi", "icons/svg/item-bag.svg", `${API}.convoi();`]
 ];
 
 export async function installMacros() {
@@ -432,6 +434,7 @@ export async function installAll({ silent = false } = {}) {
     await installCatalog();
     await installCompendium();
     await installMacros();
+    await ensureConvoy();
     await game.settings.set(MODULE_ID, "installedVersion", game.modules.get(MODULE_ID).version);
     ui.notifications.info("FE Tactique : installation terminée. Les macros sont dans le dossier « FE Tactique ».");
   } catch (err) {
@@ -449,7 +452,7 @@ export async function offerInstall() {
     window: { title: "FE Tactique" },
     content: installed
       ? `<p>Le module est passé en version ${current}. Mettre à jour les modèles CSB et les macros ?</p><p class="hint">Les fiches existantes sont rechargées depuis les nouveaux modèles et gardent leurs valeurs.</p>`
-      : `<p>Installer le contenu FE Tactique dans ce monde ?</p><ul><li>modèles CSB : Unité, Arme, Tome, Sceptre, Objet, Trait, Classe, Mot-clé ;</li><li>catalogue des armes, tomes, sceptres, objets, traits, classes et mots-clés ;</li><li>macros de combat, de progression et de scène.</li></ul>`,
+      : `<p>Installer le contenu FE Tactique dans ce monde ?</p><ul><li>modèles CSB : Unité, Convoi, Arme, Tome, Sceptre, Objet, Trait, Classe, Mot-clé ;</li><li>catalogue des armes, tomes, sceptres, objets, traits, classes et mots-clés ;</li><li>macros de combat, de progression et de scène ;</li><li>un acteur Convoi (or, inventaire et compteurs de l'équipe).</li></ul>`,
     rejectClose: false
   }).catch(() => false);
   if (ok) await installAll();
@@ -491,7 +494,7 @@ export async function newChapter() {
   if (!game.user.isGM) return;
   const ok = await DialogV2().confirm({ window: { title: "Nouveau chapitre" }, content: "<p>Remettre à zéro les jetons Bouclier, Ailé et Esprit de toutes les unités du monde ?</p>", rejectClose: false }).catch(() => false);
   if (!ok) return;
-  for (const a of game.actors.filter(a => a.type === "character" && a.system?.props)) {
+  for (const a of game.actors.filter(a => a.type === "character" && isUnitActor(a))) {
     await a.update({ "system.props.jet_bouclier": 0, "system.props.jet_aile": 0, "system.props.jet_esprit": 0 });
   }
   ui.notifications.info("Jetons remis à zéro.");

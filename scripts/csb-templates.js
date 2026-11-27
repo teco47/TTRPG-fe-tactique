@@ -123,7 +123,8 @@ function uniteTemplate() {
         col("c_crit", "Crit", itemValue("crit")),
         col("c_poids", "Poids", itemValue("poids")),
         col("c_por", "Portée", itemValue("portee")),
-        col("c_dur", "Dur. / Util.", itemValue("dur"))
+        col("c_dur", "Dur. / Util.", itemValue("dur")),
+        col("c_convoi", "Convoi", "📦", { rollMessage: `%{${API}?.toConvoy(linkedEntity); return '';}%`, tooltip: "Envoyer cet objet au convoi" })
       ]),
     panel("fe_bonus_panel", [
       table("fe_bonus", [
@@ -217,6 +218,62 @@ function uniteTemplate() {
     data: {
       header, body, hidden: [], attributeBar: {},
       display: { width: 820, height: 780, fix_size: false, pp_width: 100, pp_height: 100 },
+      initiativeFormula: ""
+    },
+    flags: {}
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Modèle d'acteur : Convoi (inventaire et compteurs de l'équipe)     */
+/* ------------------------------------------------------------------ */
+function convoiTemplate() {
+  // Les clés doivent être uniques dans tout le modèle : chaque onglet suffixe ses colonnes.
+  const give = (sfx) => col(`v_give_${sfx}`, "Donner", "🎁", { rollMessage: `%{${API}?.fromConvoy(linkedEntity); return '';}%`, tooltip: "Donner cet objet au jeton sélectionné" });
+  const c = (field, name, sfx, extra = {}) => ({ ...col(`v_${field}_${sfx}`, name, itemValue(field)), ...extra });
+  const weaponCols = (sfx) => [
+    give(sfx), c("type", "Type", sfx), c("rang", "Rang", sfx), c("pui", "Pui", sfx), c("prec", "Préc", sfx), c("crit", "Crit", sfx),
+    c("poids", "Poids", sfx), c("portee", "Portée", sfx), c("dur", "Dur.", sfx), c("prix_or", "Prix", sfx)
+  ];
+  const all = [TEMPLATE_IDS.arme, TEMPLATE_IDS.tome, TEMPLATE_IDS.sceptre, TEMPLATE_IDS.objet, TEMPLATE_IDS.trait, TEMPLATE_IDS.classe, TEMPLATE_IDS.motcle];
+  const inv = (key, titleText, templates, columns) => itemContainer(key, titleText, templates, columns, { labelWhenEmpty: "Vide" });
+
+  const header = panel("custom_header", [
+    table("fe_cv_head", [
+      [th("💰 Or"), th("Chapitre"), th("Renommée"), th("Objets")],
+      [number("or", "", { def: 0, min: 0, size: "medium", controls: true }),
+       number("chapitre", "", { def: 1, min: 0, controls: true }),
+       number("renommee", "", { def: 0, controls: true }),
+       label("nb_objets", `%{return ${API}?.convoyCount(entity) ?? ''}%`, { cssClass: "fe-val" })]
+    ], { layout: "cccc", cssClass: "fe-table fe-head" })
+  ]);
+
+  const suivi = panel("fe_cv_suivi", [
+    title("Compteurs de l'équipe (nom libre)"),
+    table("fe_cv_trackers", [
+      [th("Compteur"), th("Valeur"), th("Max")],
+      ...[1, 2, 3, 4, 5, 6].map(i => [text(`trk_nom_${i}`, "", { def: ["Vivres", "Jours de marche", "Réputation (village)", "", "", ""][i - 1] }), number(`trk_val_${i}`, "", { def: 0, controls: true }), number(`trk_max_${i}`, "", { def: 0 })])
+    ], { layout: "lcc" }),
+    textArea("notes", "Journal de l'équipe")
+  ]);
+
+  const body = panel("custom_body", [
+    tabs("fe_cv_tabs", [
+      ["cv_tout", "Tout", [inv("cv_inv_tout", "Inventaire complet", all, [give("t"), c("categorie", "Catégorie", "t"), c("type", "Type", "t"), c("dur", "Dur. / Util.", "t"), c("prix_or", "Prix", "t")])]],
+      ["cv_armes", "Armes", [inv("cv_inv_armes", "Armes", [TEMPLATE_IDS.arme], weaponCols("a"))]],
+      ["cv_tomes", "Tomes", [inv("cv_inv_tomes", "Tomes", [TEMPLATE_IDS.tome], weaponCols("m"))]],
+      ["cv_sceptres", "Sceptres", [inv("cv_inv_sceptres", "Sceptres", [TEMPLATE_IDS.sceptre], [give("s"), c("rang", "Rang", "s"), c("portee", "Portée", "s"), c("dur", "Dur.", "s"), c("prix_or", "Prix", "s")])]],
+      ["cv_objets", "Objets", [inv("cv_inv_objets", "Objets", [TEMPLATE_IDS.objet], [give("o"), c("uses", "Util.", "o"), c("prix_or", "Prix", "o"), c("effet", "Effet", "o", { align: "left" })])]],
+      ["cv_autres", "Traits et classes", [inv("cv_inv_autres", "Manuels de traits, classes, mots-clés", [TEMPLATE_IDS.trait, TEMPLATE_IDS.classe, TEMPLATE_IDS.motcle], [give("x"), c("categorie", "Catégorie", "x"), c("effet", "Effet", "x", { align: "left" })])]],
+      ["cv_suivi", "Suivi", [suivi]]
+    ])
+  ]);
+
+  return {
+    id: TEMPLATE_IDS.convoi, type: "_template", name: TEMPLATE_NAMES.convoi,
+    data: {
+      header, body, hidden: [], attributeBar: {},
+      display: { width: 760, height: 680, fix_size: false, pp_width: 100, pp_height: 100 },
       initiativeFormula: ""
     },
     flags: {}
@@ -385,7 +442,7 @@ function motCleTemplate() {
 export function buildTemplates() {
   return {
     isCustomSystemExport: true,
-    actors: [uniteTemplate()],
+    actors: [uniteTemplate(), convoiTemplate()],
     items: [armeTemplate(), tomeTemplate(), sceptreTemplate(), objetTemplate(), traitTemplate(), classeTemplate(), motCleTemplate()]
   };
 }
