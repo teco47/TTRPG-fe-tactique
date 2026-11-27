@@ -402,12 +402,44 @@ async function playStrike(src, tgt, weapon, strike) {
 function triggerCritHook(src, tgt, weapon, strike) {
   const data = { attacker: src, target: tgt, weapon, strike };
   try { Hooks.callAll("feTactique.critique", data); } catch (err) { console.warn(`${MODULE_ID} | crochet critique`, err); }
+  playCritCutIn(src, tgt, weapon, strike);
   let name = "";
   try { name = String(game.settings.get(MODULE_ID, "critMacro") ?? "").trim(); } catch (e) { /* ignore */ }
   if (!name) return;
   const macro = game.macros?.getName?.(name) ?? game.macros?.find(m => m.name === name) ?? (name.includes(".") ? fromUuidSync(name) : null);
   if (!macro) return console.warn(`${MODULE_ID} | macro de critique introuvable : ${name}`);
   try { macro.execute({ ...data, actor: src?.actor, token: src }); } catch (err) { console.warn(`${MODULE_ID} | macro de critique`, err); }
+}
+
+/** Pure : données du cut-in de critique (format de Cinematic Cut-ins : api.play). */
+export function critCutInPayload({ name, actorId, img, weaponName, dmg }, { theme = "impact", duration = 2.5 } = {}) {
+  const payload = {
+    theme: theme || "impact", format: "popout",
+    text: `${name ?? "?"} – CRITIQUE !`,
+    subText: `${weaponName ? weaponName + " · " : ""}−${dmg ?? "?"} PV`,
+    customDuration: Number(duration) > 0 ? Number(duration) : 2.5
+  };
+  if (actorId) { payload.actorId = actorId; payload.characterImageSource = "actor"; }
+  else if (img) payload.img = img;
+  return payload;
+}
+
+/** Cut-in de critique avec Cinematic Cut-ins, s'il est actif (api.play le diffuse à tous). */
+function playCritCutIn(src, tgt, weapon, strike) {
+  try {
+    if (!game.settings.get(MODULE_ID, "critCutIn")) return;
+    const mod = game.modules.get("cinematic-cut-ins");
+    const api = mod?.active ? mod.api : null;
+    if (!api?.play) return;
+    const actor = src?.actor;
+    const payload = critCutInPayload(
+      { name: src?.name ?? actor?.name, actorId: actor?.isToken ? null : actor?.id, img: actor?.img ?? src?.document?.texture?.src, weaponName: weapon?.name, dmg: strike?.dmg },
+      { theme: game.settings.get(MODULE_ID, "critCutInTheme"), duration: game.settings.get(MODULE_ID, "critCutInDuration") }
+    );
+    Promise.resolve(api.play(payload)).catch(err => console.warn(`${MODULE_ID} | cut-in`, err));
+  } catch (err) {
+    console.warn(`${MODULE_ID} | cut-in`, err);
+  }
 }
 
 /** Impact : craquement et secousse d'écran du critique, animation de raté éventuelle. Ne bloque pas. */
