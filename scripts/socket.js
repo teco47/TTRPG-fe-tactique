@@ -4,6 +4,7 @@
  */
 import { MODULE_ID } from "./config.js";
 import { handleFloatMessage } from "./floating.js";
+import { handleLootMessage } from "./loot.js";
 
 const CHANNEL = `module.${MODULE_ID}`;
 const pending = new Map();
@@ -70,6 +71,7 @@ export async function applyOperations(ops) {
 export function registerSocket() {
   game.socket.on(CHANNEL, async (msg) => {
     if (handleFloatMessage(msg)) return;
+    if (handleLootMessage(msg)) return;
     if (msg?.type === "ops" && game.user.id === msg.gmId) {
       await runOperations(msg.ops);
       game.socket.emit(CHANNEL, { type: "done", requestId: msg.requestId });

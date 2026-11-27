@@ -161,3 +161,16 @@ console.log("export OK");
   }
 }
 console.log("flottants OK");
+{
+  const L = await import("../scripts/loot.js");
+  const items = [];
+  L.addLootItem(items, { uuid: "Item.a", name: "Vulnéraire", img: "x" });
+  L.addLootItem(items, { uuid: "Item.a", name: "Vulnéraire", img: "x" });
+  L.addLootItem(items, { uuid: "Item.b", name: "Épée de fer", img: "y" });
+  assert.equal(items.length, 2);
+  assert.equal(items[0].qty, 2);
+  assert.equal(L.lootSummary(items, 50), "Vulnéraire ×2, Épée de fer, 50 or");
+  assert.equal(L.lootSummary([], 0), "");
+  assert.ok(L.LOOT_PRESETS.coffre.text.length > 0);
+  console.log("loot OK");
+}
