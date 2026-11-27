@@ -187,3 +187,13 @@ console.log("flottants OK");
   assert.ok(C.isUnitActor({ system: { template: C.TEMPLATE_IDS.unite, props: {} } }));
   console.log("convoi OK");
 }
+{
+  const Cb = await import("../scripts/combat.js");
+  assert.equal(Cb.computeImpactDelay("epee"), C.DEFAULT_IMPACT_DELAYS.epee);
+  assert.equal(Cb.computeImpactDelay("arc", { arc: 900 }), 900);
+  assert.equal(Cb.computeImpactDelay("epee", {}, -200), C.DEFAULT_IMPACT_DELAYS.epee - 200);
+  assert.equal(Cb.computeImpactDelay("epee", {}, -5000), 0);
+  assert.equal(Cb.computeImpactDelay("inconnu"), C.DEFAULT_IMPACT_DELAYS.defaut);
+  assert.equal(Cb.computeImpactDelay("hache", { hache: "abc" }), C.DEFAULT_IMPACT_DELAYS.defaut);
+  console.log("impact OK");
+}
