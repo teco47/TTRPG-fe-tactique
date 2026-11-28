@@ -262,3 +262,30 @@ console.log("flottants OK");
   assert.doesNotMatch(limited, /fe-up-tabs/);
   assert.match(UP.panelHTML({ ...d, name: "<b>x</b>" }), /&lt;b&gt;x/);
 }
+
+// Cadre de bataille (parties pures)
+{
+  const BH = await import("../scripts/battle-hud.js");
+  assert.deepEqual(BH.parseButtons("Attaquer=FE – Attaquer; FE – Loot ;; Fin=FE – Fin de phase"), [
+    { label: "Attaquer", macro: "FE – Attaquer" }, { label: "FE – Loot", macro: "FE – Loot" }, { label: "Fin", macro: "FE – Fin de phase" }]);
+  const st = BH.battleState({ name: "Chapitre 1", flags: { "fe-tactique": { battle: { objective: "Vaincre Garrec", turn: 3, phase: "ennemis" } } } });
+  assert.equal(st.chapter, "Chapitre 1"); assert.equal(st.turn, 3); assert.equal(st.phase, "ennemis");
+  assert.deepEqual(BH.battleState({ name: "X" }), { chapter: "X", objective: "", objective2: "", turn: 1, phase: "joueurs" });
+  let n = BH.nextPhase(st, "ennemis"); assert.equal(n.turn, 4); assert.equal(n.phase, "joueurs");
+  n = BH.nextPhase(n, "joueurs"); assert.equal(n.turn, 4); assert.equal(n.phase, "ennemis");
+  assert.deepEqual(BH.sortRoster([{ name: "Mara", role: "secondaire" }, { name: "Sienne", role: "principal" }, { name: "Alaric", role: "principal" }]).map(e => e.name), ["Alaric", "Sienne", "Mara"]);
+  const r = BH.rosterHTML([{ id: "t1", name: "<Alaric>", img: "a.png", hp: 10, pvMax: 27, role: "principal", acted: true, selected: true }, { id: "t2", name: "Mara", img: "", hp: 20, pvMax: 20, role: "secondaire" }]);
+  assert.match(r, /&lt;Alaric&gt;/); assert.match(r, /sel done/); assert.match(r, /bar low/); assert.match(r, /1 unité peut encore agir/);
+  assert.doesNotMatch(r, /fe-bh-camps/); // un seul camp : pas d'onglets
+  const mixed = [{ id: "a", name: "Alaric", role: "principal", hp: 1, pvMax: 2 }, { id: "b", name: "Bandit", role: "ennemi", hp: 1, pvMax: 2, hidden: true }, { id: "c", name: "Villageois", role: "neutre", hp: 1, pvMax: 2 }];
+  const m1 = BH.rosterHTML(mixed, "ennemis");
+  assert.match(m1, /data-camp="joueurs"[^>]*>Armée <span>1/); assert.match(m1, /data-camp="allies"/); assert.match(m1, /fe-bh-camp-ennemis on/);
+  assert.match(m1, /Bandit/); assert.doesNotMatch(m1, /Alaric</); assert.match(m1, /hid/);
+  assert.equal(BH.pickCamp(mixed.slice(1, 2), "joueurs"), "ennemis"); // camp absent : premier camp présent
+  assert.match(BH.titleHTML(st, { isGM: true }), /data-action="edit"/);
+  assert.doesNotMatch(BH.titleHTML(st), /data-action/);
+  assert.match(BH.buttonsHTML([{ label: "A", macro: "FE – Attaquer" }], [{ label: "Fin", macro: "FE – Fin de phase" }]), /fe-bh-sep.*class="fe-bh-btn gm"/s);
+  assert.deepEqual(BH.actedOperation({ document: { uuid: "Scene.s.Token.t" } }), { op: "update", uuid: "Scene.s.Token.t", data: { "flags.fe-tactique.acted": true } });
+  assert.ok(api.advanceBattle && api.resetBattle);
+  console.log("cadre de bataille OK");
+}

@@ -6,6 +6,7 @@ import { MODULE_ID, STATS, STAT_LABELS, MAX_LEVEL, CLASSES, TEMPLATE_IDS, UNIT_R
 import { readUnit, effectiveStats } from "./engine.js";
 import { terrainUnderToken } from "./terrain.js";
 import { applyOperations } from "./socket.js";
+import { advanceBattle } from "./battle-hud.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -157,6 +158,7 @@ export async function endPhase(endingCamp) {
       }
     }
   }
+  await advanceBattle(endingCamp);
   ChatMessage.create({
     content: `<div class="fe-chat"><h3>Phase des ${starting}</h3>${lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join("")}</ul>` : "<p>Rien à signaler.</p>"}</div>`
   });

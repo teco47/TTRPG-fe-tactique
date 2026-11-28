@@ -1,4 +1,4 @@
-# FE Tactique 0.14.0 – guide d'installation et de test
+# FE Tactique 0.15.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.14.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.15.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -110,6 +110,22 @@ Survoler un jeton affiche sa fiche tant que la souris reste dessus (réglage « 
 
 Réglages propres à chaque joueur : côté de l'écran, écart au bord, écart au haut, largeur et hauteur max. Ils servent à poser le panneau dans la colonne d'un cadre *Wrap a Map* (Landing Page Maker). Réglage du MJ « Fiche complète des unités non possédées » : décoché, les joueurs ne voient que le portrait, la classe et les PV des ennemis.
 
+### Cadre de bataille (plateau autour de la carte)
+
+L'interface fait partie du décor de la scène : elle bouge et zoome avec la carte, comme un plateau de jeu.
+
+1. Agrandis la scène pour laisser une marge autour de la carte, et pose des murs autour de la zone jouable pour que les jetons n'entrent pas dans la marge.
+2. Pose une **Tile** par zone, à la taille voulue (elle peut porter ton visuel de fond). Dans sa configuration, choisis la **Zone FE** :
+   - **Titre, objectif et tour** : chapitre, objectif, objectif secondaire, tour et phase. Le MJ clique dessus pour les modifier. *FE – Fin de phase* fait avancer la phase et le tour ; *FE – Nouveau chapitre* repart du tour 1.
+   - **Liste des unités** : les unités posées sur la scène, avec portrait et PV, et un onglet par camp présent d'après le *Type d'unité* de la fiche (Armée : principaux puis secondaires ; Alliés : neutres ; Ennemis). Les jetons cachés n'apparaissent que pour le MJ (cadre en pointillés). Clic : sélectionne le jeton et centre la caméra (ou affiche seulement sa fiche si tu ne le possèdes pas). Double-clic : ouvre la fiche CSB. La liste défile si elle dépasse la Tile.
+   - **Fiche de l'unité** : la fiche de l'unité sélectionnée ou survolée (voir ci-dessus). Sur une scène qui a cette zone, le panneau fixe ne s'affiche pas, et Alt+U ne sert plus : pour cacher une zone aux joueurs, cache sa Tile (le MJ la voit en transparence).
+   - **Boutons de macro** : réglages « Cadre : boutons des joueurs » et « Cadre : boutons du MJ », au format `Libellé=Nom de la macro; …`.
+3. Une unité qui attaque ou utilise un sceptre est **grisée** (sur la carte et dans la liste) jusqu'au début de la phase suivante de son camp.
+
+Chaque joueur a sa propre vue : sa sélection, sa fiche et son onglet de liste. Le titre, le tour, la phase et les unités grisées sont les mêmes pour tous.
+
+Réglages : « Cadre de bataille sur les Tiles » (MJ), taille du texte en fraction de case, fond sombre ou transparent (pour laisser voir l'image de la Tile), et « Cadre : le masquer pour moi » (chaque joueur).
+
 ## 4. Ce que le combat applique automatiquement
 
 - Précision = Précision de l'arme + 2 × Tech + 5 × rang ; Esquive = 2 × (Vit − Poids) + terrain ; Attaque = For ou Mag + Puissance + 2 × rang ; Critique = Crit de l'arme + Tech/2 + 5 × rang − Vit/4 de la cible.
@@ -180,6 +196,7 @@ Les ennemis gardent leurs stats du scénario : leur fiche n'affiche pas « À at
 11. **Montée de niveau** : sélectionne un jeton, lance la macro : dés dans le chat, stats et PM mis à jour.
 12. **Joueur** : connecte-toi en joueur et attaque un ennemi : les PV de l'ennemi changent (le MJ doit être connecté).
 13. **Fiche de l'unité** : sélectionne le Mercenaire : le panneau à droite montre Att 11, Préc 109, Crit 3 et l'Épée de bronze dans l'onglet Inventaire. Attaque : les PV du panneau baissent. Survole le Bandit : sa fiche s'affiche, puis revient au Mercenaire. Alt+U le masque.
+14. **Cadre de bataille** : pose quatre Tiles dans la marge et choisis leur Zone FE. Le cadre apparaît dessus et suit la caméra. Clique sur une unité de la liste : elle est sélectionnée et la caméra la centre. Attaque : l'unité est grisée. *FE – Fin de phase* deux fois : tour 2, phase joueur, l'unité redevient normale.
 
 Note les points qui ne marchent pas (avec le message de la console F12 si possible) : je corrigerai.
 

@@ -13,6 +13,7 @@ import { showFloat, showDodge, showShake, strikeFloat } from "./floating.js";
 import { playSound, strikeSound } from "./sounds.js";
 import { addGold } from "./convoi.js";
 import { dropOnDeath } from "./enemies.js";
+import { actedOperation } from "./battle-hud.js";
 
 const esc = (s) => foundry.utils.escapeHTML ? foundry.utils.escapeHTML(String(s ?? "")) : String(s ?? "");
 const DialogV2 = () => foundry.applications.api.DialogV2;
@@ -293,6 +294,8 @@ async function executeCombat(attTok, defTok, f) {
       ops.push({ op: "status", uuid: actor.uuid, statusId: CONFIG.specialStatusEffects?.DEFEATED ?? "dead", active: true, overlay: true });
     }
   }
+  const acted = actedOperation(attTok);
+  if (acted) ops.push(acted);
   await applyOperations(ops);
 
   // Prime : l'or va au convoi
@@ -546,6 +549,8 @@ export async function staffMacro(srcTok, tgtTok) {
   // Le sceptre utilisé devient l'arme équipée : les autres armes sont déséquipées
   for (const o of S.weapons) if (o.id !== w.id && o.equipped) ops.push({ op: "update", uuid: o.uuid, data: { "system.props.equipee": false } });
   ops.push({ op: "update", uuid: w.uuid, data: { "system.props.dur": dur, "system.props.equipee": true } });
+  const acted = actedOperation(srcTok);
+  if (acted) ops.push(acted);
   await applyOperations(ops);
   return ChatMessage.create({
     speaker: ChatMessage.getSpeaker({ token: srcTok.document }),

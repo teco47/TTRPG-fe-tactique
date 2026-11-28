@@ -111,10 +111,12 @@ export function panelHTML(d, tab = "stats") {
 /*  Affichage dans Foundry                                             */
 /* ------------------------------------------------------------------ */
 let el = null;
-let tab = "stats";
-let hovered = null;
-let hidden = false;
 let timer = null;
+/** État partagé avec le cadre de bataille : onglet, jeton survolé, masqué (Alt+U), panneau fixe remplacé. */
+export const panelState = { tab: "stats", hovered: null, pinned: null, hidden: false, suppressed: false };
+const listeners = [];
+/** Appelé à chaque rafraîchissement (le cadre de bataille s'y abonne). */
+export function onPanelRefresh(fn) { listeners.push(fn); }
 
 const setting = (k, d) => { try { return game.settings.get(MODULE_ID, k); } catch (e) { return d; } };
 
@@ -134,24 +136,25 @@ export function registerUnitPanelHooks() {
   game.keybindings.register(MODULE_ID, "unitPanelToggle", {
     name: "Afficher / masquer la fiche de l'unité",
     editable: [{ key: "KeyU", modifiers: ["Alt"] }],
-    onDown: () => { hidden = !hidden; refresh(); return true; }
+    onDown: () => { panelState.hidden = !panelState.hidden; refresh(); return true; }
   });
   Hooks.on("controlToken", () => refresh());
   Hooks.on("hoverToken", (token, isHover) => {
     if (!setting("unitPanelHover", true)) return;
-    if (isHover) hovered = token;
-    else if (hovered === token) hovered = null;
+    if (isHover) panelState.hovered = token;
+    else if (panelState.hovered === token) panelState.hovered = null;
     refresh();
   });
-  Hooks.on("canvasReady", () => { hovered = null; refresh(); });
-  Hooks.on("deleteToken", (doc) => { if (hovered?.document === doc) hovered = null; refresh(); });
+  Hooks.on("canvasReady", () => { panelState.hovered = null; panelState.pinned = null; refresh(); });
+  Hooks.on("deleteToken", (doc) => { if (panelState.hovered?.document === doc) panelState.hovered = null; refresh(); });
   for (const h of ["updateActor", "updateToken", "createItem", "updateItem", "deleteItem", "createActiveEffect", "deleteActiveEffect"]) Hooks.on(h, () => refresh());
 }
 
 /** Jeton affiché : survolé (unité FE), sinon le dernier sélectionné. */
-function currentToken() {
+export function currentToken() {
   const isUnit = (t) => t?.actor && isUnitActor(t.actor);
-  if (isUnit(hovered)) return hovered;
+  if (isUnit(panelState.hovered)) return panelState.hovered;
+  if (isUnit(panelState.pinned) && !panelState.pinned.destroyed) return panelState.pinned;
   const controlled = canvas?.tokens?.controlled ?? [];
   return [...controlled].reverse().find(isUnit) ?? null;
 }
@@ -159,33 +162,45 @@ function currentToken() {
 /** Regroupe les rafraîchissements (plusieurs hooks d'affilée pendant un combat). */
 export function refresh() {
   clearTimeout(timer);
-  timer = setTimeout(render, 30);
+  timer = setTimeout(() => {
+    render();
+    for (const fn of listeners) { try { fn(); } catch (err) { console.warn(`${MODULE_ID} | rafraîchissement`, err); } }
+  }, 30);
+}
+
+/** HTML de la fiche d'un jeton (aussi utilisé par le cadre de bataille). */
+export function tokenPanelHTML(token) {
+  const actor = token.actor;
+  const unit = readUnit(actor, { token: token.document });
+  const full = game.user.isGM || actor.isOwner || setting("unitPanelFoes", true);
+  const img = token.document?.texture?.src || actor.img || "";
+  return panelHTML(panelData(unit, { img, full }), panelState.tab);
+}
+
+/** Clic sur un onglet dans un conteneur de fiche. */
+export function handleTabClick(ev) {
+  const a = ev.target.closest?.("[data-tab]");
+  if (!a) return false;
+  panelState.tab = a.dataset.tab;
+  refresh();
+  return true;
 }
 
 function ensureElement() {
   if (el) return el;
   el = document.createElement("section");
   el.id = "fe-unit-panel";
-  el.addEventListener("click", (ev) => {
-    const a = ev.target.closest?.("[data-tab]");
-    if (!a) return;
-    tab = a.dataset.tab;
-    render();
-  });
+  el.addEventListener("click", handleTabClick);
   document.body.appendChild(el);
   return el;
 }
 
 function render() {
-  const token = setting("unitPanel", true) && !hidden ? currentToken() : null;
+  const token = setting("unitPanel", true) && !panelState.hidden && !panelState.suppressed ? currentToken() : null;
   if (!token) { if (el) el.hidden = true; return; }
   const panel = ensureElement();
   try {
-    const actor = token.actor;
-    const unit = readUnit(actor, { token: token.document });
-    const full = game.user.isGM || actor.isOwner || setting("unitPanelFoes", true);
-    const img = token.document?.texture?.src || actor.img || "";
-    panel.innerHTML = panelHTML(panelData(unit, { img, full }), tab);
+    panel.innerHTML = tokenPanelHTML(token);
   } catch (err) {
     console.warn(`${MODULE_ID} | fiche de l'unité`, err);
     panel.hidden = true;
@@ -205,6 +220,6 @@ function render() {
 
 /** Macro / console : affiche ou masque le panneau. */
 export function toggleUnitPanel(force) {
-  hidden = force === undefined ? !hidden : !force;
+  panelState.hidden = force === undefined ? !panelState.hidden : !force;
   refresh();
 }
