@@ -244,3 +244,21 @@ console.log("flottants OK");
   assert.equal(pl2.theme, "impact"); assert.equal(pl2.img, "x.png"); assert.equal(pl2.customDuration, 2.5); assert.ok(!("actorId" in pl2));
   console.log("cut-in OK");
 }
+
+// Fiche de l'unité sélectionnée
+{
+  const UP = await import("../scripts/unit-panel.js");
+  const unit = api.readUnit(actor);
+  const d = UP.panelData(unit, { img: "a.png" });
+  assert.equal(d.pvMax, Number(api.sheet(actor, "pv_max")));
+  assert.equal(d.combat.find(c => c.k === "atq").value, 11);
+  assert.equal(d.stats.length, 7);
+  assert.deepEqual(d.inventory.map(i => [i.name, i.equipped, i.count]), [["Épée de bronze", true, "50/50"]]);
+  assert.equal(d.traits[0].name, "Boost [+10 Esquive]");
+  assert.match(UP.panelHTML(d, "stats"), /Préc<\/span><b>109/);
+  assert.match(UP.panelHTML(d, "inv"), /icone-ep\.png/);
+  assert.match(UP.panelHTML(d, "traits"), /★ Boost/);
+  const limited = UP.panelHTML(UP.panelData(unit, { full: false }), "stats");
+  assert.doesNotMatch(limited, /fe-up-tabs/);
+  assert.match(UP.panelHTML({ ...d, name: "<b>x</b>" }), /&lt;b&gt;x/);
+}

@@ -1,4 +1,4 @@
-# FE Tactique 0.13.2 – guide d'installation et de test
+# FE Tactique 0.14.0 – guide d'installation et de test
 
 Module pour **Foundry VTT v14** (testé sur le papier pour le build 365) et **Custom System Builder 6.1.2**.
 Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/traits, la fenêtre de prévision de combat, la montée de niveau, les états à compteurs, le badge d'arme sur les jetons, le terrain par Régions avec les coûts de déplacement par profil, et la scène du chapitre 1.
@@ -9,7 +9,7 @@ Il ajoute à un monde CSB : la fiche d'unité, les armes/tomes/sceptres/objets/t
 
 ### Foundry installé sur ton PC
 1. Ferme le monde.
-2. Dézippe `fe-tactique-0.13.2.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
+2. Dézippe `fe-tactique-0.14.0.zip` dans `%LOCALAPPDATA%\FoundryVTT\Data\modules\` : tu dois obtenir `...\modules\fe-tactique\module.json`.
 3. Relance Foundry, ouvre ton monde CSB, active **FE Tactique** dans *Gérer les modules*.
 
 ### The Forge (ou installation par URL)
@@ -43,6 +43,7 @@ Plan B pour les modèles seuls : *Paramètres > Custom System Builder > Importer
 | FE – Terrain des Régions | (MJ) Liste les Régions de la scène avec le terrain reconnu, et permet de le choisir dans une liste. |
 | FE – Nouveau chapitre | Remet les jetons Bouclier, Ailé et Esprit à zéro. |
 | FE – Préparer le chapitre 1 | Remplit la scène affichée : Régions de terrain et jetons. |
+| FE – Fiche de l'unité (afficher/masquer) | Affiche ou masque le panneau de l'unité sélectionnée (raccourci **Alt+U**). Pratique comme bouton dans un cadre Landing Page Maker. |
 | FE – Exporter la scène (JSON) | (MJ) Télécharge un fichier JSON de la scène affichée : grille, terrain case par case, Régions, murs et portes, jetons avec la fiche complète de chaque unité. Pour faire analyser une carte hors de Foundry. |
 
 ## 3. La fiche d'unité
@@ -96,6 +97,18 @@ En haut de l'onglet Stats (et en résumé sous la barre de PV) : **points de sta
 - À la mise à jour, le module recharge toutes les fiches FE depuis les nouveaux modèles et remplit les valeurs vides (Niveau, Blessures, jetons, bonus).
 
 Glisse un objet du catalogue sur la fiche pour le donner à l'unité.
+
+### Fiche de l'unité sélectionnée (panneau fixe)
+
+Un panneau reste à l'écran et montre l'unité sélectionnée : portrait du jeton, nom, classe et niveau, PV avec la barre, blessures et Silence, puis trois onglets :
+
+- **Stats** : For, Mag, Déf, Rés, Tech, Vit, Mvt (valeurs en combat), puis Att, Préc, Crit, Esq, Vit. att et Esq. crit avec l'arme équipée et sa portée (sans terrain ni adversaire, comme la fiche) ;
+- **Traits** : équipés (★) puis les autres, avec le nombre d'emplacements utilisés ;
+- **Inventaire** : armes, tomes, sceptres et objets avec l'icône, l'arme équipée (★) et la durabilité ou les utilisations.
+
+Survoler un jeton affiche sa fiche tant que la souris reste dessus (réglage « Fiche : unité survolée »). Chaque joueur voit sa propre sélection. **Alt+U** masque ou réaffiche le panneau.
+
+Réglages propres à chaque joueur : côté de l'écran, écart au bord, écart au haut, largeur et hauteur max. Ils servent à poser le panneau dans la colonne d'un cadre *Wrap a Map* (Landing Page Maker). Réglage du MJ « Fiche complète des unités non possédées » : décoché, les joueurs ne voient que le portrait, la classe et les PV des ennemis.
 
 ## 4. Ce que le combat applique automatiquement
 
@@ -166,6 +179,7 @@ Les ennemis gardent leurs stats du scénario : leur fiche n'affiche pas « À at
 10. **Chute** : mets un personnage à 1 PV et fais-le attaquer : il reçoit une blessure, le malus s'affiche.
 11. **Montée de niveau** : sélectionne un jeton, lance la macro : dés dans le chat, stats et PM mis à jour.
 12. **Joueur** : connecte-toi en joueur et attaque un ennemi : les PV de l'ennemi changent (le MJ doit être connecté).
+13. **Fiche de l'unité** : sélectionne le Mercenaire : le panneau à droite montre Att 11, Préc 109, Crit 3 et l'Épée de bronze dans l'onglet Inventaire. Attaque : les PV du panneau baissent. Survole le Bandit : sa fiche s'affiche, puis revient au Mercenaire. Alt+U le masque.
 
 Note les points qui ne marchent pas (avec le message de la console F12 si possible) : je corrigerai.
 
