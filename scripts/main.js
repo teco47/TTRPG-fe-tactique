@@ -23,6 +23,7 @@ import { lootMacro, registerLootHooks } from "./loot.js";
 import { enemyMacro, createEnemy, registerEnemyHooks } from "./enemies.js";
 import { convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy } from "./convoi.js";
 import { registerUnitPanelSettings, registerUnitPanelHooks, toggleUnitPanel } from "./unit-panel.js";
+import { registerBattleHudSettings, registerBattleHudHooks, advanceBattle, resetBattle } from "./battle-hud.js";
 
 /* ------------------------------------------------------------------ */
 /*  Valeurs affichées par la fiche CSB                                 */
@@ -125,6 +126,7 @@ function registerSettings() {
   reg("traitCost", { name: "Déduire le prix des traits", hint: "Ajouter un trait à une unité retire son prix en PM ; le retirer les rembourse.", type: Boolean, default: true });
   reg("dieCost", { name: "Prix d'un dé de stat (PM)", type: Number, default: 3 });
   registerUnitPanelSettings();
+  registerBattleHudSettings();
   game.settings.register(MODULE_ID, "installedVersion", { scope: "world", config: false, type: String, default: "" });
 }
 
@@ -155,9 +157,10 @@ Hooks.once("init", () => {
   registerClassHooks();
   registerDefaultHooks();
   registerUnitPanelHooks();
+  registerBattleHudHooks();
   game.modules.get(MODULE_ID).api = {
     // Macros
-    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, enemy: enemyMacro, createEnemy, convoi: convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange, unitPanel: toggleUnitPanel,
+    attack: attackMacro, staff: staffMacro, classe: classMacro, levelUp, buyDie, endPhase, bonusDialog, newChapter, newUnit: newUnitDialog, setupChapter1, regions: regionsMacro, tokenLook: tokenLookMacro, exportScene: exportSceneMacro, playSound, loot: lootMacro, enemy: enemyMacro, createEnemy, convoi: convoyMacro, toConvoy, fromConvoy, convoyCount, addGold, findConvoy, buildSceneExport: (api) => buildSceneExport(api ?? game.modules.get(MODULE_ID).api), showRange, clearRange, unitPanel: toggleUnitPanel, advanceBattle, resetBattle,
     // Installation
     install: installAll, templates: buildTemplates,
     // Fiche CSB

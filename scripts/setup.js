@@ -9,6 +9,7 @@ import { buildTemplates } from "./csb-templates.js";
 import { itemCategory, readClass } from "./engine.js";
 import { unitPropsFromClass, ensureDefaults, syncLordHp } from "./progression.js";
 import { timedEffectData } from "./status.js";
+import { resetBattle } from "./battle-hud.js";
 
 const DialogV2 = () => foundry.applications.api.DialogV2;
 const rnd = () => (Math.random() * 0x100000000) >>> 0;
@@ -495,8 +496,9 @@ export async function bonusDialog() {
 
 export async function newChapter() {
   if (!game.user.isGM) return;
-  const ok = await DialogV2().confirm({ window: { title: "Nouveau chapitre" }, content: "<p>Remettre à zéro les jetons Bouclier, Ailé et Esprit de toutes les unités du monde ?</p>", rejectClose: false }).catch(() => false);
+  const ok = await DialogV2().confirm({ window: { title: "Nouveau chapitre" }, content: "<p>Remettre à zéro les jetons Bouclier, Ailé et Esprit de toutes les unités du monde, et repartir du tour 1 sur la scène affichée ?</p>", rejectClose: false }).catch(() => false);
   if (!ok) return;
+  await resetBattle();
   for (const a of game.actors.filter(a => a.type === "character" && isUnitActor(a))) {
     await a.update({ "system.props.jet_bouclier": 0, "system.props.jet_aile": 0, "system.props.jet_esprit": 0 });
   }
