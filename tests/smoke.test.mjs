@@ -276,6 +276,12 @@ console.log("flottants OK");
   assert.deepEqual(BH.sortRoster([{ name: "Mara", role: "secondaire" }, { name: "Sienne", role: "principal" }, { name: "Alaric", role: "principal" }]).map(e => e.name), ["Alaric", "Sienne", "Mara"]);
   const r = BH.rosterHTML([{ id: "t1", name: "<Alaric>", img: "a.png", hp: 10, pvMax: 27, role: "principal", acted: true, selected: true }, { id: "t2", name: "Mara", img: "", hp: 20, pvMax: 20, role: "secondaire" }]);
   assert.match(r, /&lt;Alaric&gt;/); assert.match(r, /sel done/); assert.match(r, /bar low/); assert.match(r, /1 unité peut encore agir/);
+  assert.doesNotMatch(r, /fe-bh-camps/); // un seul camp : pas d'onglets
+  const mixed = [{ id: "a", name: "Alaric", role: "principal", hp: 1, pvMax: 2 }, { id: "b", name: "Bandit", role: "ennemi", hp: 1, pvMax: 2, hidden: true }, { id: "c", name: "Villageois", role: "neutre", hp: 1, pvMax: 2 }];
+  const m1 = BH.rosterHTML(mixed, "ennemis");
+  assert.match(m1, /data-camp="joueurs"[^>]*>Armée <span>1/); assert.match(m1, /data-camp="allies"/); assert.match(m1, /fe-bh-camp-ennemis on/);
+  assert.match(m1, /Bandit/); assert.doesNotMatch(m1, /Alaric</); assert.match(m1, /hid/);
+  assert.equal(BH.pickCamp(mixed.slice(1, 2), "joueurs"), "ennemis"); // camp absent : premier camp présent
   assert.match(BH.titleHTML(st, { isGM: true }), /data-action="edit"/);
   assert.doesNotMatch(BH.titleHTML(st), /data-action/);
   assert.match(BH.buttonsHTML([{ label: "A", macro: "FE – Attaquer" }], [{ label: "Fin", macro: "FE – Fin de phase" }]), /fe-bh-sep.*class="fe-bh-btn gm"/s);

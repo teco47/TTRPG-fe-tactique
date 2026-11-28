@@ -200,3 +200,14 @@ table.fe-terrain-table td:nth-child(2) { text-align: left; }
 #fe-battle-hud .fe-up-iname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #fe-battle-hud .fe-up-count { font-variant-numeric: tabular-nums; opacity: 0.85; }
 #fe-battle-hud .fe-up-empty { opacity: 0.6; font-style: italic; }
+#fe-battle-hud .fe-bh-camps { display: flex; gap: 2px; margin-bottom: 0.3em; }
+#fe-battle-hud .fe-bh-camps a { flex: 1; text-align: center; padding: 0.15em 0; border-radius: 0.25em 0.25em 0 0; background: rgba(255,255,255,0.08); cursor: pointer; font-size: 0.85em; white-space: nowrap; }
+#fe-battle-hud .fe-bh-camps a span { opacity: 0.75; }
+#fe-battle-hud .fe-bh-camps a.on { font-weight: bold; background: rgba(201,167,74,0.35); }
+#fe-battle-hud .fe-bh-camps a.fe-bh-camp-ennemis.on { background: rgba(210,75,60,0.55); }
+#fe-battle-hud .fe-bh-camps a.fe-bh-camp-allies.on { background: rgba(60,140,40,0.55); }
+#fe-battle-hud .fe-bh-u-ennemis img, #fe-battle-hud .fe-bh-u-ennemis .fe-bh-noimg { border-color: #d24b3c; }
+#fe-battle-hud .fe-bh-u-allies img, #fe-battle-hud .fe-bh-u-allies .fe-bh-noimg { border-color: #4caf3a; }
+#fe-battle-hud .fe-bh-unit.hid { border-style: dashed; opacity: 0.6; }
+#fe-battle-hud .fe-bh-unit.hid .fe-bh-uname::before { content: "◌ "; }
+#fe-battle-hud .fe-bh-zone.fe-bh-hidden { opacity: 0.45; }

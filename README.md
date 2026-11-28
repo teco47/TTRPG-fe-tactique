@@ -117,10 +117,12 @@ L'interface fait partie du décor de la scène : elle bouge et zoome avec la car
 1. Agrandis la scène pour laisser une marge autour de la carte, et pose des murs autour de la zone jouable pour que les jetons n'entrent pas dans la marge.
 2. Pose une **Tile** par zone, à la taille voulue (elle peut porter ton visuel de fond). Dans sa configuration, choisis la **Zone FE** :
    - **Titre, objectif et tour** : chapitre, objectif, objectif secondaire, tour et phase. Le MJ clique dessus pour les modifier. *FE – Fin de phase* fait avancer la phase et le tour ; *FE – Nouveau chapitre* repart du tour 1.
-   - **Liste des unités** : toutes les unités joueurs (principales puis secondaires) posées sur la scène, avec portrait et PV. Clic : sélectionne le jeton et centre la caméra (ou affiche seulement sa fiche si tu ne le possèdes pas). Double-clic : ouvre la fiche CSB. La liste défile si elle dépasse la Tile.
-   - **Fiche de l'unité** : la fiche de l'unité sélectionnée ou survolée (voir ci-dessus). Sur une scène qui a cette zone, le panneau fixe ne s'affiche pas.
+   - **Liste des unités** : les unités posées sur la scène, avec portrait et PV, et un onglet par camp présent d'après le *Type d'unité* de la fiche (Armée : principaux puis secondaires ; Alliés : neutres ; Ennemis). Les jetons cachés n'apparaissent que pour le MJ (cadre en pointillés). Clic : sélectionne le jeton et centre la caméra (ou affiche seulement sa fiche si tu ne le possèdes pas). Double-clic : ouvre la fiche CSB. La liste défile si elle dépasse la Tile.
+   - **Fiche de l'unité** : la fiche de l'unité sélectionnée ou survolée (voir ci-dessus). Sur une scène qui a cette zone, le panneau fixe ne s'affiche pas, et Alt+U ne sert plus : pour cacher une zone aux joueurs, cache sa Tile (le MJ la voit en transparence).
    - **Boutons de macro** : réglages « Cadre : boutons des joueurs » et « Cadre : boutons du MJ », au format `Libellé=Nom de la macro; …`.
 3. Une unité qui attaque ou utilise un sceptre est **grisée** (sur la carte et dans la liste) jusqu'au début de la phase suivante de son camp.
+
+Chaque joueur a sa propre vue : sa sélection, sa fiche et son onglet de liste. Le titre, le tour, la phase et les unités grisées sont les mêmes pour tous.
 
 Réglages : « Cadre de bataille sur les Tiles » (MJ), taille du texte en fraction de case, fond sombre ou transparent (pour laisser voir l'image de la Tile), et « Cadre : le masquer pour moi » (chaque joueur).
 

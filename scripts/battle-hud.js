@@ -9,9 +9,12 @@ import { readUnit, effectiveStats } from "./engine.js";
 import { panelState, onPanelRefresh, refresh, currentToken, tokenPanelHTML, handleTabClick } from "./unit-panel.js";
 
 export const ZONES = { titre: "Titre, objectif et tour", liste: "Liste des unités", fiche: "Fiche de l'unité", boutons: "Boutons de macro" };
-const DEFAULT_BUTTONS = "Attaquer=FE – Attaquer; Sceptre=FE – Utiliser un sceptre; Convoi=FE – Convoi; Niveau=FE – Montée de niveau; Bonus=FE – Bonus temporaire; Fiche=FE – Fiche de l'unité (afficher/masquer)";
+const DEFAULT_BUTTONS = "Attaquer=FE – Attaquer; Sceptre=FE – Utiliser un sceptre; Convoi=FE – Convoi; Niveau=FE – Montée de niveau; Bonus=FE – Bonus temporaire";
 const DEFAULT_GM_BUTTONS = "Fin de phase=FE – Fin de phase; Loot=FE – Loot; Ennemi=FE – Générer un ennemi";
 const PHASES = { joueurs: "Phase joueur", ennemis: "Phase ennemie" };
+/** Camps de la liste, d'après le champ « Type d'unité » (role) de la fiche. */
+export const CAMPS = { joueurs: "Armée", allies: "Alliés", ennemis: "Ennemis" };
+export const campOfRole = (role) => role === "ennemi" ? "ennemis" : (role === "neutre" ? "allies" : "joueurs");
 
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const setting = (k, d) => { try { return game.settings.get(MODULE_ID, k); } catch (e) { return d; } };
@@ -60,13 +63,28 @@ export function titleHTML(st, { isGM = false } = {}) {
   </div>`;
 }
 
-/** entries : [{ id, name, img, hp, pvMax, role, acted, selected }] déjà triées. */
-export function rosterHTML(entries) {
+/** Camp affiché : celui demandé s'il a des unités, sinon le premier camp présent. */
+export function pickCamp(entries, wanted) {
+  const present = Object.keys(CAMPS).filter(c => entries.some(e => campOfRole(e.role) === c));
+  return present.includes(wanted) ? wanted : (present[0] ?? "joueurs");
+}
+
+/**
+ * entries : [{ id, name, img, hp, pvMax, role, acted, selected, hidden }] déjà triées, tous camps confondus.
+ * Un onglet par camp présent ; seules les unités du camp choisi sont listées.
+ */
+export function rosterHTML(allEntries, wanted = "joueurs") {
+  const camp = pickCamp(allEntries, wanted);
+  const present = Object.keys(CAMPS).filter(c => allEntries.some(e => campOfRole(e.role) === c));
+  const entries = allEntries.filter(e => campOfRole(e.role) === camp);
   const left = entries.filter(e => !e.acted).length;
-  return `<div class="fe-bh-head">Armée <span>${entries.length}</span></div>
+  const tabs = present.length > 1
+    ? `<nav class="fe-bh-camps">${present.map(c => `<a data-camp="${c}" class="fe-bh-camp-${c}${c === camp ? " on" : ""}">${CAMPS[c]} <span>${allEntries.filter(e => campOfRole(e.role) === c).length}</span></a>`).join("")}</nav>`
+    : `<div class="fe-bh-head">${CAMPS[camp]} <span>${entries.length}</span></div>`;
+  return `${tabs}
     <div class="fe-bh-roster">${entries.map(e => {
       const pct = Math.max(0, Math.min(100, Math.round(100 * e.hp / (e.pvMax || 1))));
-      return `<div class="fe-bh-unit${e.selected ? " sel" : ""}${e.acted ? " done" : ""}" data-token="${esc(e.id)}">
+      return `<div class="fe-bh-unit fe-bh-u-${camp}${e.selected ? " sel" : ""}${e.acted ? " done" : ""}${e.hidden ? " hid" : ""}" data-token="${esc(e.id)}"${e.hidden ? ' title="Caché : visible par le MJ seulement"' : ""}>
         ${e.img ? `<img src="${esc(e.img)}" class="${e.role === "principal" ? "lord" : ""}" alt="">` : `<div class="fe-bh-noimg"></div>`}
         <div class="fe-bh-uname">${esc(e.name)}</div>
         <div class="fe-bh-bar${pct <= 50 ? " low" : ""}"><div style="width:${pct}%"></div></div>
@@ -191,9 +209,11 @@ let root = null;
 let layer = null;
 let lastMatrix = "";
 let tickerFn = null;
+let rosterCamp = "joueurs"; // onglet de la liste, propre à chaque joueur
 
 function zoneTiles(scene = canvas?.scene) {
-  return (scene?.tiles?.contents ?? []).filter(t => ZONES[t.getFlag(MODULE_ID, "zone")]);
+  // Une Tile cachée cache sa zone aux joueurs ; le MJ la voit en transparence.
+  return (scene?.tiles?.contents ?? []).filter(t => ZONES[t.getFlag(MODULE_ID, "zone")] && (!t.hidden || game.user.isGM));
 }
 
 function ensureRoot() {
@@ -238,11 +258,10 @@ function rosterEntries(scene) {
     const actor = t.actor;
     if (!actor || !isUnitActor(actor) || (t.document.hidden && !game.user.isGM)) continue;
     const unit = readUnit(actor, { token: t.document });
-    if (!["principal", "secondaire"].includes(unit.role)) continue;
     const pvMax = effectiveStats(unit).pvMax;
     out.push({
       id: t.id, name: t.name || actor.name, img: t.document.texture?.src || actor.img, role: unit.role,
-      hp: unit.hp, pvMax, acted: !!t.document.getFlag(MODULE_ID, "acted"), selected: t.id === selected
+      hp: unit.hp, pvMax, acted: !!t.document.getFlag(MODULE_ID, "acted"), selected: t.id === selected, hidden: !!t.document.hidden
     });
   }
   return sortRoster(out);
@@ -267,16 +286,16 @@ function render() {
     let inner = "";
     try {
       if (zone === "titre") inner = titleHTML(st, { isGM: game.user.isGM });
-      else if (zone === "liste") inner = rosterHTML(rosterEntries(scene));
+      else if (zone === "liste") inner = rosterHTML(rosterEntries(scene), rosterCamp);
       else if (zone === "boutons") inner = buttonsHTML(parseButtons(setting("battleButtons", DEFAULT_BUTTONS)), game.user.isGM ? parseButtons(setting("battleButtonsGM", DEFAULT_GM_BUTTONS)) : []);
       else if (zone === "fiche") {
-        const tok = panelState.hidden ? null : currentToken();
+        const tok = currentToken();
         inner = tok ? `<div class="fe-bh-sheet">${tokenPanelHTML(tok)}</div>` : `<div class="fe-bh-empty">Sélectionne une unité</div>`;
       }
     } catch (err) {
       console.warn(`${MODULE_ID} | cadre de bataille (${zone})`, err);
     }
-    return `<div class="fe-bh-zone fe-bh-${zone}" style="left:${t.x}px;top:${t.y}px;width:${t.width}px;height:${t.height}px">${inner}</div>`;
+    return `<div class="fe-bh-zone fe-bh-${zone}${t.hidden ? " fe-bh-hidden" : ""}" style="left:${t.x}px;top:${t.y}px;width:${t.width}px;height:${t.height}px">${inner}</div>`;
   }).join("");
   // Garde la position de défilement de la liste
   const scroll = layer.querySelector(".fe-bh-roster")?.scrollTop ?? 0;
@@ -295,6 +314,8 @@ function tokenById(id) {
 
 async function onClick(ev) {
   if (handleTabClick(ev)) return;
+  const campTab = ev.target.closest?.("[data-camp]");
+  if (campTab) { rosterCamp = campTab.dataset.camp; return refresh(); }
   if (ev.target.closest?.("[data-action='edit']")) return editTitle();
   const btn = ev.target.closest?.("[data-macro]");
   if (btn) {
