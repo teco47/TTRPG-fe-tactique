@@ -287,5 +287,7 @@ console.log("flottants OK");
   assert.match(BH.buttonsHTML([{ label: "A", macro: "FE – Attaquer" }], [{ label: "Fin", macro: "FE – Fin de phase" }]), /fe-bh-sep.*class="fe-bh-btn gm"/s);
   assert.deepEqual(BH.actedOperation({ document: { uuid: "Scene.s.Token.t" } }), { op: "update", uuid: "Scene.s.Token.t", data: { "flags.fe-tactique.acted": true } });
   assert.ok(api.advanceBattle && api.resetBattle);
+  assert.deepEqual(BH.tileRect({ x: 500, y: 300, width: 400, height: 200 }), { x: 300, y: 200, w: 400, h: 200 });
+  assert.deepEqual(BH.tileRect({ x: 500, y: 300, width: 400, height: 200, object: { bounds: { x: 10, y: 20, width: 30, height: 40 } } }), { x: 10, y: 20, w: 30, h: 40 });
   console.log("cadre de bataille OK");
 }
