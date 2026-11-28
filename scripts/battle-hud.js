@@ -93,6 +93,19 @@ export function rosterHTML(allEntries, wanted = "joueurs") {
     <div class="fe-bh-foot">${left} unité${left > 1 ? "s" : ""} peu${left > 1 ? "vent" : "t"} encore agir</div>`;
 }
 
+/**
+ * Rectangle d'une Tile en coordonnées de la scène. Foundry v14 place x/y au centre de la Tile :
+ * on prend le cadre calculé par Foundry (placeable.bounds) quand il existe, sinon on recentre.
+ */
+export function tileRect(tile) {
+  const b = tile?.object?.bounds;
+  if (b && Number.isFinite(b.width) && b.width > 0) return { x: b.x, y: b.y, w: b.width, h: b.height };
+  const w = Math.abs(Number(tile.width) || 0), h = Math.abs(Number(tile.height) || 0);
+  return { x: (Number(tile.x) || 0) - w / 2, y: (Number(tile.y) || 0) - h / 2, w, h };
+}
+
+const zoneStyle = (r) => `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`;
+
 export function buttonsHTML(buttons, gmButtons = []) {
   const b = (x, gm) => `<button type="button" class="fe-bh-btn${gm ? " gm" : ""}" data-macro="${esc(x.macro)}">${esc(x.label)}</button>`;
   return `<div class="fe-bh-buttons">${buttons.map(x => b(x, false)).join("")}${gmButtons.length ? `<span class="fe-bh-sep"></span>${gmButtons.map(x => b(x, true)).join("")}` : ""}</div>`;
@@ -116,6 +129,7 @@ export function registerBattleHudHooks() {
   onPanelRefresh(render);
   for (const h of ["createTile", "updateTile", "deleteTile", "updateScene", "createToken"]) Hooks.on(h, () => refresh());
   Hooks.on("canvasReady", () => { startSync(); refresh(); });
+  Hooks.on("refreshTile", (tile) => { if (tile.document?.getFlag?.(MODULE_ID, "zone")) refresh(); });
   Hooks.on("canvasTearDown", () => { stopSync(); if (root) root.hidden = true; });
   Hooks.on("controlToken", () => { panelState.pinned = null; });
   // Unités qui ont agi : grisées sur la carte
@@ -295,7 +309,7 @@ function render() {
     } catch (err) {
       console.warn(`${MODULE_ID} | cadre de bataille (${zone})`, err);
     }
-    return `<div class="fe-bh-zone fe-bh-${zone}${t.hidden ? " fe-bh-hidden" : ""}" style="left:${t.x}px;top:${t.y}px;width:${t.width}px;height:${t.height}px">${inner}</div>`;
+    return `<div class="fe-bh-zone fe-bh-${zone}${t.hidden ? " fe-bh-hidden" : ""}" style="${zoneStyle(tileRect(t))}">${inner}</div>`;
   }).join("");
   // Garde la position de défilement de la liste
   const scroll = layer.querySelector(".fe-bh-roster")?.scrollTop ?? 0;
